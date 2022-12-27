@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ClassicChess</string>
+    <string name="local_game_screen">Local Game</string>
+
+    <string name="back_button">Back</string>
+
+    <string name="MenuScreen_LocalGameButtonText">Local Game</string>
+</resources>
