@@ -9,12 +9,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dgs.software.classicchess.R
+import dgs.software.classicchess.ui.screens.LocalGameScreen
+import dgs.software.classicchess.ui.screens.LocalGameViewModel
 import dgs.software.classicchess.ui.screens.MainMenuScreen
 
 enum class ClassicChessScreen(@StringRes val title: Int) {
@@ -56,6 +59,10 @@ fun ClassicChessApp(
     val currentScreen = ClassicChessScreen.valueOf(
         backStackEntry?.destination?.route ?: ClassicChessScreen.Menu.name
     )
+
+    val localGameViewModel: LocalGameViewModel =
+        viewModel(factory = LocalGameViewModel.Factory)
+
     Scaffold(
         topBar = {
             ClassicChessAppBar(
@@ -71,7 +78,13 @@ fun ClassicChessApp(
             modifier = modifier.padding(innerPadding)
         ) {
             composable(route = ClassicChessScreen.Menu.name) {
-                MainMenuScreen()
+                MainMenuScreen(
+                    onLocalGameButtonClickedAction = {navController.navigate(ClassicChessScreen.LocalGame.name)},
+                    onComputerGameButtonClickedAction = {}
+                )
+            }
+            composable(route = ClassicChessScreen.LocalGame.name) {
+                LocalGameScreen(localGameViewModel)
             }
         }
     }

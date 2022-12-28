@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Button
-import androidx.compose.material.R
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -13,6 +12,8 @@ import androidx.compose.ui.res.stringResource
 
 @Composable
 fun MainMenuScreen(
+    onLocalGameButtonClickedAction: () -> Unit,
+    onComputerGameButtonClickedAction: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -20,6 +21,20 @@ fun MainMenuScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Hello World!")
+        Button(
+            onClick = onLocalGameButtonClickedAction
+        ) {
+            Text(
+                text = stringResource(dgs.software.classicchess.R.string.MainMenuScreen_LocalGameButtonText)
+            )
+        }
+        Button(
+            onClick = onComputerGameButtonClickedAction,
+            enabled = false
+        ) {
+            Text(
+                text = stringResource(dgs.software.classicchess.R.string.MainMenuScreen_ComputerGameButtonText)
+            )
+        }
     }
 }

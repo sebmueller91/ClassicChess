@@ -1,13 +1,13 @@
 package dgs.software.classicchess.model
 
-sealed class Square(
-) { // TODO: Think about better name
+sealed class Cell(
+) {
     data class Piece(
         val type: Type,
         val player: Player
-    ) : Square() {}
+    ) : Cell() {}
 
     class Empty(
-    ) : Square() {}
+    ) : Cell() {}
 }
 
