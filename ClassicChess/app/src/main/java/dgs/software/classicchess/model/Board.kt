@@ -8,8 +8,16 @@ class Board {
         initializeWithDefaultSetup()
     }
 
+    fun get(coordinate: Coordinate) : Cell {
+        return get(coordinate.row, coordinate.column)
+    }
+
     fun get(row: Int, col: Int) : Cell {
         return grid[row][col]
+    }
+
+    fun set(coordinate: Coordinate, square: Cell) {
+        set(coordinate.row, coordinate.column, square)
     }
 
     fun set(row: Int, col: Int, square: Cell) {

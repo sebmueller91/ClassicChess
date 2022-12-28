@@ -11,4 +11,8 @@ data class Game(
     fun getCurrentPlayer() : Player {
         return currentPlayer
     }
+
+    fun setCurrentPlayer(player: Player) {
+        currentPlayer = player
+    }
 }
