@@ -1,4 +1,4 @@
-package dgs.software.classicchess.model.moves.actions
+package dgs.software.classicchess.model.actions
 
 import dgs.software.classicchess.model.Board
 import dgs.software.classicchess.model.Cell
