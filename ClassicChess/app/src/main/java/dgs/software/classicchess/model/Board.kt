@@ -18,6 +18,9 @@ class Board {
 
     fun set(coordinate: Coordinate, square: Cell) {
         set(coordinate.row, coordinate.column, square)
+        if (square is Cell.Piece) {
+            square.coordinate = coordinate
+        }
     }
 
     fun set(row: Int, col: Int, square: Cell) {

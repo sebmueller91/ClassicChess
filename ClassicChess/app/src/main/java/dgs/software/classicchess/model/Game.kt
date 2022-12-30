@@ -15,4 +15,12 @@ data class Game(
     fun setCurrentPlayer(player: Player) {
         currentPlayer = player
     }
+
+    fun get(coordinate: Coordinate) : Cell {
+        return board.get(coordinate)
+    }
+
+    fun getAsPiece(coordinate: Coordinate) : Cell.Piece {
+        return board.get(coordinate) as Cell.Piece
+    }
 }
