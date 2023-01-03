@@ -1,41 +1,96 @@
-package dgs.software.classicchess.calculations
+package dgs.software.classicchess.calculations.possiblemoves
 
 import android.util.Log
-import dgs.software.classicchess.model.Cell
+import dgs.software.classicchess.model.*
 import dgs.software.classicchess.model.Cell.Piece
-import dgs.software.classicchess.model.Coordinate
-import dgs.software.classicchess.model.Game
-import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.model.moves.MoveAndCapturePiece
 import dgs.software.classicchess.model.moves.MovePiece
 import dgs.software.classicchess.model.moves.RevertableMove
 
-private val TAG = "PossibleMovesProvider"
+private val TAG = "BasicMovesProvider"
 
-class PossibleMovesProvider(
+class BasicMovesProvider(
     val game: Game
 ) {
-    fun getUnfilteredMoves(position: Coordinate): List<RevertableMove> {
+    fun getBasicMoves(position: Coordinate): List<RevertableMove> {
         if (game.get(position) is Cell.Empty) {
-            Log.e(TAG, "Tried to calculate moves for an empty cell at pos $position")
+            Log.e(TAG, "Tried to calculate basic moves for an empty cell at pos $position")
             return listOf<RevertableMove>()
         }
         val piece = game.getAsPiece(position)
         return when (piece.type) {
-            Type.PAWN -> piece.getUnfilteredMovesForPawn(position)
-            Type.ROOK -> piece.getUnfilteredMovesForRook(position)
-            Type.KNIGHT -> piece.getUnfilteredMovesForKnight(position)
-            Type.BISHOP -> piece.getUnfilteredMovesForBishop(position)
-            Type.KING -> piece.getUnfilteredMovesForKing(position)
-            Type.QUEEN -> piece.getUnfilteredMovesForQueen(position)
+            Type.PAWN -> piece.getBasicMovesForPawn(position)
+            Type.ROOK -> piece.getBasicMovesForRook(position)
+            Type.KNIGHT -> piece.getBasicMovesForKnight(position)
+            Type.BISHOP -> piece.getBasicMovesForBishop(position)
+            Type.QUEEN -> piece.getBasicMovesForQueen(position)
+            Type.KING -> piece.getBasicMovesForKing(position)
         }
     }
 
-    fun Piece.getUnfilteredMovesForPawn(position: Coordinate): List<RevertableMove> {
-        throw java.lang.Exception("Not implemented")
+    private fun Piece.getBasicMovesForPawn(position: Coordinate): List<RevertableMove> {
+        val player = game.getAsPiece(coordinate).player
+        val moveDirection = if (player == Player.BLACK) 1 else -1
+        val isInStartingPos = when (player) {
+            Player.BLACK -> position.row == 1
+            Player.WHITE -> position.row == 6
+        }
+        var possibleMoves = mutableListOf<RevertableMove>()
+
+        // Move 1 forward
+        var destination = position.copy(position.row + moveDirection)
+        possibleMoves.addMoveIfValid(position, destination) { coord ->
+            game.get(destination) is Cell.Empty
+        }
+
+        // Move 2 forward
+        destination = position.copy(position.row + (moveDirection*2))
+        possibleMoves.addMoveIfValid(position, destination) { coord ->
+            game.get(position.copy(position.row+moveDirection))  is Cell.Empty &&
+            game.get(destination) is Cell.Empty
+        }
+
+        // Hit diagonal left and right
+        destination = position.copy(position.row + moveDirection, position.column + 1)
+        possibleMoves.addMoveIfValid(position, destination) { coord ->
+            player == game.getAsPiece(destination).player.opponent()
+        }
+        destination = position.copy(position.row + moveDirection, position.column + -1)
+        possibleMoves.addMoveIfValid(position, destination) { coord ->
+            player == game.getAsPiece(destination).player.opponent()
+        }
+
+        return possibleMoves
     }
 
-    private fun Piece.getUnfilteredMovesForQueen(position: Coordinate): List<RevertableMove> {
+    private fun Piece.getBasicMovesForRook(position: Coordinate): List<RevertableMove> {
+        var possibleMoves = mutableListOf<RevertableMove>()
+        possibleMoves.addCellsOnStraightLines(position)
+        return possibleMoves
+    }
+
+    private fun Piece.getBasicMovesForKnight(position: Coordinate): List<RevertableMove> {
+        var possibleMoves = mutableListOf<RevertableMove>()
+
+        possibleMoves.addMoveIfValid(position, position.copy(position.row + 2, position.column + 1))
+        possibleMoves.addMoveIfValid(position, position.copy(position.row + 2, position.column - 1))
+        possibleMoves.addMoveIfValid(position, position.copy(position.row - 2, position.column + 1))
+        possibleMoves.addMoveIfValid(position, position.copy(position.row - 2, position.column - 1))
+        possibleMoves.addMoveIfValid(position, position.copy(position.row + 1, position.column + 2))
+        possibleMoves.addMoveIfValid(position, position.copy(position.row - 1, position.column + 2))
+        possibleMoves.addMoveIfValid(position, position.copy(position.row + 1, position.column - 2))
+        possibleMoves.addMoveIfValid(position, position.copy(position.row - 1, position.column - 2))
+
+        return possibleMoves
+    }
+
+    private fun Piece.getBasicMovesForBishop(position: Coordinate): List<RevertableMove> {
+        var possibleMoves = mutableListOf<RevertableMove>()
+        possibleMoves.addCellsOnDiagonalLines(position)
+        return possibleMoves
+    }
+
+    private fun Piece.getBasicMovesForQueen(position: Coordinate): List<RevertableMove> {
         var possibleMoves = mutableListOf<RevertableMove>()
         possibleMoves.addCellsOnStraightLines(position)
         possibleMoves.addCellsOnDiagonalLines(position)
@@ -43,42 +98,13 @@ class PossibleMovesProvider(
         return possibleMoves
     }
 
-    private fun Piece.getUnfilteredMovesForKing(position: Coordinate): List<RevertableMove> {
-        throw java.lang.Exception("Not implemented")
-    }
-
-    private fun Piece.getUnfilteredMovesForBishop(position: Coordinate): List<RevertableMove> {
+    private fun Piece.getBasicMovesForKing(position: Coordinate): List<RevertableMove> {
         var possibleMoves = mutableListOf<RevertableMove>()
-        possibleMoves.addCellsOnDiagonalLines(position)
-        return possibleMoves
-    }
-
-    private fun Piece.getUnfilteredMovesForKnight(position: Coordinate): List<RevertableMove> {
-        var possibleMoves = mutableListOf<RevertableMove>()
-
-        possibleMoves.addMoveIfValid(position, position.copy(position.row+2,position.column+1))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row+2,position.column-1))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row-2,position.column+1))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row-2,position.column-1))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row+1,position.column+2))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row-1,position.column+2))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row+1,position.column-2))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row-1,position.column-2))
-
-        return possibleMoves
-    }
-
-    private fun Piece.getUnfilteredMovesForRook(position: Coordinate): List<RevertableMove> {
-        var possibleMoves = mutableListOf<RevertableMove>()
-        possibleMoves.addCellsOnStraightLines(position)
+        possibleMoves.addNeighborCells(position)
         return possibleMoves
     }
 
     private fun MutableList<RevertableMove>.addNeighborCells(fromPos: Coordinate) {
-        if (game.get(fromPos) is Cell.Empty) {
-            Log.e(TAG, "Tried to add neighbor cells for empty cell $fromPos")
-            return
-        }
         val r = fromPos.row
         val c = fromPos.column
         addMoveIfValid(fromPos, fromPos.copy(row = r + 1, column = c - 1))
@@ -92,11 +118,6 @@ class PossibleMovesProvider(
     }
 
     private fun MutableList<RevertableMove>.addCellsOnStraightLines(fromPos: Coordinate) {
-        if (game.get(fromPos) is Cell.Empty) {
-            Log.e(TAG, "Tried to add straight lines for empty cell $fromPos")
-            return
-        }
-
         for (r in fromPos.row..7) {
             if (!addMoveAndCheckIfToContinue(fromPos, fromPos.copy(row = r))) {
                 break
@@ -120,19 +141,15 @@ class PossibleMovesProvider(
     }
 
     private fun MutableList<RevertableMove>.addCellsOnDiagonalLines(fromPos: Coordinate) {
-        if (game.get(fromPos) is Cell.Empty) {
-            Log.e(TAG, "Tried to add diagonal lines for empty cell $fromPos")
-            return
-        }
-
         val directions =
             listOf(
                 Coordinate(1, 1),
                 Coordinate(-1, 1),
                 Coordinate(1, -1),
-                Coordinate(-1, -1))
+                Coordinate(-1, -1)
+            )
 
-        directions.forEach{ direction ->
+        directions.forEach { direction ->
             var toPos = fromPos
             for (i in 0..6) {
                 toPos += direction
@@ -162,7 +179,7 @@ class PossibleMovesProvider(
         fromPos: Coordinate,
         toPos: Coordinate,
         conditionToAdd: (Coordinate) -> Boolean = { true }
-    ) : Boolean {
+    ): Boolean {
         val moves = mutableListOf<RevertableMove>()
         if (!fromPos.isValid()) {
             Log.e(TAG, "Tried to move an invalid cell $fromPos")

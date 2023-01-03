@@ -2,6 +2,10 @@ package dgs.software.classicchess.model
 
 sealed class Cell(
 ) {
+    fun isPlayer(player: Player) : Boolean {
+        return !(this is Empty) && (this as Piece).player == player
+    }
+
     data class Piece(
         val type: Type,
         val player: Player,

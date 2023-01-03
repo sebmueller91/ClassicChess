@@ -45,21 +45,21 @@ class Board {
         set(1,6, Cell.Piece(Type.PAWN, Player.BLACK));
         set(1,7, Cell.Piece(Type.PAWN, Player.BLACK));
 
-        set(6,0, Cell.Piece(Type.PAWN, Player.BLACK));
-        set(6,1, Cell.Piece(Type.PAWN, Player.BLACK));
-        set(6,2, Cell.Piece(Type.PAWN, Player.BLACK));
-        set(6,3, Cell.Piece(Type.PAWN, Player.BLACK));
-        set(6,4, Cell.Piece(Type.PAWN, Player.BLACK));
-        set(6,5, Cell.Piece(Type.PAWN, Player.BLACK));
-        set(6,6, Cell.Piece(Type.PAWN, Player.BLACK));
-        set(6,7, Cell.Piece(Type.PAWN, Player.BLACK));
-        set(7,0, Cell.Piece(Type.ROOK, Player.BLACK));
-        set(7,1, Cell.Piece(Type.KNIGHT, Player.BLACK));
-        set(7,2, Cell.Piece(Type.BISHOP, Player.BLACK));
-        set(7,3, Cell.Piece(Type.QUEEN, Player.BLACK));
-        set(7,4, Cell.Piece(Type.KING, Player.BLACK));
-        set(7,5, Cell.Piece(Type.BISHOP, Player.BLACK));
-        set(7,6, Cell.Piece(Type.KNIGHT, Player.BLACK));
-        set(7,7, Cell.Piece(Type.ROOK, Player.BLACK));
+        set(6,0, Cell.Piece(Type.PAWN, Player.WHITE));
+        set(6,1, Cell.Piece(Type.PAWN, Player.WHITE));
+        set(6,2, Cell.Piece(Type.PAWN, Player.WHITE));
+        set(6,3, Cell.Piece(Type.PAWN, Player.WHITE));
+        set(6,4, Cell.Piece(Type.PAWN, Player.WHITE));
+        set(6,5, Cell.Piece(Type.PAWN, Player.WHITE));
+        set(6,6, Cell.Piece(Type.PAWN, Player.WHITE));
+        set(6,7, Cell.Piece(Type.PAWN, Player.WHITE));
+        set(7,0, Cell.Piece(Type.ROOK, Player.WHITE));
+        set(7,1, Cell.Piece(Type.KNIGHT, Player.WHITE));
+        set(7,2, Cell.Piece(Type.BISHOP, Player.WHITE));
+        set(7,3, Cell.Piece(Type.QUEEN, Player.WHITE));
+        set(7,4, Cell.Piece(Type.KING, Player.WHITE));
+        set(7,5, Cell.Piece(Type.BISHOP, Player.WHITE));
+        set(7,6, Cell.Piece(Type.KNIGHT, Player.WHITE));
+        set(7,7, Cell.Piece(Type.ROOK, Player.WHITE));
     }
 }
