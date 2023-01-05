@@ -22,7 +22,11 @@ data class MovePiece(
         actions.add(UpdateCurrentPlayerAction(game))
     }
 
-    override fun execute() {
+    fun execute() {
+        execute(false)
+    }
+
+    override fun execute(simmulate: Boolean) {
         if (board.get(fromPos) is Cell.Empty) {
             Log.e(TAG,"Attempting to execute move from empty position from ${fromPos} to ${toPos}")
             return
@@ -32,7 +36,7 @@ data class MovePiece(
             return
         }
 
-        super.execute()
+        super.execute(simmulate)
     }
 
     override fun rollback() {

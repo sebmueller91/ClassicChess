@@ -23,7 +23,11 @@ data class MoveAndCapturePiece(
         actions.add(UpdateCurrentPlayerAction(game))
     }
 
-    override fun execute() {
+    fun execute() {
+        execute(false)
+    }
+
+    override fun execute(simulate: Boolean) {
         if (board.get(fromPos) is Cell.Empty) {
             Log.e(TAG, "Attempting to execute move from empty position from ${fromPos} to ${toPos}")
             return
@@ -31,11 +35,14 @@ data class MoveAndCapturePiece(
         if (!(board.get(toPos) is Cell.Piece)
             || game.getAsPiece(fromPos).player == game.getAsPiece(toPos).player
         ) {
-            Log.e(TAG, "Attempting to execute move to cell which is not the opposing player - from ${fromPos} to ${toPos}")
+            Log.e(
+                TAG,
+                "Attempting to execute move to cell which is not the opposing player - from ${fromPos} to ${toPos}"
+            )
             return
         }
 
-        super.execute()
+        super.execute(simulate)
     }
 
     override fun rollback() {

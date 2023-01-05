@@ -10,7 +10,7 @@ private val TAG = "GameStatusProvider"
 class GameStatusProvider(
     val game: Game
 ) {
-    val basicMovesProvider = BasicMovesProvider(game)
+   private val basicMovesProvider = BasicMovesProvider(game)
 
     fun isStalemate(player: Player) : Boolean {
         return !kingIsInCheck(player) && !playerCanPerformMove(player)

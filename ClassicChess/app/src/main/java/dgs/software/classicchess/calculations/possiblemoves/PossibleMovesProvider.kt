@@ -1,10 +1,7 @@
 package dgs.software.classicchess.calculations.possiblemoves
 
 import android.util.Log
-import dgs.software.classicchess.model.Cell
-import dgs.software.classicchess.model.Coordinate
-import dgs.software.classicchess.model.Game
-import dgs.software.classicchess.model.Type
+import dgs.software.classicchess.model.*
 import dgs.software.classicchess.model.moves.RevertableMove
 
 private val TAG = "PossibleMovesProvider"
@@ -13,6 +10,7 @@ class PossibleMovesProvider(
     val game: Game
 ) {
     private val basicPossibleMovesProvider = BasicMovesProvider(game)
+    private val gameStatusProvider = GameStatusProvider(game)
 
     fun getMoves(position: Coordinate): List<RevertableMove> {
         if (game.get(position) is Cell.Empty) {
@@ -52,6 +50,18 @@ class PossibleMovesProvider(
 
     private fun Cell.Piece.getMovesForKing(position: Coordinate): List<RevertableMove> {
         throw Exception("Not Implemented")
+    }
+
+    private fun filterMovesThatLeaveKingInCheck(moves: MutableList<RevertableMove>, player: Player) : List<RevertableMove> {
+        val filteredMoves = mutableListOf<RevertableMove>()
+        moves.forEach { move ->
+            game.executeMove(move, true)
+            if (!gameStatusProvider.kingIsInCheck(player)) {
+                filteredMoves.add(move)
+            }
+            game.rollbackSimulatedMoves()
+        }
+        return filteredMoves
     }
 }
 

@@ -12,14 +12,18 @@ abstract class RevertableMove(
     open val toPos: Coordinate,
     open val board: Board
 ) {
-    public val actions = mutableListOf<RevertableAction>()
+    val actions = mutableListOf<RevertableAction>()
     var isExecuted = false
+        private set
+    var isSimulated = false
+        private set
 
-    open fun execute() {
+    open fun execute(simulate: Boolean = false) {
         if (isExecuted) {
             Log.e(TAG, "Move execute() called despite already executed")
         }
         isExecuted = true
+        isSimulated = simulate
 
         for (i in 0 until actions.size) {
             actions[i].execute()
@@ -32,7 +36,7 @@ abstract class RevertableMove(
         }
         isExecuted = false
 
-        for (i in actions.size-1 downTo 0) {
+        for (i in actions.size - 1 downTo 0) {
             actions[i].rollback()
         }
     }
