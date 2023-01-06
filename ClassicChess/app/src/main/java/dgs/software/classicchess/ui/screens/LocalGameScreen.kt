@@ -10,8 +10,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import dgs.software.classicchess.model.Board
 import dgs.software.classicchess.R
+import dgs.software.classicchess.model.Board
+import dgs.software.classicchess.model.Cell
+import dgs.software.classicchess.model.Player
+import dgs.software.classicchess.model.Type
 
 @Composable
 fun LocalGameScreen(
@@ -39,72 +42,85 @@ fun ChessBoard(
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier) {
-        BoardColumn(board, 0, Modifier.weight(1f))
-        BoardColumn(board, 1, Modifier.weight(1f))
-        BoardColumn(board, 2, Modifier.weight(1f))
-        BoardColumn(board, 3, Modifier.weight(1f))
-        BoardColumn(board, 4, Modifier.weight(1f))
-        BoardColumn(board, 5, Modifier.weight(1f))
-        BoardColumn(board, 6, Modifier.weight(1f))
-        BoardColumn(board, 7, Modifier.weight(1f))
+        ChessColumn(board, 0, Modifier.weight(1f))
+        ChessColumn(board, 1, Modifier.weight(1f))
+        ChessColumn(board, 2, Modifier.weight(1f))
+        ChessColumn(board, 3, Modifier.weight(1f))
+        ChessColumn(board, 4, Modifier.weight(1f))
+        ChessColumn(board, 5, Modifier.weight(1f))
+        ChessColumn(board, 6, Modifier.weight(1f))
+        ChessColumn(board, 7, Modifier.weight(1f))
     }
 }
 
 @Composable
-fun BoardColumn(
+fun ChessColumn(
     board: Board,
     colIndex: Int,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        Cell(board, 0, colIndex, Modifier.weight(1f))
-        Cell(board, 1, colIndex, Modifier.weight(1f))
-        Cell(board, 2, colIndex, Modifier.weight(1f))
-        Cell(board, 3, colIndex, Modifier.weight(1f))
-        Cell(board, 4, colIndex, Modifier.weight(1f))
-        Cell(board, 5, colIndex, Modifier.weight(1f))
-        Cell(board, 6, colIndex, Modifier.weight(1f))
-        Cell(board, 7, colIndex, Modifier.weight(1f))
+        ChessCell(board, 0, colIndex, Modifier.weight(1f))
+        ChessCell(board, 1, colIndex, Modifier.weight(1f))
+        ChessCell(board, 2, colIndex, Modifier.weight(1f))
+        ChessCell(board, 3, colIndex, Modifier.weight(1f))
+        ChessCell(board, 4, colIndex, Modifier.weight(1f))
+        ChessCell(board, 5, colIndex, Modifier.weight(1f))
+        ChessCell(board, 6, colIndex, Modifier.weight(1f))
+        ChessCell(board, 7, colIndex, Modifier.weight(1f))
     }
 }
 
 @Composable
-fun Cell(
+fun ChessCell(
     board: Board,
     rowIndex: Int,
     colIndex: Int,
     modifier: Modifier = Modifier
 ) {
+    val cell = board.get(rowIndex, colIndex)
+    val isPiece = !(cell is Cell.Empty)
+
     val interactionSource = MutableInteractionSource()
     Box(modifier = modifier
         .fillMaxSize()
         .background(getCellBackgroundColor(rowIndex, colIndex))
+        .wrapContentSize()
         .clickable(
             interactionSource = interactionSource,
             indication = null
         ) {}) {
-        Icon(
-            painter = painterResource(id = R.drawable.rook_black),
-            contentDescription = null
-        )
-//        Button(
-//            onClick = { /*TODO*/ },
-//            border = BorderStroke(1.dp, Color.Black),
-//            shape = RoundedCornerShape(0.dp),
-//            modifier = Modifier.clickable(
-//                interactionSource = remember { MutableInteractionSource() },
-//                indication = null
-//            ) {
-//                /* .... */
-//            },
-//            colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
-//        ) {
-//            Text(
-//                text = "A",
-//                modifier = Modifier.fillMaxSize()
-//            )
-//        }
+        if (isPiece) {
+            Icon(
+                painter = painterResource(id = getIconId(cell as Cell.Piece)),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(2.dp),
+                tint = Color.Unspecified
+            )
+        }
+    }
+}
 
+private fun getIconId(piece: Cell.Piece): Int {
+    return when (piece.player) {
+        Player.WHITE -> when (piece.type) {
+            Type.PAWN -> R.drawable.pawn_white
+            Type.ROOK -> R.drawable.rook_white
+            Type.KNIGHT -> R.drawable.knight_white
+            Type.BISHOP -> R.drawable.bishop_white
+            Type.QUEEN -> R.drawable.queen_white
+            Type.KING -> R.drawable.king_white
+        }
+        Player.BLACK -> when (piece.type) {
+            Type.PAWN -> R.drawable.pawn_black
+            Type.ROOK -> R.drawable.rook_black
+            Type.KNIGHT -> R.drawable.knight_black
+            Type.BISHOP -> R.drawable.bishop_black
+            Type.QUEEN -> R.drawable.queen_black
+            Type.KING -> R.drawable.king_black
+        }
     }
 }
 
