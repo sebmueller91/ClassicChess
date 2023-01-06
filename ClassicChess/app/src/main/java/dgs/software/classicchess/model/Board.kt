@@ -15,7 +15,7 @@ class Board {
     fun get(row: Int, col: Int) : Cell {
         return grid[row][col]
     }
-
+    
     fun set(coordinate: Coordinate, square: Cell) {
         set(coordinate.row, coordinate.column, square)
         if (square is Cell.Piece) {
