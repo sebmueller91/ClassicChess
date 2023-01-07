@@ -14,6 +14,12 @@ class LocalGameViewModel : ViewModel() {
     var gameUiState: Game by mutableStateOf(Game())
         private set
 
+    // returns true if it is a cell with light background, false otherwise
+    fun getCellBackgroundType(rowIndex: Int, colIndex: Int): Boolean {
+        return (rowIndex % 2 == 0 && colIndex % 2 == 0) || (rowIndex % 2 != 0 && colIndex % 2 != 0)
+
+    }
+
     init {
         gameUiState = Game()
     }
