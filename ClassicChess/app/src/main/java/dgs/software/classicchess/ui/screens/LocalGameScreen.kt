@@ -4,9 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -14,7 +17,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dgs.software.classicchess.R
-import dgs.software.classicchess.model.Board
 import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
@@ -24,21 +26,84 @@ import dgs.software.classicchess.ui.theme.boardCellWhite
 
 @Composable
 fun LocalGameScreen(
-    localGameViewModel: LocalGameViewModel,
+    viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .padding(30.dp)
-            .background(MaterialTheme.colors.boardBorderColor)
-    ) {
-        ChessBoard(
-            localGameViewModel,
+    Column(Modifier,
+    horizontalAlignment = Alignment.CenterHorizontally) {
+
+        Column(
             modifier = Modifier
-                .aspectRatio(1f)
-                .padding(2.dp)
-                .fillMaxWidth()
-        )
+                .weight(1f)
+        ) {
+            Text("Current Player: " + viewModel.gameUiState.getCurrentPlayer())
+        }
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 10.dp)
+                .background(MaterialTheme.colors.boardBorderColor)
+        ) {
+            ChessBoard(
+                viewModel,
+                modifier = Modifier
+                    .aspectRatio(1f)
+                    .padding(2.dp)
+                    .fillMaxWidth()
+            )
+        }
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = 10.dp),
+            verticalAlignment = Alignment.Bottom) {
+            Button(
+                modifier = Modifier
+                    .height(50.dp)
+                    .padding(5.dp),
+                onClick = { },
+                enabled = true
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_reverseupdown_24),
+                    contentDescription = null
+                )
+            }
+            Button(
+                modifier = Modifier
+                    .height(50.dp)
+                    .padding(5.dp),
+                onClick = { },
+                enabled = true
+            ) {
+                Text(
+                    text = "Reset"
+                )
+            }
+            Button(
+                modifier = Modifier
+                    .height(50.dp)
+                    .padding(5.dp),
+                onClick = { },
+                enabled = true
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_undo_24),
+                    contentDescription = null
+                )
+            }
+            Button(
+                modifier = Modifier
+                    .height(50.dp)
+                    .padding(5.dp),
+                onClick = { },
+                enabled = false
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_redo_24),
+                    contentDescription = null
+                )
+            }
+        }
     }
 }
 
