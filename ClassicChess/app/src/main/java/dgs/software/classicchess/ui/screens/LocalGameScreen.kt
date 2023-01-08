@@ -4,87 +4,166 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Button
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dgs.software.classicchess.R
-import dgs.software.classicchess.model.Board
 import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
+import dgs.software.classicchess.ui.theme.boardBorderColor
+import dgs.software.classicchess.ui.theme.boardCellBlack
+import dgs.software.classicchess.ui.theme.boardCellWhite
 
 @Composable
 fun LocalGameScreen(
-    localGameViewModel: LocalGameViewModel,
+    viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .padding(30.dp)
-            .background(Color.Black)
-    ) {
-        ChessBoard(
-            localGameViewModel.gameUiState.getBoard(),
+    Column(Modifier,
+    horizontalAlignment = Alignment.CenterHorizontally) {
+
+        Column(
             modifier = Modifier
-                .aspectRatio(1f)
-                .padding(2.dp)
-                .fillMaxWidth()
-        )
+                .weight(1f)
+        ) {
+            Text("Current Player: " + viewModel.gameUiState.getCurrentPlayer())
+        }
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 10.dp)
+                .background(MaterialTheme.colors.boardBorderColor)
+        ) {
+            ChessBoard(
+                viewModel,
+                modifier = Modifier
+                    .aspectRatio(1f)
+                    .padding(2.dp)
+                    .fillMaxWidth()
+            )
+        }
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = 10.dp),
+            verticalAlignment = Alignment.Bottom) {
+            Button(
+                modifier = Modifier
+                    .height(50.dp)
+                    .padding(5.dp),
+                onClick = { },
+                enabled = true
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_reverseupdown_24),
+                    contentDescription = null
+                )
+            }
+            Button(
+                modifier = Modifier
+                    .height(50.dp)
+                    .padding(5.dp),
+                onClick = { },
+                enabled = true
+            ) {
+                Text(
+                    text = "Reset"
+                )
+            }
+            Button(
+                modifier = Modifier
+                    .height(50.dp)
+                    .padding(5.dp),
+                onClick = { },
+                enabled = true
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_undo_24),
+                    contentDescription = null
+                )
+            }
+            Button(
+                modifier = Modifier
+                    .height(50.dp)
+                    .padding(5.dp),
+                onClick = { },
+                enabled = false
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_redo_24),
+                    contentDescription = null
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun ChessBoard(
-    board: Board,
+    viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier) {
-        ChessColumn(board, 0, Modifier.weight(1f))
-        ChessColumn(board, 1, Modifier.weight(1f))
-        ChessColumn(board, 2, Modifier.weight(1f))
-        ChessColumn(board, 3, Modifier.weight(1f))
-        ChessColumn(board, 4, Modifier.weight(1f))
-        ChessColumn(board, 5, Modifier.weight(1f))
-        ChessColumn(board, 6, Modifier.weight(1f))
-        ChessColumn(board, 7, Modifier.weight(1f))
+        ChessColumn(0, viewModel, Modifier.weight(1f))
+        ChessColumn(1, viewModel, Modifier.weight(1f))
+        ChessColumn(2, viewModel, Modifier.weight(1f))
+        ChessColumn(3, viewModel, Modifier.weight(1f))
+        ChessColumn(4, viewModel, Modifier.weight(1f))
+        ChessColumn(5, viewModel, Modifier.weight(1f))
+        ChessColumn(6, viewModel, Modifier.weight(1f))
+        ChessColumn(7, viewModel, Modifier.weight(1f))
     }
 }
 
 @Composable
 fun ChessColumn(
-    board: Board,
     colIndex: Int,
+    viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        ChessCell(board, 0, colIndex, Modifier.weight(1f))
-        ChessCell(board, 1, colIndex, Modifier.weight(1f))
-        ChessCell(board, 2, colIndex, Modifier.weight(1f))
-        ChessCell(board, 3, colIndex, Modifier.weight(1f))
-        ChessCell(board, 4, colIndex, Modifier.weight(1f))
-        ChessCell(board, 5, colIndex, Modifier.weight(1f))
-        ChessCell(board, 6, colIndex, Modifier.weight(1f))
-        ChessCell(board, 7, colIndex, Modifier.weight(1f))
+        ChessCell(0, colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(1, colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(2, colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(3, colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(4, colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(5, colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(6, colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(7, colIndex, viewModel, Modifier.weight(1f))
     }
 }
 
 @Composable
 fun ChessCell(
-    board: Board,
     rowIndex: Int,
     colIndex: Int,
+    viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    val cell = board.get(rowIndex, colIndex)
+    val context = LocalContext.current
+
+    val cell = viewModel.gameUiState.getBoard().get(rowIndex, colIndex)
     val isPiece = !(cell is Cell.Empty)
 
     val interactionSource = MutableInteractionSource()
+    val backgroundColor = if (viewModel.getCellBackgroundType(rowIndex, colIndex)) {
+        MaterialTheme.colors.boardCellWhite
+    } else {
+        MaterialTheme.colors.boardCellBlack
+    }
+
     Box(modifier = modifier
         .fillMaxSize()
-        .background(getCellBackgroundColor(rowIndex, colIndex))
+        .background(backgroundColor)
         .wrapContentSize()
         .clickable(
             interactionSource = interactionSource,
@@ -121,13 +200,5 @@ private fun getIconId(piece: Cell.Piece): Int {
             Type.QUEEN -> R.drawable.queen_black
             Type.KING -> R.drawable.king_black
         }
-    }
-}
-
-private fun getCellBackgroundColor(rowIndex: Int, colIndex: Int): Color {
-    if ((rowIndex % 2 == 0 && colIndex % 2 == 0) || (rowIndex % 2 != 0 && colIndex % 2 != 0)) {
-        return Color.LightGray
-    } else {
-        return Color.DarkGray
     }
 }
