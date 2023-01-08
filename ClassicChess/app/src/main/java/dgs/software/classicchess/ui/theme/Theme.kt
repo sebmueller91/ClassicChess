@@ -15,14 +15,7 @@ val Colors.boardCellBlack: Color
     get() = if (isLight) Green400 else Green900
 
 val Colors.boardBorderColor: Color
-    get() = if (isLight) Gray400 else Gray100
-
-private val DarkColorPalette = darkColors(
-    primary = Blue600,
-    primaryVariant = Blue600,
-    secondary = Teal200,
-    surface = Black
-)
+    get() = if (isLight) Gray900 else Gray400
 
 private val LightColorPalette = lightColors(
     primary = Blue600,
@@ -37,6 +30,14 @@ private val LightColorPalette = lightColors(
     onBackground = Color.Black,
     onSurface = Color.Black,
     */
+)
+
+private val DarkColorPalette = darkColors(
+    primary = Blue900,
+    onPrimary = Gray100,
+    primaryVariant = Gray900,
+    secondary = Blue600,
+    surface = Black
 )
 
 @Composable

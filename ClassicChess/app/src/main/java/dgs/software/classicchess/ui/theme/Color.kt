@@ -2,8 +2,6 @@ package dgs.software.classicchess.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Teal200 = Color(0xFF03DAC5)
-
 val White = Color.White
 val Black = Color.Black
 
@@ -18,3 +16,5 @@ val Gray100 = Color(0xFFB9B6BD)
 val Gray900 = Color(0xFF36373A)
 
 val Blue600 = Color(0xFF1A3BF5)
+val Blue900 = Color(0xFF0C1B74)
+
