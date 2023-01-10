@@ -6,13 +6,16 @@ import dgs.software.classicchess.model.moves.RevertableMove
 
 private val TAG = "PossibleMovesProvider"
 
-class PossibleMovesProvider(
-    val game: Game
-) {
-    private val basicPossibleMovesProvider = BasicMovesProvider(game)
-    private val gameStatusProvider = GameStatusProvider(game)
+interface PossibleMovesProvider {
+    fun getPossibleMoves(position: Coordinate): List<RevertableMove>
+}
 
-    fun getMoves(position: Coordinate): List<RevertableMove> {
+class DefaultPossibleMovesProvider(
+    val game: Game,
+    private val basicPossibleMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider(game),
+    private val gameStatusProvider: GameStatusProvider = DefaultGameStatusProvider(game)
+) : PossibleMovesProvider {
+    override fun getPossibleMoves(position: Coordinate): List<RevertableMove> {
         if (game.get(position) is Cell.Empty) {
             Log.e(TAG, "Tried to calculate moves for an empty cell at pos $position")
             return listOf<RevertableMove>()
@@ -29,7 +32,8 @@ class PossibleMovesProvider(
     }
 
     private fun Cell.Piece.getMovesForPawn(position: Coordinate): List<RevertableMove> {
-        throw Exception("Not Implemented")
+        // TODO:
+        return basicPossibleMovesProvider.getBasicMoves(position)
     }
 
     private fun Cell.Piece.getMovesForRook(position: Coordinate): List<RevertableMove> {

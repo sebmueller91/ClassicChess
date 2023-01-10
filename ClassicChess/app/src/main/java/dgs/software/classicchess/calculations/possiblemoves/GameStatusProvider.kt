@@ -1,26 +1,31 @@
 package dgs.software.classicchess.calculations.possiblemoves
 
-import android.service.notification.NotificationListenerService.Ranking
 import android.util.Log
 import dgs.software.classicchess.model.*
-import java.nio.file.WatchEvent.Kind
 
 private val TAG = "GameStatusProvider"
 
-class GameStatusProvider(
-    val game: Game
-) {
-   private val basicMovesProvider = BasicMovesProvider(game)
+interface GameStatusProvider {
+    fun isStalemate(player: Player) : Boolean
+    fun isCheckmate(player: Player) : Boolean
+    fun kingIsInCheck(player: Player) : Boolean
+}
 
-    fun isStalemate(player: Player) : Boolean {
+class DefaultGameStatusProvider(
+    val game: Game,
+    private val basicMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider(game)
+) : GameStatusProvider {
+
+
+    override fun isStalemate(player: Player) : Boolean {
         return !kingIsInCheck(player) && !playerCanPerformMove(player)
     }
 
-    fun isCheckmate(player: Player) : Boolean {
+    override fun isCheckmate(player: Player) : Boolean {
         return kingIsInCheck(player) && !playerCanPerformMove(player)
     }
 
-    fun kingIsInCheck(player: Player) : Boolean {
+    override fun kingIsInCheck(player: Player) : Boolean {
         val positionOfKing = getPositionOfKing(player)
         val cellsInCheck = getCellsInCheck(player)
         return cellsInCheck[positionOfKing.row][positionOfKing.column]
