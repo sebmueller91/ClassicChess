@@ -15,11 +15,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dgs.software.classicchess.R
 import dgs.software.classicchess.model.Cell
+import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
+import dgs.software.classicchess.ui.theme.selectedCellColor
 import dgs.software.classicchess.ui.theme.boardBorderColor
 import dgs.software.classicchess.ui.theme.boardCellBlack
 import dgs.software.classicchess.ui.theme.boardCellWhite
@@ -155,7 +156,10 @@ fun ChessCell(
     val isPiece = !(cell is Cell.Empty)
 
     val interactionSource = MutableInteractionSource()
-    val backgroundColor = if (viewModel.getCellBackgroundType(rowIndex, colIndex)) {
+    val backgroundColor = if (viewModel.selectedCell == Coordinate(rowIndex,colIndex)) {
+        MaterialTheme.colors.selectedCellColor
+    }
+        else if (viewModel.getCellBackgroundType(rowIndex, colIndex)) {
         MaterialTheme.colors.boardCellWhite
     } else {
         MaterialTheme.colors.boardCellBlack
@@ -168,7 +172,9 @@ fun ChessCell(
         .clickable(
             interactionSource = interactionSource,
             indication = null
-        ) {}) {
+        ) {
+            viewModel.assignSelectedCell(Coordinate(rowIndex,colIndex))
+        }) {
         if (isPiece) {
             Icon(
                 painter = painterResource(id = getIconId(cell as Cell.Piece)),

@@ -17,6 +17,9 @@ val Colors.boardCellBlack: Color
 val Colors.boardBorderColor: Color
     get() = if (isLight) Gray900 else Gray400
 
+val Colors.selectedCellColor: Color
+    get() = if (isLight) Orange400 else Blue700
+
 private val LightColorPalette = lightColors(
     primary = Blue600,
     primaryVariant = Gray900,
