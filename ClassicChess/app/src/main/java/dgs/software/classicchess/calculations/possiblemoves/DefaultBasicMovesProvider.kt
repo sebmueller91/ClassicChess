@@ -9,10 +9,14 @@ import dgs.software.classicchess.model.moves.RevertableMove
 
 private val TAG = "BasicMovesProvider"
 
-class BasicMovesProvider(
+interface BasicMovesProvider {
+    fun getBasicMoves(position: Coordinate): List<RevertableMove>
+}
+
+class DefaultBasicMovesProvider(
     val game: Game
-) {
-    fun getBasicMoves(position: Coordinate): List<RevertableMove> {
+) : BasicMovesProvider{
+    override fun getBasicMoves(position: Coordinate): List<RevertableMove> {
         if (game.get(position) is Cell.Empty) {
             Log.e(TAG, "Tried to calculate basic moves for an empty cell at pos $position")
             return listOf<RevertableMove>()
@@ -59,6 +63,8 @@ class BasicMovesProvider(
         possibleMoves.addMoveIfValid(position, destination) { coord ->
             player == game.getAsPiece(destination).player.opponent()
         }
+
+        // TOOD: Add en-passant
 
         return possibleMoves
     }
