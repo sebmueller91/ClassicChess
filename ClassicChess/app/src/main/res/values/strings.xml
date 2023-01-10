@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ClassicChess</string>
+    <string name="app_name">Classic Chess</string>
     <string name="local_game_screen">Local Game</string>
 
     <string name="back_button">Back</string>
