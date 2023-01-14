@@ -11,7 +11,7 @@ interface PossibleMovesProvider {
 }
 
 class DefaultPossibleMovesProvider(
-    val game: Game,
+    private val game: Game,
     private val basicPossibleMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider(game),
     private val gameStatusProvider: GameStatusProvider = DefaultGameStatusProvider(game)
 ) : PossibleMovesProvider {
@@ -21,7 +21,7 @@ class DefaultPossibleMovesProvider(
             return listOf<RevertableMove>()
         }
         val piece = game.getAsPiece(position)
-        return when (piece.type) {
+        val possibleMoves = when (piece.type) {
             Type.PAWN -> piece.getMovesForPawn(position)
             Type.ROOK -> piece.getMovesForRook(position)
             Type.KNIGHT -> piece.getMovesForKnight(position)
@@ -29,10 +29,13 @@ class DefaultPossibleMovesProvider(
             Type.QUEEN -> piece.getMovesForQueen(position)
             Type.KING -> piece.getMovesForKing(position)
         }
+
+        // TODO: Filter moves that leave king in check
+        return possibleMoves
     }
 
     private fun Cell.Piece.getMovesForPawn(position: Coordinate): List<RevertableMove> {
-        // TODO:
+        // TODO: Add complex moves
         return basicPossibleMovesProvider.getBasicMoves(position)
     }
 
@@ -53,10 +56,11 @@ class DefaultPossibleMovesProvider(
     }
 
     private fun Cell.Piece.getMovesForKing(position: Coordinate): List<RevertableMove> {
-        throw Exception("Not Implemented")
+        // TODO: Add complex moves
+        return basicPossibleMovesProvider.getBasicMoves(position)
     }
 
-    private fun filterMovesThatLeaveKingInCheck(moves: MutableList<RevertableMove>, player: Player) : List<RevertableMove> {
+    private fun filterMovesThatLeaveKingInCheck(moves: List<RevertableMove>, player: Player) : List<RevertableMove> {
         val filteredMoves = mutableListOf<RevertableMove>()
         moves.forEach { move ->
             game.executeMove(move, true)

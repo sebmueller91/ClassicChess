@@ -1,7 +1,10 @@
 package dgs.software.classicchess.model
 
+import android.util.Log
 import dgs.software.classicchess.model.moves.MoveStack
 import dgs.software.classicchess.model.moves.RevertableMove
+
+private const val TAG = "Game"
 
 data class Game(
     private val board: Board = Board(),
@@ -9,9 +12,18 @@ data class Game(
     private var currentPlayer: Player = Player.WHITE
 
 ) {
+    val canUndoMove: Boolean
+        get() = moveStack.doneActionsOnStack()
+
+    val canRedoMove: Boolean
+        get() = moveStack.undoneActionsOnStack()
+
     fun getBoard() : Board {
         return board
     }
+
+    val curPlayer: Player
+        get() = currentPlayer
 
     fun getCurrentPlayer() : Player {
         return currentPlayer
@@ -26,6 +38,9 @@ data class Game(
     }
 
     fun getAsPiece(coordinate: Coordinate) : Cell.Piece {
+        if (board.get(coordinate) is Cell.Empty) {
+            Log.e(TAG, "Tried to get empty coordinate $coordinate as Piece")
+        }
         return board.get(coordinate) as Cell.Piece
     }
 

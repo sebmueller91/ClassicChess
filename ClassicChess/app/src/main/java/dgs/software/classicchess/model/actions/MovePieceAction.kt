@@ -17,7 +17,7 @@ data class MovePieceAction(
         if (!(board.get(toPos) is Cell.Empty)) {
             Log.e(TAG, "Attempting to move piece into non-empty cell (execute)")
         }
-        board.set(toPos, board.get(fromPos))
+        board.set(toPos, board.get(fromPos) as Cell.Piece)
         board.set(fromPos, Cell.Empty())
     }
 

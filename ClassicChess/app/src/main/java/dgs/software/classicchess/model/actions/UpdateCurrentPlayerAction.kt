@@ -11,6 +11,7 @@ data class UpdateCurrentPlayerAction(
     override fun execute() {
         super.execute()
         previousState = game.getCurrentPlayer()
+        game.setCurrentPlayer(previousState.opponent())
     }
 
     override fun rollback() {

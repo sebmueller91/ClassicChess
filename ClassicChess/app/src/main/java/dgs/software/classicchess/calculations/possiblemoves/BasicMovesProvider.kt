@@ -14,7 +14,7 @@ interface BasicMovesProvider {
 }
 
 class DefaultBasicMovesProvider(
-    val game: Game
+    private val game: Game
 ) : BasicMovesProvider{
     override fun getBasicMoves(position: Coordinate): List<RevertableMove> {
         if (game.get(position) is Cell.Empty) {
@@ -57,11 +57,13 @@ class DefaultBasicMovesProvider(
         // Hit diagonal left and right
         destination = position.copy(position.row + moveDirection, position.column + 1)
         possibleMoves.addMoveIfValid(position, destination) { coord ->
-            player == game.getAsPiece(destination).player.opponent()
+            !(game.get(destination) is Cell.Empty)
+                    && player == game.getAsPiece(destination).player.opponent()
         }
-        destination = position.copy(position.row + moveDirection, position.column + -1)
+        destination = position.copy(position.row + moveDirection, position.column - 1)
         possibleMoves.addMoveIfValid(position, destination) { coord ->
-            player == game.getAsPiece(destination).player.opponent()
+            !(game.get(destination) is Cell.Empty)
+                    && player == game.getAsPiece(destination).player.opponent()
         }
 
         // TOOD: Add en-passant
@@ -170,6 +172,13 @@ class DefaultBasicMovesProvider(
         fromPos: Coordinate,
         toPos: Coordinate
     ): Boolean {
+        if (!toPos.isValid()) {
+            return false
+        }
+        if (game.get(fromPos) is Cell.Empty) {
+            var a = 2
+        }
+
         if (!(game.get(toPos) is Cell.Empty)
             || game.getAsPiece(fromPos).player == game.getAsPiece(toPos).player
         ) {

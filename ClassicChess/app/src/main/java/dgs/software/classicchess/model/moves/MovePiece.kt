@@ -1,7 +1,6 @@
 package dgs.software.classicchess.model.moves
 
 import android.util.Log
-import dgs.software.classicchess.model.Board
 import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
@@ -26,7 +25,7 @@ data class MovePiece(
         execute(false)
     }
 
-    override fun execute(simmulate: Boolean) {
+    override fun execute(simulate: Boolean) {
         if (board.get(fromPos) is Cell.Empty) {
             Log.e(TAG,"Attempting to execute move from empty position from ${fromPos} to ${toPos}")
             return
@@ -36,7 +35,7 @@ data class MovePiece(
             return
         }
 
-        super.execute(simmulate)
+        super.execute(simulate)
     }
 
     override fun rollback() {

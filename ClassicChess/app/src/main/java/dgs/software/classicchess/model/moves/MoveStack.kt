@@ -60,11 +60,11 @@ data class MoveStack(
         return true
     }
 
-    private fun doneActionsOnStack(): Boolean {
+    fun doneActionsOnStack(): Boolean {
         return iteratorIndex >= 0
     }
 
-    private fun undoneActionsOnStack(): Boolean {
+    fun undoneActionsOnStack(): Boolean {
         return iteratorIndex < moves.size - 1
     }
 
