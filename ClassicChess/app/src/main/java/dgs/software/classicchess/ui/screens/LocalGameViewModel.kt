@@ -26,17 +26,14 @@ class LocalGameViewModel : ViewModel() {
 
     // TODO: Think about better name
     fun cellSelected(coordinate: Coordinate) {
-        val newGame = gameUiState.copy()
 
-        selectedCell = newGame.get(coordinate)
+        selectedCell = gameUiState.get(coordinate)
 
         val clickedMove = possibleMovesForSelectedPiece.filter { it.toPos == coordinate }
         if (clickedMove.any()) {
-            newGame.executeMove(clickedMove.first())
-            val a = gameUiState.getBoard().get(Coordinate(5,0))
-            val b = gameUiState.getBoard().get(Coordinate(6,0))
+            gameUiState.executeMove(clickedMove.first())
 
-            gameUiState = newGame
+            gameUiState = gameUiState
         }
         possibleMovesForSelectedPiece.clear()
         if (selectedCell is Cell.Empty) {
@@ -44,7 +41,7 @@ class LocalGameViewModel : ViewModel() {
         }
 
         val selectedPiece = selectedCell as Cell.Piece
-        if (selectedPiece.player == newGame.getCurrentPlayer()) {
+        if (selectedPiece.player == gameUiState.getCurrentPlayer()) {
             possibleMovesForSelectedPiece.addAll(
                 possibleMovesProvider.getPossibleMoves(
                     selectedPiece.coordinate
