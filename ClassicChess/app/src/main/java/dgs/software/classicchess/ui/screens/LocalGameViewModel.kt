@@ -41,7 +41,7 @@ class LocalGameViewModel : ViewModel() {
         }
 
         val selectedPiece = selectedCell as Cell.Piece
-        if (selectedPiece.player == gameUiState.getCurrentPlayer()) {
+        if (selectedPiece.player == gameUiState.currentPlayer) {
             possibleMovesForSelectedPiece.addAll(
                 possibleMovesProvider.getPossibleMoves(
                     selectedPiece.coordinate

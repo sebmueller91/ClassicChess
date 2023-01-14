@@ -10,12 +10,12 @@ data class UpdateCurrentPlayerAction(
 
     override fun execute() {
         super.execute()
-        previousState = game.getCurrentPlayer()
-        game.setCurrentPlayer(previousState.opponent())
+        previousState = game.currentPlayer
+        game.updateCurrentPlayer(previousState.opponent())
     }
 
     override fun rollback() {
         super.rollback()
-        game.setCurrentPlayer(previousState)
+        game.updateCurrentPlayer(previousState)
     }
 }

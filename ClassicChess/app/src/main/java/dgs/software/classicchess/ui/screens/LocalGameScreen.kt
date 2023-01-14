@@ -39,7 +39,7 @@ fun LocalGameScreen(
             modifier = Modifier
                 .weight(1f)
         ) {
-            Text("Current Player: " + viewModel.gameUiState.curPlayer)
+            Text("Current Player: " + viewModel.gameUiState.currentPlayer)
         }
         Box(
             modifier = Modifier
