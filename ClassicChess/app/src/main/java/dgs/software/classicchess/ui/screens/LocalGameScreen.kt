@@ -180,14 +180,30 @@ fun ChessCell(
             viewModel.cellSelected(Coordinate(rowIndex, colIndex))
         }) {
         if (isPiece) {
-            Icon(
-                painter = painterResource(id = getIconId(cell as Cell.Piece)),
-                contentDescription = null,
-                modifier = Modifier
+            Box(
+                Modifier
                     .fillMaxSize()
-                    .padding(2.dp),
-                tint = Color.Unspecified
-            )
+                    .wrapContentSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                if (viewModel.possibleMovesForSelectedPiece.any { it.toPos == curCoordinate }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_baseline_circle_24),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        tint = MaterialTheme.colors.selectedCellColor
+                    )
+                }
+                Icon(
+                    painter = painterResource(id = getIconId(cell as Cell.Piece)),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(4.dp),
+                    tint = Color.Unspecified
+                )
+            }
         } else if (viewModel.possibleMovesForSelectedPiece.any { it.toPos == curCoordinate }) {
             Text(
                 text = "\u2B24",

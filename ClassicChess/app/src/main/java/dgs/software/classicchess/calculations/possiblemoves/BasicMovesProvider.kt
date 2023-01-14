@@ -48,10 +48,13 @@ class DefaultBasicMovesProvider(
         }
 
         // Move 2 forward
-        destination = position.copy(position.row + (moveDirection*2))
-        possibleMoves.addMoveIfValid(position, destination) { coord ->
-            game.get(position.copy(position.row+moveDirection))  is Cell.Empty &&
-            game.get(destination) is Cell.Empty
+        if ((player == Player.WHITE && position.row == 6 && game.get(position.copy(row=5)) is Cell.Empty)
+            || (player == Player.BLACK && position.row == 1 && game.get(position.copy(row=2)) is Cell.Empty)){
+            destination = position.copy(position.row + (moveDirection * 2))
+            possibleMoves.addMoveIfValid(position, destination) { coord ->
+                game.get(position.copy(position.row + moveDirection)) is Cell.Empty &&
+                        game.get(destination) is Cell.Empty
+            }
         }
 
         // Hit diagonal left and right

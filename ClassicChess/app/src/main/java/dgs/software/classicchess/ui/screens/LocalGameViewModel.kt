@@ -32,8 +32,9 @@ class LocalGameViewModel : ViewModel() {
         val clickedMove = possibleMovesForSelectedPiece.filter { it.toPos == coordinate }
         if (clickedMove.any()) {
             gameUiState.executeMove(clickedMove.first())
-
-            gameUiState = gameUiState
+            selectedCell = null
+            possibleMovesForSelectedPiece.clear()
+            return
         }
         possibleMovesForSelectedPiece.clear()
         if (selectedCell is Cell.Empty) {
@@ -48,8 +49,6 @@ class LocalGameViewModel : ViewModel() {
                 )
             )
         }
-
-
     }
 
     // returns true if it is a cell with light background, false otherwise

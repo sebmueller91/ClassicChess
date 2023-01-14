@@ -41,4 +41,8 @@ data class MovePiece(
     override fun rollback() {
         super.rollback()
     }
+
+    override fun toString() : String {
+        return "${this.javaClass.kotlin.simpleName ?: ""}, fromPos: $fromPos, toPos: $toPos"
+    }
 }
