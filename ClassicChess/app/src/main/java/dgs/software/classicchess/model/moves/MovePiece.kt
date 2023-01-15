@@ -13,12 +13,12 @@ private val TAG = "MovePiece"
 data class MovePiece(
     override val fromPos: Coordinate,
     override val toPos: Coordinate,
-    val game: Game
-) : RevertableMove(fromPos, toPos, game.getBoard()) {
+    override val getGame: () -> Game
+) : RevertableMove(fromPos, toPos, getGame) {
     init {
-        actions.add(SetIsMovedAction(board, fromPos))
-        actions.add(MovePieceAction(board, fromPos, toPos))
-        actions.add(UpdateCurrentPlayerAction(game))
+        actions.add(SetIsMovedAction(fromPos, getGame))
+        actions.add(MovePieceAction(fromPos, toPos, getGame))
+        actions.add(UpdateCurrentPlayerAction(getGame))
     }
 
     fun execute() {
@@ -26,11 +26,11 @@ data class MovePiece(
     }
 
     override fun execute(simulate: Boolean) {
-        if (board.get(fromPos) is Cell.Empty) {
+        if (getGame().get(fromPos) is Cell.Empty) {
             Log.e(TAG,"Attempting to execute move from empty position from ${fromPos} to ${toPos}")
             return
         }
-        if (!(board.get(toPos) is Cell.Empty)) {
+        if (!(getGame().get(toPos) is Cell.Empty)) {
             Log.e(TAG,"Attempting to execute move to non-empty cell from ${fromPos} to ${toPos}")
             return
         }
@@ -42,7 +42,7 @@ data class MovePiece(
         super.rollback()
     }
 
-    override fun toString() : String {
-        return "${this.javaClass.kotlin.simpleName ?: ""}, fromPos: $fromPos, toPos: $toPos"
-    }
+//    override fun toString() : String {
+//        return "${this.javaClass.kotlin.simpleName ?: ""}, fromPos: $fromPos, toPos: $toPos"
+//    }
 }

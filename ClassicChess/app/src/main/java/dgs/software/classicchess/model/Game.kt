@@ -47,6 +47,10 @@ data class Game(
         return board.get(coordinate)
     }
 
+    fun set(coordinate: Coordinate, cell: Cell) {
+        board.set(coordinate,cell)
+    }
+
     fun getAsPiece(coordinate: Coordinate) : Cell.Piece {
         if (board.get(coordinate) is Cell.Empty) {
             Log.e(TAG, "Tried to get empty coordinate $coordinate as Piece")

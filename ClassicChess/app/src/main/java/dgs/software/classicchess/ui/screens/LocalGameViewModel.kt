@@ -1,5 +1,6 @@
 package dgs.software.classicchess.ui.screens
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,6 +13,8 @@ import dgs.software.classicchess.calculations.possiblemoves.DefaultPossibleMoves
 import dgs.software.classicchess.calculations.possiblemoves.PossibleMovesProvider
 import dgs.software.classicchess.model.*
 import dgs.software.classicchess.model.moves.RevertableMove
+
+private const val TAG = "LocalGameViewModel"
 
 class LocalGameViewModel : ViewModel() {
     var gameUiState: Game by mutableStateOf(Game())
@@ -26,7 +29,7 @@ class LocalGameViewModel : ViewModel() {
 
     // TODO: Think about better name
     fun cellSelected(coordinate: Coordinate) {
-
+        // TODO: Add Log statements
         selectedCell = gameUiState.get(coordinate)
 
         val clickedMove = possibleMovesForSelectedPiece.filter { it.toPos == coordinate }

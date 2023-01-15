@@ -213,10 +213,10 @@ class DefaultBasicMovesProvider(
         }
 
         val move = if (game.get(toPos) is Cell.Empty) { // Non-capture move
-            MovePiece(fromPos, toPos, game)
+            MovePiece(fromPos, toPos, { game })
         } else { // Capture move
             if (game.getAsPiece(fromPos).player != game.getAsPiece(toPos).player) {
-                MoveAndCapturePiece(fromPos, toPos, game)
+                MoveAndCapturePiece(fromPos, toPos, {game})
             } else {
                 return false // fromPos and toPos are both the same player
             }

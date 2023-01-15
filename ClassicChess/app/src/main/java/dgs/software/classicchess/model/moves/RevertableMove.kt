@@ -3,6 +3,7 @@ package dgs.software.classicchess.model.moves
 import android.util.Log
 import dgs.software.classicchess.model.Board
 import dgs.software.classicchess.model.Coordinate
+import dgs.software.classicchess.model.Game
 import dgs.software.classicchess.model.actions.RevertableAction
 
 private const val TAG = "Move"
@@ -10,7 +11,7 @@ private const val TAG = "Move"
 abstract class RevertableMove(
     open val fromPos: Coordinate,
     open val toPos: Coordinate,
-    open val board: Board
+    open val getGame: () -> Game
 ) {
     val actions = mutableListOf<RevertableAction>()
     var isExecuted = false
