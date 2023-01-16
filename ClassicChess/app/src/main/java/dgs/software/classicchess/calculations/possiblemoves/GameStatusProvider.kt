@@ -12,7 +12,7 @@ interface GameStatusProvider {
 }
 
 class DefaultGameStatusProvider(
-    val game: Game,
+    private val game: Game,
     private val basicMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider(game)
 ) : GameStatusProvider {
 

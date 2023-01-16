@@ -14,13 +14,13 @@ private val TAG = "MoveAndCapturePiece"
 data class MoveAndCapturePiece(
     override val fromPos: Coordinate,
     override val toPos: Coordinate,
-    val game: Game
-) : RevertableMove(fromPos, toPos, game.getBoard()) {
+    override val getGame: () -> Game
+) : RevertableMove(fromPos, toPos, getGame) {
     init {
-        actions.add(SetIsMovedAction(board, fromPos))
-        actions.add(CapturePieceAction(board, toPos))
-        actions.add(MovePieceAction(board, fromPos, toPos))
-        actions.add(UpdateCurrentPlayerAction(game))
+        actions.add(SetIsMovedAction(fromPos, getGame))
+        actions.add(CapturePieceAction(toPos, getGame))
+        actions.add(MovePieceAction(fromPos, toPos, getGame))
+        actions.add(UpdateCurrentPlayerAction(getGame))
     }
 
     fun execute() {
@@ -28,12 +28,12 @@ data class MoveAndCapturePiece(
     }
 
     override fun execute(simulate: Boolean) {
-        if (board.get(fromPos) is Cell.Empty) {
+        if (getGame().get(fromPos) is Cell.Empty) {
             Log.e(TAG, "Attempting to execute move from empty position from ${fromPos} to ${toPos}")
             return
         }
-        if (!(board.get(toPos) is Cell.Piece)
-            || game.getAsPiece(fromPos).player == game.getAsPiece(toPos).player
+        if (!(getGame().get(toPos) is Cell.Piece)
+            || getGame().getAsPiece(fromPos).player == getGame().getAsPiece(toPos).player
         ) {
             Log.e(
                 TAG,

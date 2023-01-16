@@ -14,8 +14,8 @@ interface BasicMovesProvider {
 }
 
 class DefaultBasicMovesProvider(
-    val game: Game
-) : BasicMovesProvider{
+    private val game: Game
+) : BasicMovesProvider {
     override fun getBasicMoves(position: Coordinate): List<RevertableMove> {
         if (game.get(position) is Cell.Empty) {
             Log.e(TAG, "Tried to calculate basic moves for an empty cell at pos $position")
@@ -48,20 +48,26 @@ class DefaultBasicMovesProvider(
         }
 
         // Move 2 forward
-        destination = position.copy(position.row + (moveDirection*2))
-        possibleMoves.addMoveIfValid(position, destination) { coord ->
-            game.get(position.copy(position.row+moveDirection))  is Cell.Empty &&
-            game.get(destination) is Cell.Empty
+        if ((player == Player.WHITE && position.row == 6 && game.get(position.copy(row = 5)) is Cell.Empty)
+            || (player == Player.BLACK && position.row == 1 && game.get(position.copy(row = 2)) is Cell.Empty)
+        ) {
+            destination = position.copy(position.row + (moveDirection * 2))
+            possibleMoves.addMoveIfValid(position, destination) { coord ->
+                game.get(position.copy(position.row + moveDirection)) is Cell.Empty &&
+                        game.get(destination) is Cell.Empty
+            }
         }
 
         // Hit diagonal left and right
         destination = position.copy(position.row + moveDirection, position.column + 1)
         possibleMoves.addMoveIfValid(position, destination) { coord ->
-            player == game.getAsPiece(destination).player.opponent()
+            !(game.get(destination) is Cell.Empty)
+                    && player == game.getAsPiece(destination).player.opponent()
         }
-        destination = position.copy(position.row + moveDirection, position.column + -1)
+        destination = position.copy(position.row + moveDirection, position.column - 1)
         possibleMoves.addMoveIfValid(position, destination) { coord ->
-            player == game.getAsPiece(destination).player.opponent()
+            !(game.get(destination) is Cell.Empty)
+                    && player == game.getAsPiece(destination).player.opponent()
         }
 
         // TOOD: Add en-passant
@@ -124,24 +130,21 @@ class DefaultBasicMovesProvider(
     }
 
     private fun MutableList<RevertableMove>.addCellsOnStraightLines(fromPos: Coordinate) {
-        for (r in fromPos.row..7) {
-            if (!addMoveAndCheckIfToContinue(fromPos, fromPos.copy(row = r))) {
-                break
-            }
-        }
-        for (r in fromPos.row downTo 0) {
-            if (!addMoveAndCheckIfToContinue(fromPos, fromPos.copy(row = r))) {
-                break
-            }
-        }
-        for (c in fromPos.column..7) {
-            if (!addMoveAndCheckIfToContinue(fromPos, fromPos.copy(column = c))) {
-                break
-            }
-        }
-        for (c in fromPos.column downTo 0) {
-            if (!addMoveAndCheckIfToContinue(fromPos, fromPos.copy(column = c))) {
-                break
+        val directions =
+            listOf(
+                Coordinate(1, 0),
+                Coordinate(-1, 0),
+                Coordinate(0, 1),
+                Coordinate(0, -1)
+            )
+
+        directions.forEach { direction ->
+            var toPos = fromPos
+            for (i in 0..6) {
+                toPos += direction
+                if (!addMoveAndCheckIfToContinue(fromPos, toPos)) {
+                    break
+                }
             }
         }
     }
@@ -170,15 +173,23 @@ class DefaultBasicMovesProvider(
         fromPos: Coordinate,
         toPos: Coordinate
     ): Boolean {
-        if (!(game.get(toPos) is Cell.Empty)
-            || game.getAsPiece(fromPos).player == game.getAsPiece(toPos).player
-        ) {
+        if (!toPos.isValid()) {
             return false
         }
-        if (!addMoveIfValid(fromPos, toPos)) {
+        if (game.get(fromPos) is Cell.Empty) {
+            Log.e(TAG, "Tried to move an invalid cell $fromPos")
             return false
         }
-        return game.get(toPos) is Cell.Empty
+
+        if (game.get(toPos) is Cell.Empty){
+            return addMoveIfValid(fromPos, toPos)
+        }
+
+        if (game.getAsPiece(fromPos).player != game.getAsPiece(toPos).player) {
+            addMoveIfValid(fromPos, toPos)
+        }
+
+        return false
     }
 
     private fun MutableList<RevertableMove>.addMoveIfValid(
@@ -202,10 +213,10 @@ class DefaultBasicMovesProvider(
         }
 
         val move = if (game.get(toPos) is Cell.Empty) { // Non-capture move
-            MovePiece(fromPos, toPos, game)
+            MovePiece(fromPos, toPos, { game })
         } else { // Capture move
             if (game.getAsPiece(fromPos).player != game.getAsPiece(toPos).player) {
-                MoveAndCapturePiece(fromPos, toPos, game)
+                MoveAndCapturePiece(fromPos, toPos, {game})
             } else {
                 return false // fromPos and toPos are both the same player
             }

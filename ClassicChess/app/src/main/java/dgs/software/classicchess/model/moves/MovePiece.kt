@@ -1,7 +1,6 @@
 package dgs.software.classicchess.model.moves
 
 import android.util.Log
-import dgs.software.classicchess.model.Board
 import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
@@ -14,32 +13,36 @@ private val TAG = "MovePiece"
 data class MovePiece(
     override val fromPos: Coordinate,
     override val toPos: Coordinate,
-    val game: Game
-) : RevertableMove(fromPos, toPos, game.getBoard()) {
+    override val getGame: () -> Game
+) : RevertableMove(fromPos, toPos, getGame) {
     init {
-        actions.add(SetIsMovedAction(board, fromPos))
-        actions.add(MovePieceAction(board, fromPos, toPos))
-        actions.add(UpdateCurrentPlayerAction(game))
+        actions.add(SetIsMovedAction(fromPos, getGame))
+        actions.add(MovePieceAction(fromPos, toPos, getGame))
+        actions.add(UpdateCurrentPlayerAction(getGame))
     }
 
     fun execute() {
         execute(false)
     }
 
-    override fun execute(simmulate: Boolean) {
-        if (board.get(fromPos) is Cell.Empty) {
+    override fun execute(simulate: Boolean) {
+        if (getGame().get(fromPos) is Cell.Empty) {
             Log.e(TAG,"Attempting to execute move from empty position from ${fromPos} to ${toPos}")
             return
         }
-        if (!(board.get(toPos) is Cell.Empty)) {
+        if (!(getGame().get(toPos) is Cell.Empty)) {
             Log.e(TAG,"Attempting to execute move to non-empty cell from ${fromPos} to ${toPos}")
             return
         }
 
-        super.execute(simmulate)
+        super.execute(simulate)
     }
 
     override fun rollback() {
         super.rollback()
     }
+
+//    override fun toString() : String {
+//        return "${this.javaClass.kotlin.simpleName ?: ""}, fromPos: $fromPos, toPos: $toPos"
+//    }
 }

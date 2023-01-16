@@ -14,7 +14,7 @@ data class MoveStack(
     }
 
     fun executeMove(move: RevertableMove, simulateExecution: Boolean = false) {
-        Log.d(TAG, "Execute move $move, simulated: $simulateExecution")
+        Log.d(TAG, "Execute move $move.toString(), simulated: $simulateExecution")
         deleteElementsAfterIndex(iteratorIndex)
         rollbackSimulatedMoves()
         move.execute(simulateExecution)
@@ -25,6 +25,7 @@ data class MoveStack(
     fun rollbackSimulatedMoves() {
         var count = 0
         while (iteratorIndex >= 0 && moves[iteratorIndex].isSimulated) {
+            moves[iteratorIndex].rollback()
             iteratorIndex--
             count++
         }
@@ -60,11 +61,11 @@ data class MoveStack(
         return true
     }
 
-    private fun doneActionsOnStack(): Boolean {
+    fun doneActionsOnStack(): Boolean {
         return iteratorIndex >= 0
     }
 
-    private fun undoneActionsOnStack(): Boolean {
+    fun undoneActionsOnStack(): Boolean {
         return iteratorIndex < moves.size - 1
     }
 
