@@ -12,8 +12,6 @@ private const val TAG = "Game"
 data class Game(
     private val board: Board = Board(),
     private val moveStack: MoveStack = MoveStack(),
-   // private var currentPlayer: Player = Player.WHITE
-
 ) {
     var currentPlayer by mutableStateOf(Player.WHITE)
         private set
@@ -28,30 +26,32 @@ data class Game(
     val canRedoMove: Boolean
         get() = moveStack.undoneActionsOnStack()
 
-    fun getBoard() : Board {
+    fun getBoard(): Board {
         return board
     }
 
-//    val curPlayer: Player
-//        get() = currentPlayer
-//
-//    fun getCurrentPlayer() : Player {
-//        return currentPlayer
-//    }
-//
-//    fun setCurrentPlayer(player: Player) {
-//        currentPlayer = player
-//    }
-
-    fun get(coordinate: Coordinate) : Cell {
+    fun get(coordinate: Coordinate): Cell {
         return board.get(coordinate)
     }
 
-    fun set(coordinate: Coordinate, cell: Cell) {
-        board.set(coordinate,cell)
+    fun anyMoveExecuted(): Boolean {
+        return moveStack.moves.any()
     }
 
-    fun getAsPiece(coordinate: Coordinate) : Cell.Piece {
+    fun set(coordinate: Coordinate, cell: Cell) {
+        board.set(coordinate, cell)
+    }
+
+    fun undoLastMove() {
+        moveStack.rollbackLastMove()
+    }
+
+    fun redoNextMove() {
+
+        moveStack.redoNextMove()
+    }
+
+    fun getAsPiece(coordinate: Coordinate): Cell.Piece {
         if (board.get(coordinate) is Cell.Empty) {
             Log.e(TAG, "Tried to get empty coordinate $coordinate as Piece")
         }

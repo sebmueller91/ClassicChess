@@ -6,10 +6,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -19,7 +19,6 @@ import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
-import dgs.software.classicchess.model.moves.RevertableMove
 import dgs.software.classicchess.ui.theme.selectedCellColor
 import dgs.software.classicchess.ui.theme.boardBorderColor
 import dgs.software.classicchess.ui.theme.boardCellBlack
@@ -64,9 +63,7 @@ fun LocalGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = { },
-                enabled = false
-            ) {
+                onClick = { viewModel.invertBoardDisplayDirection() }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_reverseupdown_24),
                     contentDescription = null
@@ -76,8 +73,8 @@ fun LocalGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = { },
-                enabled = false
+                onClick = {  },
+                enabled = viewModel.canResetGame()
             ) {
                 Text(
                     text = "Reset"
@@ -87,7 +84,7 @@ fun LocalGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = { },
+                onClick = { viewModel.undoLastMove() },
                 enabled = viewModel.gameUiState.canUndoMove
             ) {
                 Icon(
@@ -99,7 +96,7 @@ fun LocalGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = { },
+                onClick = { viewModel.redoNextMove() },
                 enabled = viewModel.gameUiState.canRedoMove
             ) {
                 Icon(
@@ -116,40 +113,50 @@ fun ChessBoard(
     viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier) {
-        ChessColumn(0, viewModel, Modifier.weight(1f))
-        ChessColumn(1, viewModel, Modifier.weight(1f))
-        ChessColumn(2, viewModel, Modifier.weight(1f))
-        ChessColumn(3, viewModel, Modifier.weight(1f))
-        ChessColumn(4, viewModel, Modifier.weight(1f))
-        ChessColumn(5, viewModel, Modifier.weight(1f))
-        ChessColumn(6, viewModel, Modifier.weight(1f))
-        ChessColumn(7, viewModel, Modifier.weight(1f))
+    Column(modifier = modifier) {
+        val rowIndices = if (viewModel.boardDisplayedInverted) {
+            listOf(7,6,5,4,3,2,1,0)
+        } else {
+            listOf(0, 1, 2, 3, 4, 5, 6, 7)
+        }
+        ChessRow(rowIndices[0], viewModel, Modifier.weight(1f))
+        ChessRow(rowIndices[1], viewModel, Modifier.weight(1f))
+        ChessRow(rowIndices[2], viewModel, Modifier.weight(1f))
+        ChessRow(rowIndices[3], viewModel, Modifier.weight(1f))
+        ChessRow(rowIndices[4], viewModel, Modifier.weight(1f))
+        ChessRow(rowIndices[5], viewModel, Modifier.weight(1f))
+        ChessRow(rowIndices[6], viewModel, Modifier.weight(1f))
+        ChessRow(rowIndices[7], viewModel, Modifier.weight(1f))
     }
 }
 
 @Composable
-fun ChessColumn(
+fun ChessRow(
     colIndex: Int,
     viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
-        ChessCell(0, colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(1, colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(2, colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(3, colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(4, colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(5, colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(6, colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(7, colIndex, viewModel, Modifier.weight(1f))
+    Row(modifier = modifier) {
+        val colIndices = if (viewModel.boardDisplayedInverted) {
+            listOf(7,6,5,4,3,2,1,0)
+        } else {
+            listOf(0, 1, 2, 3, 4, 5, 6, 7)
+        }
+        ChessCell(colIndices[0], colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(colIndices[1], colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(colIndices[2], colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(colIndices[3], colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(colIndices[4], colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(colIndices[5], colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(colIndices[6], colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(colIndices[7], colIndex, viewModel, Modifier.weight(1f))
     }
 }
 
 @Composable
 fun ChessCell(
-    rowIndex: Int,
     colIndex: Int,
+    rowIndex: Int,
     viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {

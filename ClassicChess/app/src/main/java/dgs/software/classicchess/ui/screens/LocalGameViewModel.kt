@@ -1,6 +1,5 @@
 package dgs.software.classicchess.ui.screens
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,7 +9,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dgs.software.classicchess.ClassicChessApplication
 import dgs.software.classicchess.calculations.possiblemoves.DefaultPossibleMovesProvider
-import dgs.software.classicchess.calculations.possiblemoves.PossibleMovesProvider
 import dgs.software.classicchess.model.*
 import dgs.software.classicchess.model.moves.RevertableMove
 
@@ -24,6 +22,10 @@ class LocalGameViewModel : ViewModel() {
         private set
 
     var possibleMovesForSelectedPiece by mutableStateOf(mutableListOf<RevertableMove>())
+        private set
+
+    var boardDisplayedInverted by mutableStateOf(false)
+        private set
 
     private val possibleMovesProvider = DefaultPossibleMovesProvider(gameUiState)
 
@@ -52,6 +54,22 @@ class LocalGameViewModel : ViewModel() {
                 )
             )
         }
+    }
+
+    fun invertBoardDisplayDirection() {
+        boardDisplayedInverted = !boardDisplayedInverted
+    }
+
+    fun canResetGame(): Boolean {
+        return gameUiState.anyMoveExecuted()
+    }
+
+    fun undoLastMove() {
+        gameUiState.undoLastMove()
+    }
+
+    fun redoNextMove() {
+        gameUiState.redoNextMove()
     }
 
     // returns true if it is a cell with light background, false otherwise

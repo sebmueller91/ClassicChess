@@ -11,6 +11,7 @@ data class MoveStack(
 
     fun ResetMoveStack() {
         moves.clear()
+        iteratorIndex = -1
     }
 
     fun executeMove(move: RevertableMove, simulateExecution: Boolean = false) {
