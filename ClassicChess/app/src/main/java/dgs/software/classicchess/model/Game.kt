@@ -69,5 +69,6 @@ data class Game(
     fun reset() {
         board.reset()
         moveStack.resetMoveStack()
+        currentPlayer = Player.WHITE
     }
 }
