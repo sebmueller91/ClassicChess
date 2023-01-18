@@ -25,6 +25,10 @@ data class Board(
         cell.coordinate = Coordinate(row,col)
     }
 
+    fun reset() {
+        initializeWithDefaultSetup()
+    }
+
     private fun createPiece(row: Int, col: Int, type: Type, player: Player) {
         grid[row][col] = Cell.Piece(type, player, Coordinate(row, col))
     }

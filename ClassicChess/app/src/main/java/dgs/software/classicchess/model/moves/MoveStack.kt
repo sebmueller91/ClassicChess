@@ -9,7 +9,7 @@ data class MoveStack(
 ) {
     var iteratorIndex = -1
 
-    fun ResetMoveStack() {
+    fun resetMoveStack() {
         moves.clear()
         iteratorIndex = -1
     }

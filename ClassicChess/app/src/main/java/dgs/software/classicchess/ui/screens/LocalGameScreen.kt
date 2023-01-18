@@ -6,7 +6,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,18 +39,20 @@ fun LocalGameScreen(
         ) {
             Text("Current Player: " + viewModel.gameUiState.currentPlayer)
         }
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 10.dp)
-                .background(MaterialTheme.colors.boardBorderColor)
-        ) {
-            ChessBoard(
-                viewModel,
+        if (viewModel.forceBoardRecomposition || !viewModel.forceBoardRecomposition) {
+            Box(
                 modifier = Modifier
-                    .aspectRatio(1f)
-                    .padding(2.dp)
-                    .fillMaxWidth()
-            )
+                    .padding(horizontal = 10.dp)
+                    .background(MaterialTheme.colors.boardBorderColor)
+            ) {
+                ChessBoard(
+                    viewModel,
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .padding(2.dp)
+                        .fillMaxWidth()
+                )
+            }
         }
         Row(
             modifier = Modifier
@@ -59,7 +60,7 @@ fun LocalGameScreen(
                 .padding(bottom = 10.dp),
             verticalAlignment = Alignment.Bottom
         ) {
-            Button(
+            Button( // TODO: Move into composable
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
@@ -73,7 +74,7 @@ fun LocalGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = {  },
+                onClick = { viewModel.resetGame() },
                 enabled = viewModel.canResetGame()
             ) {
                 Text(

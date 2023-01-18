@@ -65,4 +65,9 @@ data class Game(
     fun rollbackSimulatedMoves() {
         moveStack.rollbackSimulatedMoves()
     }
+
+    fun reset() {
+        board.reset()
+        moveStack.resetMoveStack()
+    }
 }

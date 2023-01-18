@@ -15,6 +15,8 @@ import dgs.software.classicchess.model.moves.RevertableMove
 private const val TAG = "LocalGameViewModel"
 
 class LocalGameViewModel : ViewModel() {
+    var forceBoardRecomposition by mutableStateOf(false)
+
     var gameUiState: Game by mutableStateOf(Game())
         private set
 
@@ -62,6 +64,13 @@ class LocalGameViewModel : ViewModel() {
 
     fun canResetGame(): Boolean {
         return gameUiState.anyMoveExecuted()
+    }
+
+    fun resetGame() {
+        selectedCell = null
+        possibleMovesForSelectedPiece.clear()
+        gameUiState.reset()
+        forceBoardRecomposition = !forceBoardRecomposition
     }
 
     fun undoLastMove() {
