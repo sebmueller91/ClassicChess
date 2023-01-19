@@ -7,4 +7,11 @@
     <string name="MenuScreen_LocalGameButtonText">Local Game</string>
     <string name="MainMenuScreen_LocalGameButtonText">Local Game</string>
     <string name="MainMenuScreen_ComputerGameButtonText">Play against Computer</string>
+    <string name="LocalGameScreen_CurrentPlayerText">\Current Player: </string>
+    <string name="LocalGameScreen_WhitePlayer">White</string>
+    <string name="LocalGameScreen_BlackPlayer">Black</string>
+    <string name="LocalGameScreen_InvertButtonContentDescription">Reverse chess board horizontally</string>
+    <string name="LocalGameScreen_UndoButtonContentDescription">Undo last move</string>
+    <string name="LocalGameScreen_RedoButtonContentDescription">Redo next move</string>
+    <string name="LocalGameScreen_ResetButtonText">Reset</string>
 </resources>

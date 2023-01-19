@@ -1,5 +1,6 @@
 package dgs.software.classicchess.ui.screens
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -11,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dgs.software.classicchess.R
@@ -36,8 +38,13 @@ fun LocalGameScreen(
         Column(
             modifier = Modifier
                 .weight(1f)
+                .padding(20.dp)
         ) {
-            Text("Current Player: " + viewModel.gameUiState.currentPlayer)
+            val playerString = when (viewModel.gameUiState.currentPlayer) {
+                Player.WHITE -> stringResource(R.string.LocalGameScreen_WhitePlayer)
+                Player.BLACK -> stringResource(R.string.LocalGameScreen_BlackPlayer)
+            }
+            Text(stringResource(R.string.LocalGameScreen_CurrentPlayerText) + playerString)
         }
         if (viewModel.forceBoardRecomposition || !viewModel.forceBoardRecomposition) {
             Box(
@@ -60,16 +67,12 @@ fun LocalGameScreen(
                 .padding(bottom = 10.dp),
             verticalAlignment = Alignment.Bottom
         ) {
-            Button( // TODO: Move into composable
-                modifier = Modifier
-                    .height(50.dp)
-                    .padding(5.dp),
-                onClick = { viewModel.invertBoardDisplayDirection() }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_reverseupdown_24),
-                    contentDescription = null
-                )
-            }
+            IconButton(
+                onClick = viewModel::invertBoardDisplayDirection,
+                isEnabled = { true },
+                iconId = R.drawable.ic_baseline_invertupdown_24,
+                contentDescription = stringResource(R.string.LocalGameScreen_InvertButtonContentDescription)
+            )
             Button(
                 modifier = Modifier
                     .height(50.dp)
@@ -78,33 +81,21 @@ fun LocalGameScreen(
                 enabled = viewModel.canResetGame()
             ) {
                 Text(
-                    text = "Reset"
+                    text = stringResource(R.string.LocalGameScreen_ResetButtonText)
                 )
             }
-            Button(
-                modifier = Modifier
-                    .height(50.dp)
-                    .padding(5.dp),
-                onClick = { viewModel.undoLastMove() },
-                enabled = viewModel.gameUiState.canUndoMove
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_undo_24),
-                    contentDescription = null
-                )
-            }
-            Button(
-                modifier = Modifier
-                    .height(50.dp)
-                    .padding(5.dp),
-                onClick = { viewModel.redoNextMove() },
-                enabled = viewModel.gameUiState.canRedoMove
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_redo_24),
-                    contentDescription = null
-                )
-            }
+            IconButton(
+                onClick = viewModel::undoLastMove,
+                isEnabled = viewModel.gameUiState::canUndoMove,
+                iconId = R.drawable.ic_baseline_undo_24,
+                contentDescription = stringResource(R.string.LocalGameScreen_UndoButtonContentDescription)
+            )
+            IconButton(
+                onClick = viewModel::redoNextMove,
+                isEnabled = viewModel.gameUiState::canRedoMove,
+                iconId = R.drawable.ic_baseline_redo_24,
+                contentDescription = stringResource(R.string.LocalGameScreen_RedoButtonContentDescription)
+            )
         }
     }
 }
@@ -116,7 +107,7 @@ fun ChessBoard(
 ) {
     Column(modifier = modifier) {
         val rowIndices = if (viewModel.boardDisplayedInverted) {
-            listOf(7,6,5,4,3,2,1,0)
+            listOf(7, 6, 5, 4, 3, 2, 1, 0)
         } else {
             listOf(0, 1, 2, 3, 4, 5, 6, 7)
         }
@@ -139,7 +130,7 @@ fun ChessRow(
 ) {
     Row(modifier = modifier) {
         val colIndices = if (viewModel.boardDisplayedInverted) {
-            listOf(7,6,5,4,3,2,1,0)
+            listOf(7, 6, 5, 4, 3, 2, 1, 0)
         } else {
             listOf(0, 1, 2, 3, 4, 5, 6, 7)
         }
@@ -219,6 +210,28 @@ fun ChessCell(
                 color = MaterialTheme.colors.selectedCellColor
             )
         }
+    }
+}
+
+@Composable
+fun IconButton(
+    onClick: () -> Unit,
+    isEnabled: () -> Boolean,
+    @DrawableRes iconId: Int,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null
+) {
+    Button(
+        modifier = Modifier
+            .height(50.dp)
+            .padding(5.dp),
+        onClick = { onClick() },
+        enabled = isEnabled()
+    ) {
+        Icon(
+            painter = painterResource(id = iconId),
+            contentDescription = contentDescription
+        )
     }
 }
 
