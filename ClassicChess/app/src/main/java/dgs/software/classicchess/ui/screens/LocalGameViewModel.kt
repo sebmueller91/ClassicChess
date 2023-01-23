@@ -8,7 +8,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dgs.software.classicchess.ClassicChessApplication
+import dgs.software.classicchess.calculations.possiblemoves.DefaultGameStatusProvider
 import dgs.software.classicchess.calculations.possiblemoves.DefaultPossibleMovesProvider
+import dgs.software.classicchess.calculations.possiblemoves.GameStatusProvider
 import dgs.software.classicchess.model.*
 import dgs.software.classicchess.model.moves.RevertableMove
 
@@ -30,8 +32,8 @@ class LocalGameViewModel : ViewModel() {
         private set
 
     private val possibleMovesProvider = DefaultPossibleMovesProvider(gameUiState)
+    private val gameStatusProvider = DefaultGameStatusProvider(gameUiState)
 
-    // TODO: Think about better name
     fun cellSelected(coordinate: Coordinate) {
         // TODO: Add Log statements
         selectedCell = gameUiState.get(coordinate)

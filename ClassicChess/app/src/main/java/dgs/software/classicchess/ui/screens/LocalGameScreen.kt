@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dgs.software.classicchess.R
@@ -37,7 +38,14 @@ fun LocalGameScreen(
             modifier = Modifier
                 .weight(1f)
         ) {
-            Text("Current Player: " + viewModel.gameUiState.currentPlayer)
+            Text(
+                "${stringResource(R.string.LocalGameScreen_CurrentPlayerText)} ${
+                    if (viewModel.gameUiState.currentPlayer == Player.WHITE) stringResource(
+                        R.string.LocalGameScreen_WhiteText
+                    ) else stringResource(R.string.LocalGameScreen_BlackText)
+                }",
+                modifier = Modifier.padding(20.dp)
+            )
         }
         if (viewModel.forceBoardRecomposition || !viewModel.forceBoardRecomposition) {
             Box(
@@ -116,7 +124,7 @@ fun ChessBoard(
 ) {
     Column(modifier = modifier) {
         val rowIndices = if (viewModel.boardDisplayedInverted) {
-            listOf(7,6,5,4,3,2,1,0)
+            listOf(7, 6, 5, 4, 3, 2, 1, 0)
         } else {
             listOf(0, 1, 2, 3, 4, 5, 6, 7)
         }
@@ -139,7 +147,7 @@ fun ChessRow(
 ) {
     Row(modifier = modifier) {
         val colIndices = if (viewModel.boardDisplayedInverted) {
-            listOf(7,6,5,4,3,2,1,0)
+            listOf(7, 6, 5, 4, 3, 2, 1, 0)
         } else {
             listOf(0, 1, 2, 3, 4, 5, 6, 7)
         }

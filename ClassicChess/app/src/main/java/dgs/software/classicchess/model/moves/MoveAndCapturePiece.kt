@@ -32,7 +32,7 @@ data class MoveAndCapturePiece(
             Log.e(TAG, "Attempting to execute move from empty position from ${fromPos} to ${toPos}")
             return
         }
-        if (!(getGame().get(toPos) is Cell.Piece)
+        if (getGame().get(toPos) !is Cell.Piece
             || getGame().getAsPiece(fromPos).player == getGame().getAsPiece(toPos).player
         ) {
             Log.e(

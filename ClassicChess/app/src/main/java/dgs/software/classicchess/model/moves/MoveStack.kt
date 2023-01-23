@@ -28,7 +28,7 @@ data class MoveStack(
         while (iteratorIndex >= 0 && moves[iteratorIndex].isSimulated) {
             moves[iteratorIndex].rollback()
             iteratorIndex--
-            count++
+            count--
         }
         if (count > 0) {
             Log.d(TAG, "Rolled back ${count} simulated moves")
@@ -71,10 +71,11 @@ data class MoveStack(
     }
 
     private fun deleteElementsAfterIndex(index: Int) {
-        if (index <= 0 || index >= moves.size) {
+        if (index < -1 || index >= moves.size) {
+            // TODO: Log
             return;
         }
-        while (moves.size > index + 1) {
+        while (moves.size-1 > index) {
             moves.removeLast()
         }
     }

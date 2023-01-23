@@ -9,6 +9,7 @@ interface GameStatusProvider {
     fun isStalemate(player: Player) : Boolean
     fun isCheckmate(player: Player) : Boolean
     fun kingIsInCheck(player: Player) : Boolean
+    fun getCellsInCheck(player: Player): Array<Array<Boolean>>
 }
 
 class DefaultGameStatusProvider(
@@ -31,13 +32,13 @@ class DefaultGameStatusProvider(
         return cellsInCheck[positionOfKing.row][positionOfKing.column]
     }
 
-    private fun getCellsInCheck(player: Player): Array<Array<Boolean>> {
+    override fun getCellsInCheck(player: Player): Array<Array<Boolean>> {
         val fieldsInCheck = Array(8) { Array(8) { false } }
 
         for (i in 0 until 8) {
             for (j in 0 until 8) {
                 val pos = Coordinate(i,j)
-                if (game.get(pos).isPlayer(player)) {
+                if (game.get(pos).isPlayer(player.opponent())) {
                     val possibleMoves = basicMovesProvider.getBasicMoves(pos)
                     possibleMoves.forEach{
                         fieldsInCheck[it.toPos.row][it.toPos.column] = true

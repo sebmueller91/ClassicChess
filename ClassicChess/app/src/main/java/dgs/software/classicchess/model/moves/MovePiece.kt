@@ -30,7 +30,7 @@ data class MovePiece(
             Log.e(TAG,"Attempting to execute move from empty position from ${fromPos} to ${toPos}")
             return
         }
-        if (!(getGame().get(toPos) is Cell.Empty)) {
+        if (getGame().get(toPos) !is Cell.Empty) {
             Log.e(TAG,"Attempting to execute move to non-empty cell from ${fromPos} to ${toPos}")
             return
         }
@@ -41,8 +41,4 @@ data class MovePiece(
     override fun rollback() {
         super.rollback()
     }
-
-//    override fun toString() : String {
-//        return "${this.javaClass.kotlin.simpleName ?: ""}, fromPos: $fromPos, toPos: $toPos"
-//    }
 }

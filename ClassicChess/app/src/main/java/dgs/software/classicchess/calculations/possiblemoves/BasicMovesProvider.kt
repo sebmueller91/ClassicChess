@@ -181,7 +181,7 @@ class DefaultBasicMovesProvider(
             return false
         }
 
-        if (game.get(toPos) is Cell.Empty){
+        if (game.get(toPos) is Cell.Empty) {
             return addMoveIfValid(fromPos, toPos)
         }
 
@@ -197,7 +197,6 @@ class DefaultBasicMovesProvider(
         toPos: Coordinate,
         conditionToAdd: (Coordinate) -> Boolean = { true }
     ): Boolean {
-        val moves = mutableListOf<RevertableMove>()
         if (!fromPos.isValid()) {
             Log.e(TAG, "Tried to move an invalid cell $fromPos")
             return false
@@ -216,7 +215,7 @@ class DefaultBasicMovesProvider(
             MovePiece(fromPos, toPos, { game })
         } else { // Capture move
             if (game.getAsPiece(fromPos).player != game.getAsPiece(toPos).player) {
-                MoveAndCapturePiece(fromPos, toPos, {game})
+                MoveAndCapturePiece(fromPos, toPos, { game })
             } else {
                 return false // fromPos and toPos are both the same player
             }

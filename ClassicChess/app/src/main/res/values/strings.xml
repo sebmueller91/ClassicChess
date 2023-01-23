@@ -7,4 +7,7 @@
     <string name="MenuScreen_LocalGameButtonText">Local Game</string>
     <string name="MainMenuScreen_LocalGameButtonText">Local Game</string>
     <string name="MainMenuScreen_ComputerGameButtonText">Play against Computer</string>
+    <string name="LocalGameScreen_CurrentPlayerText">Current Player: </string>
+    <string name="LocalGameScreen_WhiteText">White</string>
+    <string name="LocalGameScreen_BlackText">Black</string>
 </resources>
