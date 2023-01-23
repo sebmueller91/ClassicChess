@@ -28,6 +28,8 @@ class LocalGameViewModel : ViewModel() {
     var possibleMovesForSelectedPiece by mutableStateOf(mutableListOf<RevertableMove>())
         private set
 
+    var kingInCheck: Coordinate? by mutableStateOf(null)
+
     var boardDisplayedInverted by mutableStateOf(false)
         private set
 
@@ -37,27 +39,26 @@ class LocalGameViewModel : ViewModel() {
     fun cellSelected(coordinate: Coordinate) {
         // TODO: Add Log statements
         selectedCell = gameUiState.get(coordinate)
-
         val clickedMove = possibleMovesForSelectedPiece.filter { it.toPos == coordinate }
+        possibleMovesForSelectedPiece.clear()
+
         if (clickedMove.any()) {
             gameUiState.executeMove(clickedMove.first())
             selectedCell = null
             possibleMovesForSelectedPiece.clear()
-            return
         }
-        possibleMovesForSelectedPiece.clear()
-        if (selectedCell is Cell.Empty) {
-            return
+        else if (selectedCell is Cell.Empty) {
+            // Do nothing
         }
-
-        val selectedPiece = selectedCell as Cell.Piece
-        if (selectedPiece.player == gameUiState.currentPlayer) {
+        else if ((selectedCell as Cell.Piece).player == gameUiState.currentPlayer) {
             possibleMovesForSelectedPiece.addAll(
                 possibleMovesProvider.getPossibleMoves(
-                    selectedPiece.coordinate
+                    (selectedCell as Cell.Piece).coordinate
                 )
             )
         }
+
+        updateKingInCheck()
     }
 
     fun invertBoardDisplayDirection() {
@@ -70,6 +71,7 @@ class LocalGameViewModel : ViewModel() {
 
     fun resetGame() {
         selectedCell = null
+        kingInCheck = null
         possibleMovesForSelectedPiece.clear()
         gameUiState.reset()
         forceBoardRecomposition = !forceBoardRecomposition
@@ -77,15 +79,28 @@ class LocalGameViewModel : ViewModel() {
 
     fun undoLastMove() {
         gameUiState.undoLastMove()
+        updateKingInCheck()
     }
 
     fun redoNextMove() {
         gameUiState.redoNextMove()
+        updateKingInCheck()
     }
 
     // returns true if it is a cell with light background, false otherwise
     fun getCellBackgroundType(rowIndex: Int, colIndex: Int): Boolean {
         return (rowIndex % 2 == 0 && colIndex % 2 == 0) || (rowIndex % 2 != 0 && colIndex % 2 != 0)
+    }
+
+    private fun updateKingInCheck() {
+        kingInCheck = null
+        Player.values().forEach { player ->
+            val positionOfKing = gameStatusProvider.getPositionOfKing(player)
+            val cellsInCheck = gameStatusProvider.getCellsInCheck(player)
+            if (cellsInCheck[positionOfKing.row][positionOfKing.column]) {
+                kingInCheck = positionOfKing
+            }
+        }
     }
 
     init {

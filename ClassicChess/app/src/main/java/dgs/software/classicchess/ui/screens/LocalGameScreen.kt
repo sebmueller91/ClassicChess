@@ -45,9 +45,9 @@ fun LocalGameScreen(
                     if (viewModel.gameUiState.currentPlayer == Player.WHITE) stringResource(
                         R.string.LocalGameScreen_WhiteText
                     ) else stringResource(R.string.LocalGameScreen_BlackText)
-                }",
-                modifier = Modifier.padding(20.dp)
+                }"
             )
+
         }
         if (viewModel.forceBoardRecomposition || !viewModel.forceBoardRecomposition) {
             Box(
@@ -188,7 +188,8 @@ fun ChessCell(
                     .wrapContentSize(),
                 contentAlignment = Alignment.Center
             ) {
-                if (viewModel.possibleMovesForSelectedPiece.any { it.toPos == curCoordinate }) {
+                if (viewModel.possibleMovesForSelectedPiece.any { it.toPos == curCoordinate }
+                    || viewModel.kingInCheck == (curCoordinate)) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_baseline_circle_24),
                         contentDescription = null,

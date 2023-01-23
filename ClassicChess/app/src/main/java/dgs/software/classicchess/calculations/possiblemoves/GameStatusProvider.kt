@@ -10,6 +10,7 @@ interface GameStatusProvider {
     fun isCheckmate(player: Player) : Boolean
     fun kingIsInCheck(player: Player) : Boolean
     fun getCellsInCheck(player: Player): Array<Array<Boolean>>
+    fun getPositionOfKing(player: Player) : Coordinate
 }
 
 class DefaultGameStatusProvider(
@@ -50,7 +51,7 @@ class DefaultGameStatusProvider(
         return fieldsInCheck
     }
 
-    private fun getPositionOfKing(player: Player) : Coordinate {
+    override fun getPositionOfKing(player: Player) : Coordinate {
         for (i in 0 until 8) {
             for (j in 0 until 8) {
                 val piece = game.get(Coordinate(i,j))
