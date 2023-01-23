@@ -1,5 +1,6 @@
 package dgs.software.classicchess.ui.screens
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -37,6 +38,7 @@ fun LocalGameScreen(
         Column(
             modifier = Modifier
                 .weight(1f)
+                .padding(20.dp)
         ) {
             Text(
                 "${stringResource(R.string.LocalGameScreen_CurrentPlayerText)} ${
@@ -68,16 +70,12 @@ fun LocalGameScreen(
                 .padding(bottom = 10.dp),
             verticalAlignment = Alignment.Bottom
         ) {
-            Button( // TODO: Move into composable
-                modifier = Modifier
-                    .height(50.dp)
-                    .padding(5.dp),
-                onClick = { viewModel.invertBoardDisplayDirection() }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_reverseupdown_24),
-                    contentDescription = null
-                )
-            }
+            IconButton(
+                onClick = viewModel::invertBoardDisplayDirection,
+                isEnabled = { true },
+                iconId = R.drawable.ic_baseline_invertupdown_24,
+                contentDescription = stringResource(R.string.LocalGameScreen_InvertButtonContentDescription)
+            )
             Button(
                 modifier = Modifier
                     .height(50.dp)
@@ -86,33 +84,21 @@ fun LocalGameScreen(
                 enabled = viewModel.canResetGame()
             ) {
                 Text(
-                    text = "Reset"
+                    text = stringResource(R.string.LocalGameScreen_ResetButtonText)
                 )
             }
-            Button(
-                modifier = Modifier
-                    .height(50.dp)
-                    .padding(5.dp),
-                onClick = { viewModel.undoLastMove() },
-                enabled = viewModel.gameUiState.canUndoMove
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_undo_24),
-                    contentDescription = null
-                )
-            }
-            Button(
-                modifier = Modifier
-                    .height(50.dp)
-                    .padding(5.dp),
-                onClick = { viewModel.redoNextMove() },
-                enabled = viewModel.gameUiState.canRedoMove
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_redo_24),
-                    contentDescription = null
-                )
-            }
+            IconButton(
+                onClick = viewModel::undoLastMove,
+                isEnabled = viewModel.gameUiState::canUndoMove,
+                iconId = R.drawable.ic_baseline_undo_24,
+                contentDescription = stringResource(R.string.LocalGameScreen_UndoButtonContentDescription)
+            )
+            IconButton(
+                onClick = viewModel::redoNextMove,
+                isEnabled = viewModel.gameUiState::canRedoMove,
+                iconId = R.drawable.ic_baseline_redo_24,
+                contentDescription = stringResource(R.string.LocalGameScreen_RedoButtonContentDescription)
+            )
         }
     }
 }
@@ -227,6 +213,28 @@ fun ChessCell(
                 color = MaterialTheme.colors.selectedCellColor
             )
         }
+    }
+}
+
+@Composable
+fun IconButton(
+    onClick: () -> Unit,
+    isEnabled: () -> Boolean,
+    @DrawableRes iconId: Int,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null
+) {
+    Button(
+        modifier = Modifier
+            .height(50.dp)
+            .padding(5.dp),
+        onClick = { onClick() },
+        enabled = isEnabled()
+    ) {
+        Icon(
+            painter = painterResource(id = iconId),
+            contentDescription = contentDescription
+        )
     }
 }
 
