@@ -10,8 +10,8 @@ import dgs.software.classicchess.model.moves.RevertableMove
 private const val TAG = "Game"
 
 data class Game(
-    private val board: Board = Board(),
-    private val moveStack: MoveStack = MoveStack(),
+    val board: Board = Board(),
+    val moveStack: MoveStack = MoveStack(),
 ) {
     var currentPlayer by mutableStateOf(Player.WHITE)
         private set
@@ -25,10 +25,6 @@ data class Game(
 
     val canRedoMove: Boolean
         get() = moveStack.undoneActionsOnStack()
-
-    fun getBoard(): Board {
-        return board
-    }
 
     fun get(coordinate: Coordinate): Cell {
         return board.get(coordinate)
@@ -56,6 +52,10 @@ data class Game(
             Log.e(TAG, "Tried to get empty coordinate $coordinate as Piece")
         }
         return board.get(coordinate) as Cell.Piece
+    }
+
+    fun isPlayer(coordinate: Coordinate, player: Player): Boolean {
+        return get(coordinate) !is Cell.Empty && getAsPiece(coordinate).player == player
     }
 
     fun executeMove(move: RevertableMove, simulateExecution: Boolean = false) {

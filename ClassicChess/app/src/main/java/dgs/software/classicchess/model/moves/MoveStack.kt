@@ -1,6 +1,7 @@
 package dgs.software.classicchess.model.moves
 
 import android.util.Log
+import dgs.software.classicchess.model.Coordinate
 
 private val TAG = "MoveStack"
 
@@ -70,12 +71,20 @@ data class MoveStack(
         return iteratorIndex < moves.size - 1
     }
 
+    fun lastMoveWas(fromPos: Coordinate, toPos: Coordinate): Boolean {
+        if (iteratorIndex == -1) {
+            return false
+        }
+        val lastMove = moves[iteratorIndex]
+        return lastMove.fromPos == fromPos && lastMove.toPos == toPos
+    }
+
     private fun deleteElementsAfterIndex(index: Int) {
         if (index < -1 || index >= moves.size) {
             // TODO: Log
             return;
         }
-        while (moves.size-1 > index) {
+        while (moves.size - 1 > index) {
             moves.removeLast()
         }
     }

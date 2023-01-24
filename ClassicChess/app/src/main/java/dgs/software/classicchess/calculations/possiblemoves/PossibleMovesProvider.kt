@@ -2,6 +2,7 @@ package dgs.software.classicchess.calculations.possiblemoves
 
 import android.util.Log
 import dgs.software.classicchess.model.*
+import dgs.software.classicchess.model.moves.CaptureEnPassantMove
 import dgs.software.classicchess.model.moves.CastlingMove
 import dgs.software.classicchess.model.moves.RevertableMove
 
@@ -35,8 +36,10 @@ class DefaultPossibleMovesProvider(
     }
 
     private fun Cell.Piece.getMovesForPawn(position: Coordinate): List<RevertableMove> {
-        // TODO: Add complex moves
-        return basicPossibleMovesProvider.getBasicMoves(position)
+        var possibleMoves = basicPossibleMovesProvider.getBasicMoves(position).toMutableList()
+        possibleMoves.addEnPassantMoves(position)
+        // TODO: Add pawn promotion
+        return possibleMoves
     }
 
     private fun Cell.Piece.getMovesForRook(position: Coordinate): List<RevertableMove> {
@@ -61,6 +64,46 @@ class DefaultPossibleMovesProvider(
         return possibleMoves
     }
 
+    private fun MutableList<RevertableMove>.addEnPassantMoves(position: Coordinate) {
+        val pawn = game.getAsPiece(position)
+        when (pawn.player) {
+            Player.WHITE -> {
+                if (position.row == 3) {
+                    val enPassantPositions = listOf(position.left(), position.right())
+                    enPassantPositions.forEach { curPos ->
+                        if (game.isPlayer(curPos, pawn.player.opponent())
+                            && game.moveStack.lastMoveWas(curPos.up().up(), curPos)
+                        ) {
+                            add(
+                                CaptureEnPassantMove(
+                                    fromPos = position,
+                                    toPos = curPos.up(),
+                                    capturePiecePos = curPos
+                                ) { game })
+                        }
+                    }
+                }
+            }
+            Player.BLACK -> {
+                if (position.row == 4) {
+                    val enPassantPositions = listOf(position.left(), position.right())
+                    enPassantPositions.forEach { curPos ->
+                        if (game.isPlayer(curPos, pawn.player.opponent())
+                            && game.moveStack.lastMoveWas(curPos.down().down(), curPos)
+                        ) {
+                            add(
+                                CaptureEnPassantMove(
+                                    fromPos = position,
+                                    toPos = curPos.down(),
+                                    capturePiecePos = curPos
+                                ) { game })
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun MutableList<RevertableMove>.addCastlingMoves(position: Coordinate) {
         if (game.get(position) is Cell.Empty || game.getAsPiece(position).type != Type.KING) {
             return
@@ -76,8 +119,8 @@ class DefaultPossibleMovesProvider(
                             kingFromPos = Coordinate(7, 4),
                             kingToPos = Coordinate(7, 6),
                             rookFromPos = Coordinate(7, 7),
-                            rookToPos = Coordinate(7, 5),
-                            { game })
+                            rookToPos = Coordinate(7, 5)
+                        ) { game }
                     )
                 }
                 if (checkCastingConditionFulfilled(Coordinate(7, 4), Coordinate(7, 0))) {
@@ -86,8 +129,8 @@ class DefaultPossibleMovesProvider(
                             kingFromPos = Coordinate(7, 4),
                             kingToPos = Coordinate(7, 2),
                             rookFromPos = Coordinate(7, 0),
-                            rookToPos = Coordinate(7, 3),
-                            { game })
+                            rookToPos = Coordinate(7, 3)
+                        ) { game }
                     )
                 }
             }
@@ -98,8 +141,8 @@ class DefaultPossibleMovesProvider(
                             kingFromPos = Coordinate(0, 4),
                             kingToPos = Coordinate(0, 6),
                             rookFromPos = Coordinate(0, 7),
-                            rookToPos = Coordinate(0, 5),
-                            { game })
+                            rookToPos = Coordinate(0, 5)
+                        ) { game }
                     )
                 }
                 if (checkCastingConditionFulfilled(Coordinate(0, 4), Coordinate(0, 0))) {
@@ -108,8 +151,8 @@ class DefaultPossibleMovesProvider(
                             kingFromPos = Coordinate(0, 4),
                             kingToPos = Coordinate(0, 2),
                             rookFromPos = Coordinate(0, 0),
-                            rookToPos = Coordinate(0, 3),
-                            { game })
+                            rookToPos = Coordinate(0, 3)
+                        ) { game }
                     )
                 }
             }

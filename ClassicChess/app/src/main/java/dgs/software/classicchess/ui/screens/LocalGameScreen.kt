@@ -158,7 +158,7 @@ fun ChessCell(
     val curCoordinate = Coordinate(rowIndex, colIndex)
     val context = LocalContext.current
 
-    val cell = viewModel.gameUiState.getBoard().get(rowIndex, colIndex)
+    val cell = viewModel.gameUiState.board.get(rowIndex, colIndex)
     val isPiece = !(cell is Cell.Empty)
 
     val interactionSource = MutableInteractionSource()
