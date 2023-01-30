@@ -24,6 +24,8 @@ class DefaultGameStatusProvider(
     }
 
     override fun isCheckmate(player: Player) : Boolean {
+        val kingIsInCheck = kingIsInCheck(player)
+        val p = playerCanPerformMove(player)
         return kingIsInCheck(player) && !playerCanPerformMove(player)
     }
 

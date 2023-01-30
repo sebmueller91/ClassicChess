@@ -4,22 +4,22 @@ import android.util.Log
 import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
-import dgs.software.classicchess.model.actions.RemovePieceAction
-import dgs.software.classicchess.model.actions.MovePieceAction
-import dgs.software.classicchess.model.actions.SetIsMovedAction
-import dgs.software.classicchess.model.actions.UpdateCurrentPlayerAction
+import dgs.software.classicchess.model.Type
+import dgs.software.classicchess.model.actions.*
 
-private val TAG = "MoveAndCapturePiece"
+private val TAG = "PromotePawnMove"
 
-data class MoveAndCapturePiece(
+data class PromotePawnMove(
     override val fromPos: Coordinate,
     override val toPos: Coordinate,
+    val type: Type,
     override val getGame: () -> Game
 ) : RevertableMove(fromPos, toPos, getGame) {
     init {
-        actions.add(SetIsMovedAction(fromPos, getGame))
+        // TODO: Log any other than allowed types
         actions.add(RemovePieceAction(toPos, getGame))
         actions.add(MovePieceAction(fromPos, toPos, getGame))
+        actions.add(ReplacePieceAction(toPos, type, getGame))
         actions.add(UpdateCurrentPlayerAction(getGame))
     }
 
@@ -29,16 +29,11 @@ data class MoveAndCapturePiece(
 
     override fun execute(simulate: Boolean) {
         if (getGame().get(fromPos) is Cell.Empty) {
-            Log.e(TAG, "Attempting to execute move from empty position from ${fromPos} to ${toPos}")
+            Log.e(TAG,"Attempting to execute move from empty position from ${fromPos} to ${toPos}")
             return
         }
-        if (getGame().get(toPos) !is Cell.Piece
-            || getGame().getAsPiece(fromPos).player == getGame().getAsPiece(toPos).player
-        ) {
-            Log.e(
-                TAG,
-                "Attempting to execute move to cell which is not the opposing player - from ${fromPos} to ${toPos}"
-            )
+        if (getGame().get(toPos) !is Cell.Empty) {
+            Log.e(TAG,"Attempting to execute move to non-empty cell from ${fromPos} to ${toPos}")
             return
         }
 

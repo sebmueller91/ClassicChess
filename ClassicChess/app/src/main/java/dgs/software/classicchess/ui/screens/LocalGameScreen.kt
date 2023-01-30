@@ -30,6 +30,12 @@ fun LocalGameScreen(
     viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
+    if (viewModel.playerWon != null) {
+        GameWonDialog(player = Player.BLACK) {
+            viewModel.playerWon = null
+        }
+    }
+
     Column(
         Modifier,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -43,8 +49,8 @@ fun LocalGameScreen(
             Text(
                 "${stringResource(R.string.LocalGameScreen_CurrentPlayerText)} ${
                     if (viewModel.gameUiState.currentPlayer == Player.WHITE) stringResource(
-                        R.string.LocalGameScreen_WhiteText
-                    ) else stringResource(R.string.LocalGameScreen_BlackText)
+                        R.string.WhitePlayer
+                    ) else stringResource(R.string.BlackPlayer)
                 }"
             )
 

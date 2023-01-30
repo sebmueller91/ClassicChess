@@ -10,7 +10,6 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import dgs.software.classicchess.ClassicChessApplication
 import dgs.software.classicchess.calculations.possiblemoves.DefaultGameStatusProvider
 import dgs.software.classicchess.calculations.possiblemoves.DefaultPossibleMovesProvider
-import dgs.software.classicchess.calculations.possiblemoves.GameStatusProvider
 import dgs.software.classicchess.model.*
 import dgs.software.classicchess.model.moves.RevertableMove
 
@@ -29,6 +28,8 @@ class LocalGameViewModel : ViewModel() {
         private set
 
     var kingInCheck: Coordinate? by mutableStateOf(null)
+
+    var playerWon: Player? by mutableStateOf(null)
 
     var boardDisplayedInverted by mutableStateOf(false)
         private set
@@ -59,6 +60,7 @@ class LocalGameViewModel : ViewModel() {
         }
 
         updateKingInCheck()
+        updatePlayerWon()
     }
 
     fun invertBoardDisplayDirection() {
@@ -100,6 +102,14 @@ class LocalGameViewModel : ViewModel() {
             if (cellsInCheck[positionOfKing.row][positionOfKing.column]) {
                 kingInCheck = positionOfKing
             }
+        }
+    }
+
+    private fun updatePlayerWon() {
+        if (gameStatusProvider.isCheckmate(Player.WHITE)) {
+            playerWon = Player.BLACK
+        } else if (gameStatusProvider.isCheckmate(Player.BLACK)) {
+            playerWon = Player.WHITE
         }
     }
 

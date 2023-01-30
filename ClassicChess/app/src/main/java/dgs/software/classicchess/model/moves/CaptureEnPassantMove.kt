@@ -4,7 +4,7 @@ import android.util.Log
 import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
-import dgs.software.classicchess.model.actions.CapturePieceAction
+import dgs.software.classicchess.model.actions.RemovePieceAction
 import dgs.software.classicchess.model.actions.MovePieceAction
 import dgs.software.classicchess.model.actions.SetIsMovedAction
 import dgs.software.classicchess.model.actions.UpdateCurrentPlayerAction
@@ -19,7 +19,7 @@ data class CaptureEnPassantMove(
 ) : RevertableMove(fromPos, toPos, getGame) {
     init {
         actions.add(SetIsMovedAction(fromPos, getGame))
-        actions.add(CapturePieceAction(capturePiecePos, getGame))
+        actions.add(RemovePieceAction(capturePiecePos, getGame))
         actions.add(MovePieceAction(fromPos, toPos, getGame))
         actions.add(UpdateCurrentPlayerAction(getGame))
     }
