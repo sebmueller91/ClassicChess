@@ -15,6 +15,6 @@
     <string name="WhitePlayer">White</string>
     <string name="BlackPlayer">Black</string>
     <string name="GameWonDialog_GameOverText">Game over</string>
-    <string name="GameWonDialog_PlayerWonText">\" has won the game.\"</string>
+    <string name="GameWonDialog_PlayerWonText"> has won the game.</string>
     <string name="GameWonDialog_OkText">OK</string>
 </resources>

@@ -15,7 +15,7 @@ interface PossibleMovesProvider {
 class DefaultPossibleMovesProvider(
     private val game: Game,
     private val basicPossibleMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider(game),
-    private val gameStatusProvider: GameStatusProvider = DefaultGameStatusProvider(game)
+    private val boardStatusProvider: BoardStatusProvider = DefaultBoardStatusProvider(game)
 ) : PossibleMovesProvider {
     override fun getPossibleMoves(position: Coordinate): List<RevertableMove> {
         if (game.get(position) is Cell.Empty) {
@@ -177,7 +177,7 @@ class DefaultPossibleMovesProvider(
         }
 
         // Check that cells between rook and king are empty
-        val fieldsInCheck = gameStatusProvider.getCellsInCheck(king.player)
+        val fieldsInCheck = boardStatusProvider.getCellsInCheck(king.player)
         val row = kingPos.row
         val fromCol =
             if (kingPos.column > rookPos.column) rookPos.column + 1 else kingPos.column + 1
@@ -199,7 +199,7 @@ class DefaultPossibleMovesProvider(
         val filteredMoves = mutableListOf<RevertableMove>()
         moves.forEach { move ->
             game.executeMove(move, true)
-            if (!gameStatusProvider.kingIsInCheck(player)) {
+            if (!boardStatusProvider.kingIsInCheck(player)) {
                 filteredMoves.add(move)
             }
             game.rollbackSimulatedMoves()

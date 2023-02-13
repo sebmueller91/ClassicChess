@@ -1,69 +1,29 @@
 package dgs.software.classicchess.calculations.possiblemoves
 
-import android.util.Log
-import dgs.software.classicchess.model.*
+import dgs.software.classicchess.model.Coordinate
+import dgs.software.classicchess.model.Game
+import dgs.software.classicchess.model.Player
 
 private val TAG = "GameStatusProvider"
 
 interface GameStatusProvider {
     fun isStalemate(player: Player) : Boolean
     fun isCheckmate(player: Player) : Boolean
-    fun kingIsInCheck(player: Player) : Boolean
-    fun getCellsInCheck(player: Player): Array<Array<Boolean>>
-    fun getPositionOfKing(player: Player) : Coordinate
 }
 
 class DefaultGameStatusProvider(
     private val game: Game,
-    private val basicMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider(game)
+    private val possibleMovesProvider: PossibleMovesProvider = DefaultPossibleMovesProvider(game),
+    private val boardStatusProvider: BoardStatusProvider = DefaultBoardStatusProvider(game)
 ) : GameStatusProvider {
-
-
     override fun isStalemate(player: Player) : Boolean {
-        return !kingIsInCheck(player) && !playerCanPerformMove(player)
+        return !boardStatusProvider.kingIsInCheck(player) && !playerCanPerformMove(player)
     }
 
     override fun isCheckmate(player: Player) : Boolean {
-        val kingIsInCheck = kingIsInCheck(player)
-        val p = playerCanPerformMove(player)
-        return kingIsInCheck(player) && !playerCanPerformMove(player)
-    }
-
-    override fun kingIsInCheck(player: Player) : Boolean {
-        val positionOfKing = getPositionOfKing(player)
-        val cellsInCheck = getCellsInCheck(player)
-        return cellsInCheck[positionOfKing.row][positionOfKing.column]
-    }
-
-    override fun getCellsInCheck(player: Player): Array<Array<Boolean>> {
-        val fieldsInCheck = Array(8) { Array(8) { false } }
-
-        for (i in 0 until 8) {
-            for (j in 0 until 8) {
-                val pos = Coordinate(i,j)
-                if (game.get(pos).isPlayer(player.opponent())) {
-                    val possibleMoves = basicMovesProvider.getBasicMoves(pos)
-                    possibleMoves.forEach{
-                        fieldsInCheck[it.toPos.row][it.toPos.column] = true
-                    }
-                }
-            }
-        }
-
-        return fieldsInCheck
-    }
-
-    override fun getPositionOfKing(player: Player) : Coordinate {
-        for (i in 0 until 8) {
-            for (j in 0 until 8) {
-                val piece = game.get(Coordinate(i,j))
-                if (piece.isPlayer(player) && (piece as Cell.Piece).type == Type.KING) {
-                    return Coordinate(i,j)
-                }
-            }
-        }
-        Log.e(TAG, "No king found for player $player")
-        throw java.lang.IllegalStateException("No king found for player $player")
+        val kingIsInCheck = boardStatusProvider.kingIsInCheck(player)
+        val playerCanPerformMove = playerCanPerformMove(player)
+        return kingIsInCheck && !playerCanPerformMove
     }
 
     private fun playerCanPerformMove(player: Player) : Boolean {
@@ -71,7 +31,7 @@ class DefaultGameStatusProvider(
             for (j in 0 until 8) {
                 val pos = Coordinate(i,j)
                 if (game.get(pos).isPlayer(player)) {
-                    val possibleMoves = basicMovesProvider.getBasicMoves(pos)
+                    val possibleMoves = possibleMovesProvider.getPossibleMoves(pos)
                     if (possibleMoves.any()) {
                         return true
                     }

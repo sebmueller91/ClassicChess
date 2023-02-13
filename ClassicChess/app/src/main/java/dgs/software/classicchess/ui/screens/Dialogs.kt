@@ -13,6 +13,11 @@ fun GameWonDialog(
     player: Player,
     onDismiss: () -> Unit
 ) {
+    val playerString = when (player) {
+        Player.WHITE -> stringResource(R.string.WhitePlayer)
+        Player.BLACK -> stringResource(R.string.BlackPlayer)
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -20,6 +25,27 @@ fun GameWonDialog(
             { Text(text = stringResource(R.string.GameWonDialog_OkText)) }
         },
         title = { Text(text = stringResource(R.string.GameWonDialog_GameOverText)) },
-        text = { Text(text = " ${stringResource(R.string.GameWonDialog_PlayerWonText)}") }
+        text = { Text(text = "$playerString ${stringResource(R.string.GameWonDialog_PlayerWonText)}") }
+    )
+}
+
+@Composable
+fun StalemateDialog(
+    player: Player,
+    onDismiss: () -> Unit
+) {
+    val playerString = when (player) {
+        Player.WHITE -> stringResource(R.string.WhitePlayer)
+        Player.BLACK -> stringResource(R.string.BlackPlayer)
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss)
+            { Text(text = stringResource(R.string.GameWonDialog_OkText)) } // TODO
+        },
+        title = { Text(text = stringResource(R.string.GameWonDialog_GameOverText)) },
+        text = { Text(text = "$playerString ${stringResource(R.string.GameWonDialog_PlayerWonText)}") }
     )
 }

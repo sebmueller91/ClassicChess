@@ -30,8 +30,9 @@ fun LocalGameScreen(
     viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    if (viewModel.playerWon != null) {
-        GameWonDialog(player = Player.BLACK) {
+    val winningPlayer = viewModel.playerWon
+    if (winningPlayer != null) {
+        GameWonDialog(player = winningPlayer) {
             viewModel.playerWon = null
         }
     }
@@ -48,7 +49,7 @@ fun LocalGameScreen(
         ) {
             Text(
                 "${stringResource(R.string.LocalGameScreen_CurrentPlayerText)} ${
-                    if (viewModel.gameUiState.currentPlayer == Player.WHITE) stringResource(
+                    if (viewModel.game.currentPlayer == Player.WHITE) stringResource(
                         R.string.WhitePlayer
                     ) else stringResource(R.string.BlackPlayer)
                 }"
@@ -95,13 +96,13 @@ fun LocalGameScreen(
             }
             IconButton(
                 onClick = viewModel::undoLastMove,
-                isEnabled = viewModel.gameUiState::canUndoMove,
+                isEnabled = viewModel.game::canUndoMove,
                 iconId = R.drawable.ic_baseline_undo_24,
                 contentDescription = stringResource(R.string.LocalGameScreen_UndoButtonContentDescription)
             )
             IconButton(
                 onClick = viewModel::redoNextMove,
-                isEnabled = viewModel.gameUiState::canRedoMove,
+                isEnabled = viewModel.game::canRedoMove,
                 iconId = R.drawable.ic_baseline_redo_24,
                 contentDescription = stringResource(R.string.LocalGameScreen_RedoButtonContentDescription)
             )
@@ -164,7 +165,7 @@ fun ChessCell(
     val curCoordinate = Coordinate(rowIndex, colIndex)
     val context = LocalContext.current
 
-    val cell = viewModel.gameUiState.board.get(rowIndex, colIndex)
+    val cell = viewModel.game.board.get(rowIndex, colIndex)
     val isPiece = !(cell is Cell.Empty)
 
     val interactionSource = MutableInteractionSource()
