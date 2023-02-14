@@ -49,3 +49,24 @@ fun StalemateDialog(
         text = { Text(text = "$playerString ${stringResource(R.string.GameWonDialog_PlayerWonText)}") }
     )
 }
+
+@Composable
+fun ResetGameDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onConfirm)
+            { Text(text = "Yes") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss)
+            { Text(text = "No") }
+        },
+        title = { Text(text = stringResource(R.string.GameWonDialog_GameOverText)) },
+        text = { Text(text = "Do you really want to reset the current game?") },
+    )
+}
