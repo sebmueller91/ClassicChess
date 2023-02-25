@@ -16,5 +16,11 @@
     <string name="BlackPlayer">Black</string>
     <string name="GameWonDialog_GameOverText">Game over</string>
     <string name="GameWonDialog_PlayerWonText"> has won the game.</string>
-    <string name="GameWonDialog_OkText">OK</string>
+    <string name="GameOverDialog_StalemateText">Stalemate</string>
+    <string name="GameOverDialog_StalemateDescriptionText"> can not perform any moves.</string>
+    <string name="ResetGameDialog_Text">Do you really want to reset the game?</string>
+    <string name="ResetGameDialog_Header">Reset Game</string>
+    <string name="Dialog_OkText">OK</string>
+    <string name="Yes_Answer">Yes</string>
+    <string name="No_Answer">No</string>
 </resources>

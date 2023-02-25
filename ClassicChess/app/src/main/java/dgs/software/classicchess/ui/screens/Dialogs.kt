@@ -22,7 +22,7 @@ fun GameWonDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = onDismiss)
-            { Text(text = stringResource(R.string.GameWonDialog_OkText)) }
+            { Text(text = stringResource(R.string.Dialog_OkText)) }
         },
         title = { Text(text = stringResource(R.string.GameWonDialog_GameOverText)) },
         text = { Text(text = "$playerString ${stringResource(R.string.GameWonDialog_PlayerWonText)}") }
@@ -43,30 +43,30 @@ fun StalemateDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = onDismiss)
-            { Text(text = stringResource(R.string.GameWonDialog_OkText)) } // TODO
+            { Text(text = stringResource(R.string.Dialog_OkText)) }
         },
-        title = { Text(text = stringResource(R.string.GameWonDialog_GameOverText)) },
-        text = { Text(text = "$playerString ${stringResource(R.string.GameWonDialog_PlayerWonText)}") }
+        title = { Text(text = stringResource(R.string.GameOverDialog_StalemateText)) },
+        text = { Text(text = "$playerString ${stringResource(R.string.GameOverDialog_StalemateDescriptionText)}") }
     )
 }
 
 @Composable
 fun ResetGameDialog(
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onYesButtonClicked: () -> Unit,
+    onNoButtonClicked: () -> Unit
 ) {
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = onNoButtonClicked,
         confirmButton = {
-            TextButton(onClick = onConfirm)
-            { Text(text = "Yes") }
+            TextButton(onClick = onYesButtonClicked)
+            { Text(text = stringResource(R.string.Yes_Answer)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss)
-            { Text(text = "No") }
+            TextButton(onClick = onNoButtonClicked)
+            { Text(text = stringResource(R.string.No_Answer)) }
         },
-        title = { Text(text = stringResource(R.string.GameWonDialog_GameOverText)) },
-        text = { Text(text = "Do you really want to reset the current game?") },
+        title = { Text(text = stringResource(R.string.ResetGameDialog_Header)) },
+        text = { Text(text = stringResource(R.string.ResetGameDialog_Text)) }
     )
 }

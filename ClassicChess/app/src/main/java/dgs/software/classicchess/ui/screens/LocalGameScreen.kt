@@ -6,7 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +35,16 @@ fun LocalGameScreen(
         GameWonDialog(player = winningPlayer) {
             viewModel.playerWon = null
         }
+    }
+
+    var resetButtonClicked by remember { mutableStateOf(false) }
+    if (resetButtonClicked) {
+        ResetGameDialog(
+            onYesButtonClicked = {
+                viewModel.resetGame()
+                resetButtonClicked = false
+            },
+            onNoButtonClicked = { resetButtonClicked = false })
     }
 
     Column(
@@ -87,7 +97,7 @@ fun LocalGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = { viewModel.resetGame() },
+                onClick = { resetButtonClicked = true },
                 enabled = viewModel.canResetGame()
             ) {
                 Text(
