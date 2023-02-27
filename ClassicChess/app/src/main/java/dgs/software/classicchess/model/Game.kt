@@ -31,7 +31,7 @@ data class Game(
     }
 
     fun anyMoveExecuted(): Boolean {
-        return moveStack.moves.any()
+        return moveStack.anyMoveExecuted()
     }
 
     fun set(coordinate: Coordinate, cell: Cell) {

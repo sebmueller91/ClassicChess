@@ -6,7 +6,8 @@ import dgs.software.classicchess.model.Coordinate
 private val TAG = "MoveStack"
 
 data class MoveStack(
-    val moves: MutableList<RevertableMove> = mutableListOf<RevertableMove>()
+    private val moves: MutableList<RevertableMove> = mutableListOf<RevertableMove>(),
+    private val simulatedMoves: MutableList<RevertableMove> = mutableListOf<RevertableMove>()
 ) {
     var iteratorIndex = -1
 
@@ -68,6 +69,7 @@ data class MoveStack(
     }
 
     fun undoneActionsOnStack(): Boolean {
+        val tmp = iteratorIndex < moves.size - 1
         return iteratorIndex < moves.size - 1
     }
 
@@ -77,6 +79,10 @@ data class MoveStack(
         }
         val lastMove = moves[iteratorIndex]
         return lastMove.fromPos == fromPos && lastMove.toPos == toPos
+    }
+
+    fun anyMoveExecuted() : Boolean {
+        return moves.any()
     }
 
     private fun deleteElementsAfterIndex(index: Int) {

@@ -47,6 +47,14 @@ fun LocalGameScreen(
             onNoButtonClicked = { resetButtonClicked = false })
     }
 
+    var showPromotePawnDialog by remember { mutableStateOf(true) }
+    if (showPromotePawnDialog) {
+        PromotePawnDialog(
+            onDismiss = { showPromotePawnDialog = false },
+            onPlayerChoice = {}
+        )
+    }
+
     Column(
         Modifier,
         horizontalAlignment = Alignment.CenterHorizontally
