@@ -159,19 +159,12 @@ fun PromotePawnDialog(
                     }
                 }
                 Row(Modifier.padding(12.dp)) {
-//                    Button(
-//                        onClick = onDismiss,
-//                        Modifier.padding(12.dp)
-//
-//                    ) {
-//                        Text("Cancel")
-//                    }
                     Button(
                         onClick = { onPlayerChoice(choiceAsType(selected)) },
                         Modifier.padding(12.dp)
 
                     ) {
-                        Text("Promote Pawn")
+                        Text("Promote Pawn") // TODO: Extract string ressource
                     }
                 }
             }

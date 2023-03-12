@@ -47,16 +47,16 @@ fun LocalGameScreen(
             onNoButtonClicked = { resetButtonClicked = false })
     }
 
-    var showPromotePawnDialog by remember { mutableStateOf(true) }
-    if (showPromotePawnDialog) {
+
+    if (viewModel.requestPawnPromotionInput) {
         PromotePawnDialog(
-            onDismiss = { showPromotePawnDialog = false },
-            onPlayerChoice = {}
+            onDismiss = viewModel::dismissPromotePawn,
+            onPlayerChoice = viewModel::promotePawn
         )
     }
 
     Column(
-        Modifier,
+        modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
