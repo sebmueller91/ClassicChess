@@ -131,11 +131,15 @@ class LocalGameViewModel : ViewModel() {
 
     fun undoLastMove() {
         game.undoLastMove()
+        possibleMovesForSelectedPiece?.clear()
+        selectedCell = null
         updateBoard()
     }
 
     fun redoNextMove() {
         game.redoNextMove()
+        possibleMovesForSelectedPiece?.clear()
+        selectedCell = null
         updateBoard()
     }
 
