@@ -13,31 +13,32 @@ data class PromotePawnMove(
     override val fromPos: Coordinate,
     override val toPos: Coordinate,
     val type: Type,
-    override val getGame: () -> Game
+    override val getGame: () -> Game,
+    val captureAndMove: Boolean = false
 ) : RevertableMove(fromPos, toPos, getGame) {
     init {
         // TODO: Log any other than allowed types
-        actions.add(RemovePieceAction(toPos, getGame))
+        if (captureAndMove) {
+            actions.add(RemovePieceAction(toPos, getGame))
+        }
         actions.add(MovePieceAction(fromPos, toPos, getGame))
         actions.add(ReplacePieceAction(toPos, type, getGame))
         actions.add(UpdateCurrentPlayerAction(getGame))
     }
 
-    fun execute() {
-        execute(false)
-    }
-
-    override fun execute(simulate: Boolean) {
+    override fun execute() {
         if (getGame().get(fromPos) is Cell.Empty) {
-            Log.e(TAG,"Attempting to execute move from empty position from ${fromPos} to ${toPos}")
+            Log.e(TAG, "Attempting to execute move from empty position from ${fromPos} to ${toPos}")
+        if (!captureAndMove && getGame().get(toPos) !is Cell.Empty) {
+            Log.e(TAG, "Attempting to execute move to non-empty cell from ${fromPos} to ${toPos} without captureAndMove")
             return
         }
-        if (getGame().get(toPos) !is Cell.Empty) {
-            Log.e(TAG,"Attempting to execute move to non-empty cell from ${fromPos} to ${toPos}")
+        if (captureAndMove && getGame().get(toPos) is Cell.Empty) {
+            Log.e(TAG, "Attempting to execute move to empty cell from ${fromPos} to ${toPos} with captureAndMove")
             return
         }
 
-        super.execute(simulate)
+        super.execute()
     }
 
     override fun rollback() {

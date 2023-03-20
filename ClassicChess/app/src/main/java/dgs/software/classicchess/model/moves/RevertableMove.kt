@@ -16,15 +16,12 @@ abstract class RevertableMove(
     val actions = mutableListOf<RevertableAction>()
     var isExecuted = false
         private set
-    var isSimulated = false
-        private set
 
-    open fun execute(simulate: Boolean = false) {
+    open fun execute() {
         if (isExecuted) {
             Log.e(TAG, "Move execute() called despite already executed")
         }
         isExecuted = true
-        isSimulated = simulate
 
         for (i in 0 until actions.size) {
             actions[i].execute()

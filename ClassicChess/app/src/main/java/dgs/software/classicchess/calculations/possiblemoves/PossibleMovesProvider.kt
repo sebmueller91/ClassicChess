@@ -77,14 +77,28 @@ class DefaultPossibleMovesProvider(
         }
 
         if (position.row == requiredRow) {
+            replaceMoveWithPromotePawnMoves(
+                position,
+                position.copy(row = toRow).left(),
+                captureAndPromote = true
+            )
             replaceMoveWithPromotePawnMoves(position, position.copy(row = toRow))
+            replaceMoveWithPromotePawnMoves(
+                position,
+                position.copy(row = toRow).right(),
+                captureAndPromote = true
+            )
         }
     }
 
     private fun MutableList<RevertableMove>.replaceMoveWithPromotePawnMoves(
         position: Coordinate,
-        toPosition: Coordinate
+        toPosition: Coordinate,
+        captureAndPromote: Boolean = false
     ) {
+        if (!toPosition.isValid()) {
+            return
+        }
         val matchingMoves = filter { it.fromPos == position && it.toPos == toPosition }
         if (!matchingMoves.any()) {
             return
@@ -97,10 +111,10 @@ class DefaultPossibleMovesProvider(
         }
         remove(matchingMoves.first())
 
-        add(PromotePawnMove(position, toPosition, Type.QUEEN, { game }))
-        add(PromotePawnMove(position, toPosition, Type.ROOK, { game }))
-        add(PromotePawnMove(position, toPosition, Type.BISHOP, { game }))
-        add(PromotePawnMove(position, toPosition, Type.KNIGHT, { game }))
+        add(PromotePawnMove(position, toPosition, Type.QUEEN, { game }, captureAndPromote))
+        add(PromotePawnMove(position, toPosition, Type.ROOK, { game }, captureAndPromote))
+        add(PromotePawnMove(position, toPosition, Type.BISHOP, { game }, captureAndPromote))
+        add(PromotePawnMove(position, toPosition, Type.KNIGHT, { game }, captureAndPromote))
     }
 
     private fun MutableList<RevertableMove>.addEnPassantMoves(position: Coordinate) {
@@ -112,7 +126,7 @@ class DefaultPossibleMovesProvider(
                     enPassantPositions.forEach { curPos ->
                         if (curPos.isValid()
                             && game.isPlayer(curPos, pawn.player.opponent())
-                            && game.moveStack.lastMoveWas(curPos.up().up(), curPos)
+                            && game.simulatableMoveStack.lastMoveWas(curPos.up().up(), curPos)
                         ) {
                             add(
                                 CaptureEnPassantMove(
@@ -130,7 +144,7 @@ class DefaultPossibleMovesProvider(
                     enPassantPositions.forEach { curPos ->
                         if (curPos.isValid()
                             && game.isPlayer(curPos, pawn.player.opponent())
-                            && game.moveStack.lastMoveWas(curPos.down().down(), curPos)
+                            && game.simulatableMoveStack.lastMoveWas(curPos.down().down(), curPos)
                         ) {
                             add(
                                 CaptureEnPassantMove(

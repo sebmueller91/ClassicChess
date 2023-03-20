@@ -25,11 +25,7 @@ data class CastlingMove(
         actions.add(UpdateCurrentPlayerAction(getGame))
     }
 
-    fun execute() {
-        execute(false)
-    }
-
-    override fun execute(simulate: Boolean) {
+    override fun execute() {
         if (getGame().get(kingFromPos) is Cell.Empty || getGame().get(rookFromPos) is Cell.Empty) {
             Log.e(TAG,"Attempting to execute castling from empty position ${kingFromPos}, ${rookFromPos}")
             return
@@ -39,7 +35,7 @@ data class CastlingMove(
             return
         }
 
-        super.execute(simulate)
+        super.execute()
     }
 
     override fun rollback() {

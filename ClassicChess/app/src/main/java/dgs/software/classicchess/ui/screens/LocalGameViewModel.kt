@@ -64,15 +64,17 @@ class LocalGameViewModel : ViewModel() {
                 selectedCell = null
                 possibleMovesForSelectedPiece.clear()
             }
-        } else if (selectedCell is Cell.Empty) {
-            // Do nothing
+        } else if (selectedCell is Cell.Empty ) {
+            possibleMovesForSelectedPiece.clear()
         } else if ((selectedCell as Cell.Piece).player == game.currentPlayer) {
             possibleMovesForSelectedPiece?.clear()
-                possibleMovesForSelectedPiece.addAll(
+            possibleMovesForSelectedPiece.addAll(
                 possibleMovesProvider.getPossibleMoves(
                     (selectedCell as Cell.Piece).coordinate
                 )
             )
+        } else {
+            possibleMovesForSelectedPiece?.clear()
         }
 
         updateBoard()
@@ -106,6 +108,8 @@ class LocalGameViewModel : ViewModel() {
     fun dismissPromotePawn() {
         selectedPawnPromotionPosition = null
         requestPawnPromotionInput = false
+        possibleMovesForSelectedPiece.clear()
+
     }
 
     fun invertBoardDisplayDirection() {
