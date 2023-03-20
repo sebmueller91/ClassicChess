@@ -29,6 +29,8 @@ data class PromotePawnMove(
     override fun execute() {
         if (getGame().get(fromPos) is Cell.Empty) {
             Log.e(TAG, "Attempting to execute move from empty position from ${fromPos} to ${toPos}")
+            return
+        }
         if (!captureAndMove && getGame().get(toPos) !is Cell.Empty) {
             Log.e(TAG, "Attempting to execute move to non-empty cell from ${fromPos} to ${toPos} without captureAndMove")
             return
