@@ -1,16 +1,17 @@
 package dgs.software.classicchess.ui.screens
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -20,34 +21,42 @@ import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
-import dgs.software.classicchess.ui.theme.selectedCellColor
 import dgs.software.classicchess.ui.theme.boardBorderColor
 import dgs.software.classicchess.ui.theme.boardCellBlack
 import dgs.software.classicchess.ui.theme.boardCellWhite
+import dgs.software.classicchess.ui.theme.selectedCellColor
 
 @Composable
 fun LocalGameScreen(
     viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
+    var resetGameDialogVisible by remember { mutableStateOf(false) }
+    if (resetGameDialogVisible) {
+        ConfirmResetGameDialog(
+            title = "Reset Game",
+            message = "Do you really want to start a new game?",
+            onConfirm = {
+                viewModel.resetGame()
+                resetGameDialogVisible = false
+            },
+            onDismiss = { resetGameDialogVisible = false }
+        )
+    }
+
     Column(
-        Modifier,
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Column(
+        Row(
             modifier = Modifier
                 .weight(1f)
-                .padding(20.dp)
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                "${stringResource(R.string.LocalGameScreen_CurrentPlayerText)} ${
-                    if (viewModel.gameUiState.currentPlayer == Player.WHITE) stringResource(
-                        R.string.LocalGameScreen_WhiteText
-                    ) else stringResource(R.string.LocalGameScreen_BlackText)
-                }"
-            )
-
+            Text(text = "${stringResource(R.string.LocalGameScreen_CurrentPlayerText)}" + "   ")
+            PlayerIndicator(isWhiteTurn = viewModel.gameUiState.currentPlayer == Player.WHITE)
         }
         if (viewModel.forceBoardRecomposition || !viewModel.forceBoardRecomposition) {
             Box(
@@ -80,7 +89,7 @@ fun LocalGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = { viewModel.resetGame() },
+                onClick = { resetGameDialogVisible = true },
                 enabled = viewModel.canResetGame()
             ) {
                 Text(
@@ -156,7 +165,6 @@ fun ChessCell(
     modifier: Modifier = Modifier
 ) {
     val curCoordinate = Coordinate(rowIndex, colIndex)
-    val context = LocalContext.current
 
     val cell = viewModel.gameUiState.board.get(rowIndex, colIndex)
     val isPiece = !(cell is Cell.Empty)
@@ -218,7 +226,7 @@ fun ChessCell(
 }
 
 @Composable
-fun IconButton(
+private fun IconButton(
     onClick: () -> Unit,
     isEnabled: () -> Boolean,
     @DrawableRes iconId: Int,
@@ -237,6 +245,51 @@ fun IconButton(
             contentDescription = contentDescription
         )
     }
+}
+
+@Composable
+private fun PlayerIndicator(
+    isWhiteTurn: Boolean,
+    modifier: Modifier = Modifier
+) {
+
+    Canvas(modifier = Modifier.size(30.dp)) {
+        drawCircle(
+            color = if (isWhiteTurn) Color.White else Color.Black,
+            radius = size.minDimension / 2
+        )
+        if (isWhiteTurn) {
+            drawCircle(
+                color = Color.Black,
+                radius = size.minDimension / 2,
+                style = Stroke(width = 2f)
+            )
+        }
+    }
+}
+
+@Composable
+fun ConfirmResetGameDialog(
+    title: String,
+    message: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = title) },
+        text = { Text(text = message) },
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text(text = stringResource(R.string.DialogOption_Yes))
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text(text = stringResource(R.string.DialogOption_No))
+            }
+        }
+    )
 }
 
 private fun getIconId(piece: Cell.Piece): Int {

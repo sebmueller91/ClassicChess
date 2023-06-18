@@ -14,4 +14,6 @@
     <string name="LocalGameScreen_CurrentPlayerText">Current Player: </string>
     <string name="LocalGameScreen_WhiteText">White</string>
     <string name="LocalGameScreen_BlackText">Black</string>
+    <string name="DialogOption_Yes">Yes</string>
+    <string name="DialogOption_No">No</string>
 </resources>

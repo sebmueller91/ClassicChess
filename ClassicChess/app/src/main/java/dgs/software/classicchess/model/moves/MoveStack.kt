@@ -81,7 +81,7 @@ data class MoveStack(
 
     private fun deleteElementsAfterIndex(index: Int) {
         if (index < -1 || index >= moves.size) {
-            // TODO: Log
+            Log.d(TAG,"Attempted to delete element at index $index which is not possible.")
             return;
         }
         while (moves.size - 1 > index) {
