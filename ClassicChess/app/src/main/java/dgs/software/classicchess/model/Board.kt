@@ -1,7 +1,7 @@
 package dgs.software.classicchess.model
 
 data class Board(
-    private val grid: MutableList<MutableList<Cell>> = MutableList(8) { MutableList(8) { Cell.Empty(Coordinate(-1, -1)) } }
+    private val grid: MutableList<MutableList<Cell>> = MutableList(8) { MutableList(8) { Cell.Empty } }
 ) {
     init {
         initializeWithDefaultSetup()
@@ -17,12 +17,10 @@ data class Board(
 
     fun set(coordinate: Coordinate, cell: Cell) {
         grid.get(coordinate.row).set(coordinate.column, cell)
-        cell.coordinate = coordinate
     }
 
     fun set(row: Int, col: Int, cell: Cell) {
-        grid.get(row).set(col,cell)
-        cell.coordinate = Coordinate(row,col)
+        grid.get(row).set(col, cell)
     }
 
     fun reset() {
@@ -30,13 +28,13 @@ data class Board(
     }
 
     private fun createPiece(row: Int, col: Int, type: Type, player: Player) {
-        grid[row][col] = Cell.Piece(type, player, Coordinate(row, col))
+        grid[row][col] = Cell.Piece(type, player)
     }
 
     private fun initializeWithDefaultSetup() {
         for (i in 0 until 8) {
             for (j in 0 until 8) {
-                set(i, j, Cell.Empty(Coordinate(i, j)))
+                set(i, j, Cell.Empty)
             }
         }
 

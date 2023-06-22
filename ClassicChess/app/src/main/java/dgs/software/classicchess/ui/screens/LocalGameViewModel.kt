@@ -24,8 +24,11 @@ class LocalGameViewModel : ViewModel() {
     var game: Game by mutableStateOf(Game())
         private set
 
-    var selectedCell: Cell? by mutableStateOf(null)
+    var selectedCoordinate: Coordinate? by mutableStateOf(null)
         private set
+
+    val selectedCell: Cell?
+        get() = selectedCoordinate?.let { game.get(it) }
 
     var selectedPawnPromotionPosition: Coordinate? = null
         private set
@@ -51,7 +54,7 @@ class LocalGameViewModel : ViewModel() {
 
     fun cellSelected(coordinate: Coordinate) {
         // TODO: Add Log statements
-        selectedCell = game.get(coordinate)
+        selectedCoordinate = coordinate
         val clickedMove = possibleMovesForSelectedPiece.filter { it.toPos == coordinate }
 
 
@@ -61,17 +64,15 @@ class LocalGameViewModel : ViewModel() {
                 requestPawnPromotionInput = true
             } else {
                 game.executeMove(clickedMove.first())
-                selectedCell = null
+                selectedCoordinate = null
                 possibleMovesForSelectedPiece.clear()
             }
-        } else if (selectedCell is Cell.Empty ) {
+        } else if (selectedCell is Cell.Empty) {
             possibleMovesForSelectedPiece.clear()
         } else if ((selectedCell as Cell.Piece).player == game.currentPlayer) {
             possibleMovesForSelectedPiece?.clear()
             possibleMovesForSelectedPiece.addAll(
-                possibleMovesProvider.getPossibleMoves(
-                    (selectedCell as Cell.Piece).coordinate
-                )
+                possibleMovesProvider.getPossibleMoves(coordinate)
             )
         } else {
             possibleMovesForSelectedPiece?.clear()
@@ -97,7 +98,7 @@ class LocalGameViewModel : ViewModel() {
         }
 
         game.executeMove(clickedMove.first())
-        selectedCell = null
+        selectedCoordinate = null
         possibleMovesForSelectedPiece.clear()
         requestPawnPromotionInput = false
         selectedPawnPromotionPosition = null
@@ -121,7 +122,7 @@ class LocalGameViewModel : ViewModel() {
     }
 
     fun resetGame() {
-        selectedCell = null
+        selectedCoordinate = null
         kingInCheck = null
         possibleMovesForSelectedPiece.clear()
         game.reset()
@@ -132,14 +133,14 @@ class LocalGameViewModel : ViewModel() {
     fun undoLastMove() {
         game.undoLastMove()
         possibleMovesForSelectedPiece?.clear()
-        selectedCell = null
+        selectedCoordinate = null
         updateBoard()
     }
 
     fun redoNextMove() {
         game.redoNextMove()
         possibleMovesForSelectedPiece?.clear()
-        selectedCell = null
+        selectedCoordinate = null
         updateBoard()
     }
 

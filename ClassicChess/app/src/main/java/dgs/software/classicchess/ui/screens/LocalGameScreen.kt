@@ -38,14 +38,14 @@ fun LocalGameScreen(
         }
     }
 
-    var resetButtonClicked by remember { mutableStateOf(false) }
-    if (resetButtonClicked) {
+    var showResetConfirmationDialog by remember { mutableStateOf(false) }
+    if (showResetConfirmationDialog) {
         ResetGameDialog(
             onYesButtonClicked = {
                 viewModel.resetGame()
-                resetButtonClicked = false
+                showResetConfirmationDialog = false
             },
-            onNoButtonClicked = { resetButtonClicked = false })
+            onNoButtonClicked = { showResetConfirmationDialog = false })
     }
 
 
@@ -101,7 +101,7 @@ fun LocalGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = { resetButtonClicked = true },
+                onClick = { showResetConfirmationDialog = true },
                 enabled = viewModel.canResetGame()
             ) {
                 Text(
@@ -183,7 +183,7 @@ fun ChessCell(
 
     val interactionSource = MutableInteractionSource()
     val backgroundColor =
-        if (viewModel.selectedCell?.coordinate == curCoordinate) {
+        if (viewModel?.selectedCoordinate == curCoordinate) {
             MaterialTheme.colors.selectedCellColor
         } else if (viewModel.getCellBackgroundType(rowIndex, colIndex)) {
             MaterialTheme.colors.boardCellWhite

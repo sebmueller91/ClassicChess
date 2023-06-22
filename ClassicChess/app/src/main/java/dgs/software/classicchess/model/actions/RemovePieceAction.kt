@@ -13,7 +13,7 @@ data class RemovePieceAction(
     override fun execute() {
         super.execute()
         capturedPiece = getGame().get(coordinate)
-        getGame().set(coordinate, Cell.Empty())
+        getGame().set(coordinate, Cell.Empty)
     }
 
     override fun rollback() {

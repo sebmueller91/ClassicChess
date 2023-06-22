@@ -34,7 +34,7 @@ data class CaptureEnPassantMove(
             return
         }
         if (getGame().get(capturePiecePos) is Cell.Empty
-            || getGame().getAsPiece(capturePiecePos).player == getGame().getAsPiece(fromPos).player) {
+            || getGame().getPiece(capturePiecePos).player == getGame().getPiece(fromPos).player) {
             Log.e(TAG,"Attempting to execute en-passant and capture empty or non-player cell cell at ${capturePiecePos}")
             return
         }

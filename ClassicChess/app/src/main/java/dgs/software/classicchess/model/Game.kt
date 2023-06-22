@@ -47,7 +47,7 @@ data class Game(
         simulatableMoveStack.redoNextMove()
     }
 
-    fun getAsPiece(coordinate: Coordinate): Cell.Piece {
+    fun getPiece(coordinate: Coordinate): Cell.Piece {
         if (board.get(coordinate) is Cell.Empty) {
             Log.e(TAG, "Tried to get empty coordinate $coordinate as Piece")
         }
@@ -55,7 +55,8 @@ data class Game(
     }
 
     fun isPlayer(coordinate: Coordinate, player: Player): Boolean {
-        return get(coordinate) !is Cell.Empty && getAsPiece(coordinate).player == player
+        val piece = get(coordinate)
+        return piece is Cell.Piece && piece.player == player
     }
 
     fun executeMove(move: RevertableMove, simulateExecution: Boolean = false) {
