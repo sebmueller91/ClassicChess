@@ -31,10 +31,14 @@ fun LocalGameScreen(
     viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    val winningPlayer = viewModel.playerWon
-    if (winningPlayer != null) {
-        GameWonDialog(player = winningPlayer) {
+    viewModel.playerWon?.let {
+        GameWonDialog(player = it) {
             viewModel.playerWon = null
+        }
+    }
+    viewModel.playerStalemate?.let {
+        StalemateDialog(player = it) {
+            viewModel.playerStalemate = null
         }
     }
 
