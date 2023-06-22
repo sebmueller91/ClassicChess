@@ -154,7 +154,11 @@ fun PromotePawnDialog(
                                     selectedColor = MaterialTheme.colors.primary
                                 )
                             )
-                            Text(text = item, modifier = Modifier.padding(start = 8.dp))
+                            Text(
+                                text = item,
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .clickable { setSelected(item) })
                         }
                     }
                 }
