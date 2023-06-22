@@ -31,16 +31,28 @@ fun LocalGameScreen(
     viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    var resetGameDialogVisible by remember { mutableStateOf(false) }
-    if (resetGameDialogVisible) {
-        ConfirmResetGameDialog(
-            title = "Reset Game",
-            message = "Do you really want to start a new game?",
-            onConfirm = {
+    val winningPlayer = viewModel.playerWon
+    if (winningPlayer != null) {
+        GameWonDialog(player = winningPlayer) {
+            viewModel.playerWon = null
+        }
+    }
+
+    var resetButtonClicked by remember { mutableStateOf(false) }
+    if (resetButtonClicked) {
+        ResetGameDialog(
+            onYesButtonClicked = {
                 viewModel.resetGame()
-                resetGameDialogVisible = false
+                resetButtonClicked = false
             },
-            onDismiss = { resetGameDialogVisible = false }
+            onNoButtonClicked = { resetButtonClicked = false })
+    }
+
+
+    if (viewModel.requestPawnPromotionInput) {
+        PromotePawnDialog(
+            onDismiss = viewModel::dismissPromotePawn,
+            onPlayerChoice = viewModel::promotePawn
         )
     }
 
@@ -56,7 +68,7 @@ fun LocalGameScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(text = "${stringResource(R.string.LocalGameScreen_CurrentPlayerText)}" + "   ")
-            PlayerIndicator(isWhiteTurn = viewModel.gameUiState.currentPlayer == Player.WHITE)
+            PlayerIndicator(isWhiteTurn = viewModel.game.currentPlayer == Player.WHITE)
         }
         if (viewModel.forceBoardRecomposition || !viewModel.forceBoardRecomposition) {
             Box(
@@ -89,7 +101,7 @@ fun LocalGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = { resetGameDialogVisible = true },
+                onClick = { resetButtonClicked = true },
                 enabled = viewModel.canResetGame()
             ) {
                 Text(
@@ -98,13 +110,13 @@ fun LocalGameScreen(
             }
             IconButton(
                 onClick = viewModel::undoLastMove,
-                isEnabled = viewModel.gameUiState::canUndoMove,
+                isEnabled = viewModel.game::canUndoMove,
                 iconId = R.drawable.ic_baseline_undo_24,
                 contentDescription = stringResource(R.string.LocalGameScreen_UndoButtonContentDescription)
             )
             IconButton(
                 onClick = viewModel::redoNextMove,
-                isEnabled = viewModel.gameUiState::canRedoMove,
+                isEnabled = viewModel.game::canRedoMove,
                 iconId = R.drawable.ic_baseline_redo_24,
                 contentDescription = stringResource(R.string.LocalGameScreen_RedoButtonContentDescription)
             )
@@ -166,7 +178,7 @@ fun ChessCell(
 ) {
     val curCoordinate = Coordinate(rowIndex, colIndex)
 
-    val cell = viewModel.gameUiState.board.get(rowIndex, colIndex)
+    val cell = viewModel.game.board.get(rowIndex, colIndex)
     val isPiece = !(cell is Cell.Empty)
 
     val interactionSource = MutableInteractionSource()
@@ -266,30 +278,6 @@ private fun PlayerIndicator(
             )
         }
     }
-}
-
-@Composable
-fun ConfirmResetGameDialog(
-    title: String,
-    message: String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(text = title) },
-        text = { Text(text = message) },
-        confirmButton = {
-            Button(onClick = onConfirm) {
-                Text(text = stringResource(R.string.DialogOption_Yes))
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text(text = stringResource(R.string.DialogOption_No))
-            }
-        }
-    )
 }
 
 private fun getIconId(piece: Cell.Piece): Int {

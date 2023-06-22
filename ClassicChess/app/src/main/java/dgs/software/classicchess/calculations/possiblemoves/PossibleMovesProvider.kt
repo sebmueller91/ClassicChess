@@ -4,6 +4,7 @@ import android.util.Log
 import dgs.software.classicchess.model.*
 import dgs.software.classicchess.model.moves.CaptureEnPassantMove
 import dgs.software.classicchess.model.moves.CastlingMove
+import dgs.software.classicchess.model.moves.PromotePawnMove
 import dgs.software.classicchess.model.moves.RevertableMove
 
 private val TAG = "PossibleMovesProvider"
@@ -15,7 +16,7 @@ interface PossibleMovesProvider {
 class DefaultPossibleMovesProvider(
     private val game: Game,
     private val basicPossibleMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider(game),
-    private val gameStatusProvider: GameStatusProvider = DefaultGameStatusProvider(game)
+    private val boardStatusProvider: BoardStatusProvider = DefaultBoardStatusProvider(game)
 ) : PossibleMovesProvider {
     override fun getPossibleMoves(position: Coordinate): List<RevertableMove> {
         if (game.get(position) is Cell.Empty) {
@@ -24,44 +25,96 @@ class DefaultPossibleMovesProvider(
         }
         val piece = game.getAsPiece(position)
         val possibleMoves = when (piece.type) {
-            Type.PAWN -> piece.getMovesForPawn(position)
-            Type.ROOK -> piece.getMovesForRook(position)
-            Type.KNIGHT -> piece.getMovesForKnight(position)
-            Type.BISHOP -> piece.getMovesForBishop(position)
-            Type.QUEEN -> piece.getMovesForQueen(position)
-            Type.KING -> piece.getMovesForKing(position)
+            Type.PAWN -> getMovesForPawn(position)
+            Type.ROOK -> getMovesForRook(position)
+            Type.KNIGHT -> getMovesForKnight(position)
+            Type.BISHOP -> getMovesForBishop(position)
+            Type.QUEEN -> getMovesForQueen(position)
+            Type.KING -> getMovesForKing(position)
         }
 
         return filterMovesThatLeaveKingInCheck(possibleMoves, piece.player)
     }
 
-    private fun Cell.Piece.getMovesForPawn(position: Coordinate): List<RevertableMove> {
+    private fun getMovesForPawn(position: Coordinate): List<RevertableMove> {
         var possibleMoves = basicPossibleMovesProvider.getBasicMoves(position).toMutableList()
         possibleMoves.addEnPassantMoves(position)
-        // TODO: Add pawn promotion
+        possibleMoves.addPromotePawnMoves(position)
         return possibleMoves
     }
 
-    private fun Cell.Piece.getMovesForRook(position: Coordinate): List<RevertableMove> {
+    private fun getMovesForRook(position: Coordinate): List<RevertableMove> {
         return basicPossibleMovesProvider.getBasicMoves(position)
     }
 
-    private fun Cell.Piece.getMovesForKnight(position: Coordinate): List<RevertableMove> {
+    private fun getMovesForKnight(position: Coordinate): List<RevertableMove> {
         return basicPossibleMovesProvider.getBasicMoves(position)
     }
 
-    private fun Cell.Piece.getMovesForBishop(position: Coordinate): List<RevertableMove> {
+    private fun getMovesForBishop(position: Coordinate): List<RevertableMove> {
         return basicPossibleMovesProvider.getBasicMoves(position)
     }
 
-    private fun Cell.Piece.getMovesForQueen(position: Coordinate): List<RevertableMove> {
+    private fun getMovesForQueen(position: Coordinate): List<RevertableMove> {
         return basicPossibleMovesProvider.getBasicMoves(position)
     }
 
-    private fun Cell.Piece.getMovesForKing(position: Coordinate): List<RevertableMove> {
+    private fun getMovesForKing(position: Coordinate): List<RevertableMove> {
         var possibleMoves = basicPossibleMovesProvider.getBasicMoves(position).toMutableList()
         possibleMoves.addCastlingMoves(position)
         return possibleMoves
+    }
+
+    private fun MutableList<RevertableMove>.addPromotePawnMoves(position: Coordinate) {
+        val pawn = game.getAsPiece(position)
+        val toRow = when (pawn.player) {
+            Player.WHITE -> 0
+            Player.BLACK -> 7
+        }
+        val requiredRow = when (pawn.player) {
+            Player.WHITE -> 1
+            Player.BLACK -> 6
+        }
+
+        if (position.row == requiredRow) {
+            replaceMoveWithPromotePawnMoves(
+                position,
+                position.copy(row = toRow).left(),
+                captureAndPromote = true
+            )
+            replaceMoveWithPromotePawnMoves(position, position.copy(row = toRow))
+            replaceMoveWithPromotePawnMoves(
+                position,
+                position.copy(row = toRow).right(),
+                captureAndPromote = true
+            )
+        }
+    }
+
+    private fun MutableList<RevertableMove>.replaceMoveWithPromotePawnMoves(
+        position: Coordinate,
+        toPosition: Coordinate,
+        captureAndPromote: Boolean = false
+    ) {
+        if (!toPosition.isValid()) {
+            return
+        }
+        val matchingMoves = filter { it.fromPos == position && it.toPos == toPosition }
+        if (!matchingMoves.any()) {
+            return
+        }
+        if (matchingMoves.size != 1) {
+            Log.e(
+                TAG,
+                "replaceMoveWithPromotePawnMoves expectes exactly 1 matching move, but found ${matchingMoves.size}"
+            )
+        }
+        remove(matchingMoves.first())
+
+        add(PromotePawnMove(position, toPosition, Type.QUEEN, { game }, captureAndPromote))
+        add(PromotePawnMove(position, toPosition, Type.ROOK, { game }, captureAndPromote))
+        add(PromotePawnMove(position, toPosition, Type.BISHOP, { game }, captureAndPromote))
+        add(PromotePawnMove(position, toPosition, Type.KNIGHT, { game }, captureAndPromote))
     }
 
     private fun MutableList<RevertableMove>.addEnPassantMoves(position: Coordinate) {
@@ -71,8 +124,9 @@ class DefaultPossibleMovesProvider(
                 if (position.row == 3) {
                     val enPassantPositions = listOf(position.left(), position.right())
                     enPassantPositions.forEach { curPos ->
-                        if (game.isPlayer(curPos, pawn.player.opponent())
-                            && game.moveStack.lastMoveWas(curPos.up().up(), curPos)
+                        if (curPos.isValid()
+                            && game.isPlayer(curPos, pawn.player.opponent())
+                            && game.simulatableMoveStack.lastMoveWas(curPos.up().up(), curPos)
                         ) {
                             add(
                                 CaptureEnPassantMove(
@@ -88,8 +142,9 @@ class DefaultPossibleMovesProvider(
                 if (position.row == 4) {
                     val enPassantPositions = listOf(position.left(), position.right())
                     enPassantPositions.forEach { curPos ->
-                        if (game.isPlayer(curPos, pawn.player.opponent())
-                            && game.moveStack.lastMoveWas(curPos.down().down(), curPos)
+                        if (curPos.isValid()
+                            && game.isPlayer(curPos, pawn.player.opponent())
+                            && game.simulatableMoveStack.lastMoveWas(curPos.down().down(), curPos)
                         ) {
                             add(
                                 CaptureEnPassantMove(
@@ -177,7 +232,7 @@ class DefaultPossibleMovesProvider(
         }
 
         // Check that cells between rook and king are empty
-        val fieldsInCheck = gameStatusProvider.getCellsInCheck(king.player)
+        val fieldsInCheck = boardStatusProvider.getCellsInCheck(king.player)
         val row = kingPos.row
         val fromCol =
             if (kingPos.column > rookPos.column) rookPos.column + 1 else kingPos.column + 1
@@ -199,7 +254,7 @@ class DefaultPossibleMovesProvider(
         val filteredMoves = mutableListOf<RevertableMove>()
         moves.forEach { move ->
             game.executeMove(move, true)
-            if (!gameStatusProvider.kingIsInCheck(player)) {
+            if (!boardStatusProvider.kingIsInCheck(player)) {
                 filteredMoves.add(move)
             }
             game.rollbackSimulatedMoves()

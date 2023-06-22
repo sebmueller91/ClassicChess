@@ -1,11 +1,10 @@
 package dgs.software.classicchess.model.actions
 
-import dgs.software.classicchess.model.Board
 import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
 
-data class CapturePieceAction(
+data class RemovePieceAction(
     val coordinate: Coordinate,
     val getGame: () -> Game
 ) : RevertableAction() {
