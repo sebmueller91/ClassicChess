@@ -19,7 +19,7 @@ import dgs.software.classicchess.model.moves.RevertableMove
 private const val TAG = "LocalGameViewModel"
 
 class LocalGameViewModel : ViewModel() {
-    var forceBoardRecomposition by mutableStateOf(false)
+    var forceBoardRecomposition by mutableStateOf(false) // TODO: Try to get rid of
 
     var game: Game by mutableStateOf(Game())
         private set
