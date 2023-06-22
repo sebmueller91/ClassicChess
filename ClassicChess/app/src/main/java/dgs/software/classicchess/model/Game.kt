@@ -4,14 +4,14 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import dgs.software.classicchess.model.moves.MoveStack
+import dgs.software.classicchess.model.moves.MoveStackSimulatable
 import dgs.software.classicchess.model.moves.RevertableMove
 
 private const val TAG = "Game"
 
 data class Game(
     val board: Board = Board(),
-    val moveStack: MoveStack = MoveStack(),
+    val simulatableMoveStack: MoveStackSimulatable = MoveStackSimulatable(),
 ) {
     var currentPlayer by mutableStateOf(Player.WHITE)
         private set
@@ -21,17 +21,17 @@ data class Game(
     }
 
     val canUndoMove: Boolean
-        get() = moveStack.doneActionsOnStack()
+        get() = simulatableMoveStack.doneActionsOnStack()
 
     val canRedoMove: Boolean
-        get() = moveStack.undoneActionsOnStack()
+        get() = simulatableMoveStack.undoneActionsOnStack()
 
     fun get(coordinate: Coordinate): Cell {
         return board.get(coordinate)
     }
 
     fun anyMoveExecuted(): Boolean {
-        return moveStack.moves.any()
+        return simulatableMoveStack.anyMoveExecuted()
     }
 
     fun set(coordinate: Coordinate, cell: Cell) {
@@ -39,12 +39,12 @@ data class Game(
     }
 
     fun undoLastMove() {
-        moveStack.rollbackLastMove()
+        simulatableMoveStack.rollbackLastMove()
     }
 
     fun redoNextMove() {
 
-        moveStack.redoNextMove()
+        simulatableMoveStack.redoNextMove()
     }
 
     fun getAsPiece(coordinate: Coordinate): Cell.Piece {
@@ -59,16 +59,16 @@ data class Game(
     }
 
     fun executeMove(move: RevertableMove, simulateExecution: Boolean = false) {
-        moveStack.executeMove(move, simulateExecution)
+        simulatableMoveStack.executeMove(move, simulateExecution)
     }
 
     fun rollbackSimulatedMoves() {
-        moveStack.rollbackSimulatedMoves()
+        simulatableMoveStack.rollbackSimulatedMoves()
     }
 
     fun reset() {
         board.reset()
-        moveStack.resetMoveStack()
+        simulatableMoveStack.resetMoveStack()
         currentPlayer = Player.WHITE
     }
 }

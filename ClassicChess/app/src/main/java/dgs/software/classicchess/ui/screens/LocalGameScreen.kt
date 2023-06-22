@@ -6,7 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,8 +30,33 @@ fun LocalGameScreen(
     viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
+    val winningPlayer = viewModel.playerWon
+    if (winningPlayer != null) {
+        GameWonDialog(player = winningPlayer) {
+            viewModel.playerWon = null
+        }
+    }
+
+    var resetButtonClicked by remember { mutableStateOf(false) }
+    if (resetButtonClicked) {
+        ResetGameDialog(
+            onYesButtonClicked = {
+                viewModel.resetGame()
+                resetButtonClicked = false
+            },
+            onNoButtonClicked = { resetButtonClicked = false })
+    }
+
+
+    if (viewModel.requestPawnPromotionInput) {
+        PromotePawnDialog(
+            onDismiss = viewModel::dismissPromotePawn,
+            onPlayerChoice = viewModel::promotePawn
+        )
+    }
+
     Column(
-        Modifier,
+        modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -42,9 +67,9 @@ fun LocalGameScreen(
         ) {
             Text(
                 "${stringResource(R.string.LocalGameScreen_CurrentPlayerText)} ${
-                    if (viewModel.gameUiState.currentPlayer == Player.WHITE) stringResource(
-                        R.string.LocalGameScreen_WhiteText
-                    ) else stringResource(R.string.LocalGameScreen_BlackText)
+                    if (viewModel.game.currentPlayer == Player.WHITE) stringResource(
+                        R.string.WhitePlayer
+                    ) else stringResource(R.string.BlackPlayer)
                 }"
             )
 
@@ -80,7 +105,7 @@ fun LocalGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = { viewModel.resetGame() },
+                onClick = { resetButtonClicked = true },
                 enabled = viewModel.canResetGame()
             ) {
                 Text(
@@ -89,13 +114,13 @@ fun LocalGameScreen(
             }
             IconButton(
                 onClick = viewModel::undoLastMove,
-                isEnabled = viewModel.gameUiState::canUndoMove,
+                isEnabled = viewModel.game::canUndoMove,
                 iconId = R.drawable.ic_baseline_undo_24,
                 contentDescription = stringResource(R.string.LocalGameScreen_UndoButtonContentDescription)
             )
             IconButton(
                 onClick = viewModel::redoNextMove,
-                isEnabled = viewModel.gameUiState::canRedoMove,
+                isEnabled = viewModel.game::canRedoMove,
                 iconId = R.drawable.ic_baseline_redo_24,
                 contentDescription = stringResource(R.string.LocalGameScreen_RedoButtonContentDescription)
             )
@@ -158,7 +183,7 @@ fun ChessCell(
     val curCoordinate = Coordinate(rowIndex, colIndex)
     val context = LocalContext.current
 
-    val cell = viewModel.gameUiState.board.get(rowIndex, colIndex)
+    val cell = viewModel.game.board.get(rowIndex, colIndex)
     val isPiece = !(cell is Cell.Empty)
 
     val interactionSource = MutableInteractionSource()

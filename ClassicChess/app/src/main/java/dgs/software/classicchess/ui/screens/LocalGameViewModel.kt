@@ -1,5 +1,6 @@
 package dgs.software.classicchess.ui.screens
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -8,10 +9,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dgs.software.classicchess.ClassicChessApplication
+import dgs.software.classicchess.calculations.possiblemoves.DefaultBoardStatusProvider
 import dgs.software.classicchess.calculations.possiblemoves.DefaultGameStatusProvider
 import dgs.software.classicchess.calculations.possiblemoves.DefaultPossibleMovesProvider
-import dgs.software.classicchess.calculations.possiblemoves.GameStatusProvider
 import dgs.software.classicchess.model.*
+import dgs.software.classicchess.model.moves.PromotePawnMove
 import dgs.software.classicchess.model.moves.RevertableMove
 
 private const val TAG = "LocalGameViewModel"
@@ -19,10 +21,13 @@ private const val TAG = "LocalGameViewModel"
 class LocalGameViewModel : ViewModel() {
     var forceBoardRecomposition by mutableStateOf(false)
 
-    var gameUiState: Game by mutableStateOf(Game())
+    var game: Game by mutableStateOf(Game())
         private set
 
     var selectedCell: Cell? by mutableStateOf(null)
+        private set
+
+    var selectedPawnPromotionPosition: Coordinate? = null
         private set
 
     var possibleMovesForSelectedPiece by mutableStateOf(mutableListOf<RevertableMove>())
@@ -30,35 +35,81 @@ class LocalGameViewModel : ViewModel() {
 
     var kingInCheck: Coordinate? by mutableStateOf(null)
 
+    var playerWon: Player? by mutableStateOf(null)
+
+    var playerStalemate: Player? by mutableStateOf(null)
+
     var boardDisplayedInverted by mutableStateOf(false)
         private set
 
-    private val possibleMovesProvider = DefaultPossibleMovesProvider(gameUiState)
-    private val gameStatusProvider = DefaultGameStatusProvider(gameUiState)
+    var requestPawnPromotionInput by mutableStateOf(false)
+        private set
+
+    private val possibleMovesProvider = DefaultPossibleMovesProvider(game)
+    private val boardStatusProvider = DefaultBoardStatusProvider(game)
+    private val gameStatusProvider = DefaultGameStatusProvider(game)
 
     fun cellSelected(coordinate: Coordinate) {
         // TODO: Add Log statements
-        selectedCell = gameUiState.get(coordinate)
+        selectedCell = game.get(coordinate)
         val clickedMove = possibleMovesForSelectedPiece.filter { it.toPos == coordinate }
-        possibleMovesForSelectedPiece.clear()
+
 
         if (clickedMove.any()) {
-            gameUiState.executeMove(clickedMove.first())
-            selectedCell = null
+            if (clickedMove.first() is PromotePawnMove) {
+                selectedPawnPromotionPosition = clickedMove.first().toPos
+                requestPawnPromotionInput = true
+            } else {
+                game.executeMove(clickedMove.first())
+                selectedCell = null
+                possibleMovesForSelectedPiece.clear()
+            }
+        } else if (selectedCell is Cell.Empty ) {
             possibleMovesForSelectedPiece.clear()
-        }
-        else if (selectedCell is Cell.Empty) {
-            // Do nothing
-        }
-        else if ((selectedCell as Cell.Piece).player == gameUiState.currentPlayer) {
+        } else if ((selectedCell as Cell.Piece).player == game.currentPlayer) {
+            possibleMovesForSelectedPiece?.clear()
             possibleMovesForSelectedPiece.addAll(
                 possibleMovesProvider.getPossibleMoves(
                     (selectedCell as Cell.Piece).coordinate
                 )
             )
+        } else {
+            possibleMovesForSelectedPiece?.clear()
         }
 
-        updateKingInCheck()
+        updateBoard()
+    }
+
+    fun promotePawn(type: Type) {
+        if (selectedPawnPromotionPosition == null) {
+            Log.e(TAG, "Tried to promote pawn while position is not set")
+            return
+        }
+        val clickedMove =
+            possibleMovesForSelectedPiece.filter {
+                it.toPos == selectedPawnPromotionPosition
+                        && (it as PromotePawnMove).type == type
+            }
+
+        if (!clickedMove.any()) {
+            Log.e(TAG, "promotePawn() expects at least 1 move")
+            return
+        }
+
+        game.executeMove(clickedMove.first())
+        selectedCell = null
+        possibleMovesForSelectedPiece.clear()
+        requestPawnPromotionInput = false
+        selectedPawnPromotionPosition = null
+
+        updateBoard()
+    }
+
+    fun dismissPromotePawn() {
+        selectedPawnPromotionPosition = null
+        requestPawnPromotionInput = false
+        possibleMovesForSelectedPiece.clear()
+
     }
 
     fun invertBoardDisplayDirection() {
@@ -66,25 +117,30 @@ class LocalGameViewModel : ViewModel() {
     }
 
     fun canResetGame(): Boolean {
-        return gameUiState.anyMoveExecuted()
+        return game.anyMoveExecuted()
     }
 
     fun resetGame() {
         selectedCell = null
         kingInCheck = null
         possibleMovesForSelectedPiece.clear()
-        gameUiState.reset()
+        game.reset()
         forceBoardRecomposition = !forceBoardRecomposition
+        updateBoard()
     }
 
     fun undoLastMove() {
-        gameUiState.undoLastMove()
-        updateKingInCheck()
+        game.undoLastMove()
+        possibleMovesForSelectedPiece?.clear()
+        selectedCell = null
+        updateBoard()
     }
 
     fun redoNextMove() {
-        gameUiState.redoNextMove()
-        updateKingInCheck()
+        game.redoNextMove()
+        possibleMovesForSelectedPiece?.clear()
+        selectedCell = null
+        updateBoard()
     }
 
     // returns true if it is a cell with light background, false otherwise
@@ -92,19 +148,40 @@ class LocalGameViewModel : ViewModel() {
         return (rowIndex % 2 == 0 && colIndex % 2 == 0) || (rowIndex % 2 != 0 && colIndex % 2 != 0)
     }
 
+    private fun updateBoard() {
+        updateKingInCheck()
+        updatePlayerWon()
+    }
+
     private fun updateKingInCheck() {
         kingInCheck = null
         Player.values().forEach { player ->
-            val positionOfKing = gameStatusProvider.getPositionOfKing(player)
-            val cellsInCheck = gameStatusProvider.getCellsInCheck(player)
+            val positionOfKing = boardStatusProvider.getPositionOfKing(player)
+            val cellsInCheck = boardStatusProvider.getCellsInCheck(player)
             if (cellsInCheck[positionOfKing.row][positionOfKing.column]) {
                 kingInCheck = positionOfKing
             }
         }
     }
 
+    private fun updatePlayerWon() {
+        if (gameStatusProvider.isCheckmate(Player.WHITE)) {
+            playerWon = Player.BLACK
+        } else if (gameStatusProvider.isCheckmate(Player.BLACK)) {
+            playerWon = Player.WHITE
+        }
+    }
+
+    private fun updateStalemate() {
+        if (gameStatusProvider.isStalemate(Player.WHITE)) {
+            playerStalemate = Player.BLACK
+        } else if (gameStatusProvider.isStalemate(Player.BLACK)) {
+            playerStalemate = Player.WHITE
+        }
+    }
+
     init {
-        gameUiState = Game()
+        game = Game()
     }
 
     companion object {

@@ -6,35 +6,25 @@ import dgs.software.classicchess.model.Coordinate
 private val TAG = "MoveStack"
 
 data class MoveStack(
-    val moves: MutableList<RevertableMove> = mutableListOf<RevertableMove>()
+    private val moves: MutableList<RevertableMove> = mutableListOf<RevertableMove>(),
+    private var iteratorIndex: Int = -1
 ) {
-    var iteratorIndex = -1
-
     fun resetMoveStack() {
+        while (iteratorIndex >= 0) {
+            moves[iteratorIndex].rollback()
+            iteratorIndex--
+        }
+
         moves.clear()
         iteratorIndex = -1
     }
 
-    fun executeMove(move: RevertableMove, simulateExecution: Boolean = false) {
-        Log.d(TAG, "Execute move $move.toString(), simulated: $simulateExecution")
+    fun executeMove(move: RevertableMove) {
+        Log.d(TAG, "Execute move $move.toString()")
         deleteElementsAfterIndex(iteratorIndex)
-        rollbackSimulatedMoves()
-        move.execute(simulateExecution)
+        move.execute()
         moves.add(move)
         iteratorIndex = moves.count() - 1
-    }
-
-    fun rollbackSimulatedMoves() {
-        var count = 0
-        while (iteratorIndex >= 0 && moves[iteratorIndex].isSimulated) {
-            moves[iteratorIndex].rollback()
-            iteratorIndex--
-            count--
-        }
-        if (count > 0) {
-            Log.d(TAG, "Rolled back ${count} simulated moves")
-        }
-        deleteElementsAfterIndex(iteratorIndex)
     }
 
     fun rollbackLastMove(): Boolean {
@@ -77,6 +67,10 @@ data class MoveStack(
         }
         val lastMove = moves[iteratorIndex]
         return lastMove.fromPos == fromPos && lastMove.toPos == toPos
+    }
+
+    fun anyMoveExecuted() : Boolean {
+        return moves.any()
     }
 
     private fun deleteElementsAfterIndex(index: Int) {
