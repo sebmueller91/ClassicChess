@@ -2,6 +2,7 @@
 <resources>
 
     <style name="Theme.ClassicChess" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/purple_700</item>
+<!--        <item name="android:statusBarColor">@color/darkBlueishGray</item>-->
+                <item name="android:statusBarColor">@color/black</item>
     </style>
 </resources>
