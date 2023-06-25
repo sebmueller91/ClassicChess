@@ -29,7 +29,7 @@ data class MoveAndCapturePiece(
             return
         }
         if (getGame().get(toPos) !is Cell.Piece
-            || getGame().getAsPiece(fromPos).player == getGame().getAsPiece(toPos).player
+            || getGame().getPiece(fromPos).player == getGame().getPiece(toPos).player
         ) {
             Log.e(
                 TAG,

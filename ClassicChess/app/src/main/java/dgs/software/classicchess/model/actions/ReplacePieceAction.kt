@@ -20,8 +20,8 @@ data class ReplacePieceAction(
         if (getGame().get(position) is Cell.Empty) {
             Log.e(TAG, "Attempting to prmote a empty cell (execute)")
         }
-        oldPiece = getGame().getAsPiece(position)
-        getGame().set(position, Cell.Piece(type, oldPiece.player, position, true))
+        oldPiece = getGame().getPiece(position)
+        getGame().set(position, Cell.Piece(type, oldPiece.player, true))
     }
 
     override fun rollback() {

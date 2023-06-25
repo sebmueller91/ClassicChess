@@ -6,6 +6,7 @@ import dgs.software.classicchess.model.Cell.Piece
 import dgs.software.classicchess.model.moves.MoveAndCapturePiece
 import dgs.software.classicchess.model.moves.MovePiece
 import dgs.software.classicchess.model.moves.RevertableMove
+import java.nio.file.InvalidPathException
 
 private val TAG = "BasicMovesProvider"
 
@@ -19,26 +20,22 @@ class DefaultBasicMovesProvider(
     override fun getBasicMoves(position: Coordinate): List<RevertableMove> {
         if (game.get(position) is Cell.Empty) {
             Log.e(TAG, "Tried to calculate basic moves for an empty cell at pos $position")
-            return listOf<RevertableMove>()
+            return listOf()
         }
-        val piece = game.getAsPiece(position)
+        val piece = game.getPiece(position)
         return when (piece.type) {
-            Type.PAWN -> piece.getBasicMovesForPawn(position)
-            Type.ROOK -> piece.getBasicMovesForRook(position)
-            Type.KNIGHT -> piece.getBasicMovesForKnight(position)
-            Type.BISHOP -> piece.getBasicMovesForBishop(position)
-            Type.QUEEN -> piece.getBasicMovesForQueen(position)
-            Type.KING -> piece.getBasicMovesForKing(position)
+            Type.PAWN -> getBasicMovesForPawn(position)
+            Type.ROOK -> getBasicMovesForRook(position)
+            Type.KNIGHT -> getBasicMovesForKnight(position)
+            Type.BISHOP -> getBasicMovesForBishop(position)
+            Type.QUEEN -> getBasicMovesForQueen(position)
+            Type.KING -> getBasicMovesForKing(position)
         }
     }
 
-    private fun Piece.getBasicMovesForPawn(position: Coordinate): List<RevertableMove> {
-        val player = game.getAsPiece(coordinate).player
+    private fun getBasicMovesForPawn(position: Coordinate): List<RevertableMove> {
+        val player = game.getPiece(position).player
         val moveDirection = if (player == Player.BLACK) 1 else -1
-        val isInStartingPos = when (player) {
-            Player.BLACK -> position.row == 1
-            Player.WHITE -> position.row == 6
-        }
         var possibleMoves = mutableListOf<RevertableMove>()
 
         // Move 1 forward
@@ -62,12 +59,12 @@ class DefaultBasicMovesProvider(
         destination = position.copy(position.row + moveDirection, position.column + 1)
         possibleMoves.addMoveIfValid(position, destination) { coord ->
             !(game.get(destination) is Cell.Empty)
-                    && player == game.getAsPiece(destination).player.opponent()
+                    && player == game.getPiece(destination).player.opponent()
         }
         destination = position.copy(position.row + moveDirection, position.column - 1)
         possibleMoves.addMoveIfValid(position, destination) { coord ->
             !(game.get(destination) is Cell.Empty)
-                    && player == game.getAsPiece(destination).player.opponent()
+                    && player == game.getPiece(destination).player.opponent()
         }
 
         // TOOD: Add en-passant
@@ -75,13 +72,13 @@ class DefaultBasicMovesProvider(
         return possibleMoves
     }
 
-    private fun Piece.getBasicMovesForRook(position: Coordinate): List<RevertableMove> {
+    private fun getBasicMovesForRook(position: Coordinate): List<RevertableMove> {
         var possibleMoves = mutableListOf<RevertableMove>()
         possibleMoves.addCellsOnStraightLines(position)
         return possibleMoves
     }
 
-    private fun Piece.getBasicMovesForKnight(position: Coordinate): List<RevertableMove> {
+    private fun getBasicMovesForKnight(position: Coordinate): List<RevertableMove> {
         var possibleMoves = mutableListOf<RevertableMove>()
 
         possibleMoves.addMoveIfValid(position, position.copy(position.row + 2, position.column + 1))
@@ -96,13 +93,13 @@ class DefaultBasicMovesProvider(
         return possibleMoves
     }
 
-    private fun Piece.getBasicMovesForBishop(position: Coordinate): List<RevertableMove> {
+    private fun getBasicMovesForBishop(position: Coordinate): List<RevertableMove> {
         var possibleMoves = mutableListOf<RevertableMove>()
         possibleMoves.addCellsOnDiagonalLines(position)
         return possibleMoves
     }
 
-    private fun Piece.getBasicMovesForQueen(position: Coordinate): List<RevertableMove> {
+    private fun getBasicMovesForQueen(position: Coordinate): List<RevertableMove> {
         var possibleMoves = mutableListOf<RevertableMove>()
         possibleMoves.addCellsOnStraightLines(position)
         possibleMoves.addCellsOnDiagonalLines(position)
@@ -110,7 +107,7 @@ class DefaultBasicMovesProvider(
         return possibleMoves
     }
 
-    private fun Piece.getBasicMovesForKing(position: Coordinate): List<RevertableMove> {
+    private fun getBasicMovesForKing(position: Coordinate): List<RevertableMove> {
         var possibleMoves = mutableListOf<RevertableMove>()
         possibleMoves.addNeighborCells(position)
         return possibleMoves
@@ -185,7 +182,7 @@ class DefaultBasicMovesProvider(
             return addMoveIfValid(fromPos, toPos)
         }
 
-        if (game.getAsPiece(fromPos).player != game.getAsPiece(toPos).player) {
+        if (game.getPiece(fromPos).player != game.getPiece(toPos).player) {
             addMoveIfValid(fromPos, toPos)
         }
 
@@ -214,7 +211,7 @@ class DefaultBasicMovesProvider(
         val move = if (game.get(toPos) is Cell.Empty) { // Non-capture move
             MovePiece(fromPos, toPos, { game })
         } else { // Capture move
-            if (game.getAsPiece(fromPos).player != game.getAsPiece(toPos).player) {
+            if (game.getPiece(fromPos).player != game.getPiece(toPos).player) {
                 MoveAndCapturePiece(fromPos, toPos, { game })
             } else {
                 return false // fromPos and toPos are both the same player

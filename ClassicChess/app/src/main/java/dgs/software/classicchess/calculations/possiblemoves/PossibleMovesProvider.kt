@@ -23,7 +23,7 @@ class DefaultPossibleMovesProvider(
             Log.e(TAG, "Tried to calculate moves for an empty cell at pos $position")
             return listOf<RevertableMove>()
         }
-        val piece = game.getAsPiece(position)
+        val piece = game.getPiece(position)
         val possibleMoves = when (piece.type) {
             Type.PAWN -> getMovesForPawn(position)
             Type.ROOK -> getMovesForRook(position)
@@ -66,7 +66,7 @@ class DefaultPossibleMovesProvider(
     }
 
     private fun MutableList<RevertableMove>.addPromotePawnMoves(position: Coordinate) {
-        val pawn = game.getAsPiece(position)
+        val pawn = game.getPiece(position)
         val toRow = when (pawn.player) {
             Player.WHITE -> 0
             Player.BLACK -> 7
@@ -118,7 +118,7 @@ class DefaultPossibleMovesProvider(
     }
 
     private fun MutableList<RevertableMove>.addEnPassantMoves(position: Coordinate) {
-        val pawn = game.getAsPiece(position)
+        val pawn = game.getPiece(position)
         when (pawn.player) {
             Player.WHITE -> {
                 if (position.row == 3) {
@@ -160,12 +160,12 @@ class DefaultPossibleMovesProvider(
     }
 
     private fun MutableList<RevertableMove>.addCastlingMoves(position: Coordinate) {
-        if (game.get(position) is Cell.Empty || game.getAsPiece(position).type != Type.KING) {
+        if (game.get(position) is Cell.Empty || game.getPiece(position).type != Type.KING) {
             return
         }
 
         val castlingPositions = mutableListOf<Pair<Coordinate, Coordinate>>()
-        val king = game.getAsPiece(position)
+        val king = game.getPiece(position)
         when (king.player) {
             Player.WHITE -> {
                 if (checkCastingConditionFulfilled(Coordinate(7, 4), Coordinate(7, 7))) {
@@ -221,8 +221,8 @@ class DefaultPossibleMovesProvider(
         if (game.get(kingPos) is Cell.Empty || game.get(rookPos) is Cell.Empty) {
             return false
         }
-        val king = game.getAsPiece(kingPos)
-        val rook = game.getAsPiece(rookPos)
+        val king = game.getPiece(kingPos)
+        val rook = game.getPiece(rookPos)
 
         if (king.type != Type.KING || king.isMoved) {
             return false

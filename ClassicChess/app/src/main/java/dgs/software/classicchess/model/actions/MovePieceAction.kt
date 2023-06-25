@@ -19,7 +19,7 @@ data class MovePieceAction(
             Log.e(TAG, "Attempting to move piece into non-empty cell (execute)")
         }
         getGame().set(toPos, getGame().get(fromPos) as Cell.Piece)
-        getGame().set(fromPos, Cell.Empty())
+        getGame().set(fromPos, Cell.Empty)
     }
 
     override fun rollback() {
@@ -28,6 +28,6 @@ data class MovePieceAction(
             Log.e(TAG, "Attempting to move piece into non-empty cell (rollback)")
         }
         getGame().set(fromPos, getGame().get(toPos))
-        getGame().set(toPos, Cell.Empty())
+        getGame().set(toPos, Cell.Empty)
     }
 }

@@ -1,6 +1,7 @@
 package dgs.software.classicchess.ui.screens
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -34,21 +35,25 @@ fun LocalGameScreen(
     viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    val winningPlayer = viewModel.playerWon
-    if (winningPlayer != null) {
-        GameWonDialog(player = winningPlayer) {
+    viewModel.playerWon?.let {
+        GameWonDialog(player = it) {
             viewModel.playerWon = null
         }
     }
+    viewModel.playerStalemate?.let {
+        StalemateDialog(player = it) {
+            viewModel.playerStalemate = null
+        }
+    }
 
-    var resetButtonClicked by remember { mutableStateOf(false) }
-    if (resetButtonClicked) {
+    var showResetConfirmationDialog by remember { mutableStateOf(false) }
+    if (showResetConfirmationDialog) {
         ResetGameDialog(
             onYesButtonClicked = {
                 viewModel.resetGame()
-                resetButtonClicked = false
+                showResetConfirmationDialog = false
             },
-            onNoButtonClicked = { resetButtonClicked = false })
+            onNoButtonClicked = { showResetConfirmationDialog = false })
     }
 
 
@@ -60,23 +65,18 @@ fun LocalGameScreen(
     }
 
     Column(
-        modifier,
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Column(
+        Row(
             modifier = Modifier
                 .weight(1f)
-                .padding(20.dp)
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                "${stringResource(R.string.LocalGameScreen_CurrentPlayerText)} ${
-                    if (viewModel.game.currentPlayer == Player.WHITE) stringResource(
-                        R.string.WhitePlayer
-                    ) else stringResource(R.string.BlackPlayer)
-                }"
-            )
-
+            Text(text = "${stringResource(R.string.LocalGameScreen_CurrentPlayerText)}" + "   ")
+            PlayerIndicator(isWhiteTurn = viewModel.game.currentPlayer == Player.WHITE)
         }
         if (viewModel.forceBoardRecomposition || !viewModel.forceBoardRecomposition) {
             Box(
@@ -113,7 +113,7 @@ fun LocalGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = { resetButtonClicked = true },
+                onClick = { showResetConfirmationDialog = true },
                 enabled = viewModel.canResetGame()
             ) {
                 Text(
@@ -189,14 +189,13 @@ fun ChessCell(
     modifier: Modifier = Modifier
 ) {
     val curCoordinate = Coordinate(rowIndex, colIndex)
-    val context = LocalContext.current
 
     val cell = viewModel.game.board.get(rowIndex, colIndex)
     val isPiece = !(cell is Cell.Empty)
 
     val interactionSource = MutableInteractionSource()
     val backgroundColor =
-        if (viewModel.selectedCell?.coordinate == curCoordinate) {
+        if (viewModel?.selectedCoordinate == curCoordinate) {
             MaterialTheme.colors.selectedCellColor
         } else if (viewModel.getCellBackgroundType(rowIndex, colIndex)) {
             MaterialTheme.colors.boardCellWhite
@@ -251,7 +250,7 @@ fun ChessCell(
 }
 
 @Composable
-fun IconButton(
+private fun IconButton(
     onClick: () -> Unit,
     isEnabled: () -> Boolean,
     @DrawableRes iconId: Int,
@@ -268,6 +267,25 @@ fun IconButton(
         Icon(
             painter = painterResource(id = iconId),
             contentDescription = contentDescription
+        )
+    }
+}
+
+@Composable
+private fun PlayerIndicator(
+    isWhiteTurn: Boolean,
+    modifier: Modifier = Modifier
+) {
+
+    Canvas(modifier = Modifier.size(30.dp)) {
+        drawCircle(
+            color = if (isWhiteTurn) Color.White else Color.Black,
+            radius = size.minDimension / 2
+        )
+        drawCircle(
+            color = if (isWhiteTurn) Color.Black else Color.White,
+            radius = size.minDimension / 2,
+            style = Stroke(width = 2f)
         )
     }
 }
