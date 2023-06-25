@@ -3,15 +3,21 @@ package dgs.software.classicchess.ui.screens
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -77,15 +83,19 @@ fun LocalGameScreen(
         if (viewModel.forceBoardRecomposition || !viewModel.forceBoardRecomposition) {
             Box(
                 modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .background(MaterialTheme.colors.boardBorderColor)
+                    .padding(10.dp)
+                    .aspectRatio(1f)
+                    .border(
+                        3.dp,
+                        color = MaterialTheme.colors.primary,
+                        shape = RectangleShape
+                    )
+                    .padding(2.dp)
+                    .fillMaxWidth()
             ) {
                 ChessBoard(
                     viewModel,
-                    modifier = Modifier
-                        .aspectRatio(1f)
-                        .padding(2.dp)
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
