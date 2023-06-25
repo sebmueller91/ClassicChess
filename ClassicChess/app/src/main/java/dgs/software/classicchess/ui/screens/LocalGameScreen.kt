@@ -282,13 +282,11 @@ private fun PlayerIndicator(
             color = if (isWhiteTurn) Color.White else Color.Black,
             radius = size.minDimension / 2
         )
-        if (isWhiteTurn) {
-            drawCircle(
-                color = Color.Black,
-                radius = size.minDimension / 2,
-                style = Stroke(width = 2f)
-            )
-        }
+        drawCircle(
+            color = if (isWhiteTurn) Color.Black else Color.White,
+            radius = size.minDimension / 2,
+            style = Stroke(width = 2f)
+        )
     }
 }
 
