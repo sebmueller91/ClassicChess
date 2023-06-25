@@ -21,7 +21,7 @@ import dgs.software.classicchess.ui.screens.LocalGameViewModel
 import dgs.software.classicchess.ui.screens.MainMenuScreen
 
 enum class ClassicChessScreen(@StringRes val title: Int) {
-    Menu(title = R.string.app_name),
+    Menu(title = R.string.Empty),
     LocalGame(title = R.string.local_game_screen)
 }
 

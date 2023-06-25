@@ -95,13 +95,13 @@ fun PromotePawnDialog(
             dismissOnBackPress = true, dismissOnClickOutside = true
         )
     ) {
-        val queen = "Queen"
-        val knight = "Knight"
-        val rook = "Rook"
-        val bishop = "Bishop"
+        val queen = stringResource(R.string.Queen)
+        val knight = stringResource(R.string.Knight)
+        val rook = stringResource(R.string.Rook)
+        val bishop = stringResource(R.string.Bishop)
 
         val options = listOf(queen, knight, rook, bishop)
-        var selected by remember { mutableStateOf("Queen") }
+        var selected by remember { mutableStateOf(queen) }
         val setSelected = { selection: String -> selected = selection }
         val choiceAsType: (String) -> Type =
             { name ->
@@ -130,7 +130,7 @@ fun PromotePawnDialog(
         ) {
             Column(horizontalAlignment = CenterHorizontally) {
                 Text(
-                    text = "Promote pawn to...",
+                    text = stringResource(R.string.PromotePawnDialog_Header),
                     fontWeight = Bold,
                     fontSize = 18.sp,
                     modifier = Modifier
@@ -168,7 +168,7 @@ fun PromotePawnDialog(
                         Modifier.padding(12.dp)
 
                     ) {
-                        Text("Promote Pawn") // TODO: Extract string ressource
+                        Text(stringResource(R.string.PromotePawnDialog_AcceptText))
                     }
                 }
             }

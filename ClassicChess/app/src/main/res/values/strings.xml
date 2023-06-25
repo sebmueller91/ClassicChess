@@ -23,4 +23,15 @@
     <string name="Dialog_OkText">OK</string>
     <string name="Yes_Answer">Yes</string>
     <string name="No_Answer">No</string>
+    <string name="Empty">Main Menu</string>
+    <string name="MainMenu_LocalGame">Local Game</string>
+    <string name="MainMenu_PlayFriendDescription">Play against a friend on this device.</string>
+    <string name="MainMenu_PlayComputer">Computer Game</string>
+    <string name="MainMenu_PlayComputerDescription">Play against an AI opponent in various difficulties.</string>
+    <string name="Queen">Queen</string>
+    <string name="Knight">Knight</string>
+    <string name="Rook">Rook</string>
+    <string name="Bishop">Bishop</string>
+    <string name="PromotePawnDialog_Header">Promote pawn to...</string>
+    <string name="PromotePawnDialog_AcceptText">Promote Pawn</string>
 </resources>
