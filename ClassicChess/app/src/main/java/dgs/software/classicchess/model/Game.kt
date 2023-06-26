@@ -26,16 +26,8 @@ data class Game(
     val canRedoMove: Boolean
         get() = simulatableMoveStack.undoneActionsOnStack()
 
-    fun get(coordinate: Coordinate): Cell {
-        return board.get(coordinate)
-    }
-
     fun anyMoveExecuted(): Boolean {
         return simulatableMoveStack.anyMoveExecuted()
-    }
-
-    fun set(coordinate: Coordinate, cell: Cell) {
-        board.set(coordinate, cell)
     }
 
     fun undoLastMove() {
@@ -45,18 +37,6 @@ data class Game(
     fun redoNextMove() {
 
         simulatableMoveStack.redoNextMove()
-    }
-
-    fun getPiece(coordinate: Coordinate): Cell.Piece {
-        if (board.get(coordinate) is Cell.Empty) {
-            Log.e(TAG, "Tried to get empty coordinate $coordinate as Piece")
-        }
-        return board.get(coordinate) as Cell.Piece
-    }
-
-    fun isPlayer(coordinate: Coordinate, player: Player): Boolean {
-        val piece = get(coordinate)
-        return piece is Cell.Piece && piece.player == player
     }
 
     fun executeMove(move: RevertableMove, simulateExecution: Boolean = false) {

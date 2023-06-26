@@ -1,12 +1,14 @@
 package dgs.software.classicchess.calculations.possiblemoves
 
 import android.util.Log
-import dgs.software.classicchess.model.*
-import dgs.software.classicchess.model.Cell.Piece
+import dgs.software.classicchess.model.Coordinate
+import dgs.software.classicchess.model.Game
+import dgs.software.classicchess.model.Player
+import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.model.moves.MoveAndCapturePiece
 import dgs.software.classicchess.model.moves.MovePiece
 import dgs.software.classicchess.model.moves.RevertableMove
-import java.nio.file.InvalidPathException
+import dgs.software.classicchess.utils.getPlayerOrNull
 
 private val TAG = "BasicMovesProvider"
 
@@ -18,11 +20,11 @@ class DefaultBasicMovesProvider(
     private val game: Game
 ) : BasicMovesProvider {
     override fun getBasicMoves(position: Coordinate): List<RevertableMove> {
-        if (game.get(position) is Cell.Empty) {
+        val piece = game.board.get(position)
+        if (piece == null) {
             Log.e(TAG, "Tried to calculate basic moves for an empty cell at pos $position")
             return listOf()
         }
-        val piece = game.getPiece(position)
         return when (piece.type) {
             Type.PAWN -> getBasicMovesForPawn(position)
             Type.ROOK -> getBasicMovesForRook(position)
@@ -34,40 +36,38 @@ class DefaultBasicMovesProvider(
     }
 
     private fun getBasicMovesForPawn(position: Coordinate): List<RevertableMove> {
-        val player = game.getPiece(position).player
+        val player = game.getPlayerOrNull(position, TAG) ?: return listOf()
         val moveDirection = if (player == Player.BLACK) 1 else -1
         var possibleMoves = mutableListOf<RevertableMove>()
 
         // Move 1 forward
         var destination = position.copy(position.row + moveDirection)
         possibleMoves.addMoveIfValid(position, destination) { coord ->
-            game.get(destination) is Cell.Empty
+            game.board.get(destination) == null
         }
 
         // Move 2 forward
-        if ((player == Player.WHITE && position.row == 6 && game.get(position.copy(row = 5)) is Cell.Empty)
-            || (player == Player.BLACK && position.row == 1 && game.get(position.copy(row = 2)) is Cell.Empty)
+        if ((player == Player.WHITE && position.row == 6 && game.board.get(position.copy(row = 5)) == null)
+            || (player == Player.BLACK && position.row == 1 && game.board.get(position.copy(row = 2)) == null)
         ) {
             destination = position.copy(position.row + (moveDirection * 2))
             possibleMoves.addMoveIfValid(position, destination) { coord ->
-                game.get(position.copy(position.row + moveDirection)) is Cell.Empty &&
-                        game.get(destination) is Cell.Empty
+                game.board.get(position.copy(position.row + moveDirection)) == null &&
+                        game.board.get(destination) == null
             }
         }
 
         // Hit diagonal left and right
         destination = position.copy(position.row + moveDirection, position.column + 1)
         possibleMoves.addMoveIfValid(position, destination) { coord ->
-            !(game.get(destination) is Cell.Empty)
-                    && player == game.getPiece(destination).player.opponent()
+            val piece = game.board.get(destination)
+            !(piece == null) && player == piece.player.opponent()
         }
         destination = position.copy(position.row + moveDirection, position.column - 1)
         possibleMoves.addMoveIfValid(position, destination) { coord ->
-            !(game.get(destination) is Cell.Empty)
-                    && player == game.getPiece(destination).player.opponent()
+            val piece = game.board.get(destination)
+            !(piece == null) && player == piece.player.opponent()
         }
-
-        // TOOD: Add en-passant
 
         return possibleMoves
     }
@@ -173,16 +173,15 @@ class DefaultBasicMovesProvider(
         if (!toPos.isValid()) {
             return false
         }
-        if (game.get(fromPos) is Cell.Empty) {
+        val fromPosPiece = game.board.get(fromPos)
+        if (fromPosPiece == null) {
             Log.e(TAG, "Tried to move an invalid cell $fromPos")
             return false
         }
 
-        if (game.get(toPos) is Cell.Empty) {
-            return addMoveIfValid(fromPos, toPos)
-        }
+        val toPosPiece = game.board.get(toPos) ?: return addMoveIfValid(fromPos, toPos)
 
-        if (game.getPiece(fromPos).player != game.getPiece(toPos).player) {
+        if (fromPosPiece.player != toPosPiece.player) {
             addMoveIfValid(fromPos, toPos)
         }
 
@@ -198,7 +197,8 @@ class DefaultBasicMovesProvider(
             Log.e(TAG, "Tried to move an invalid cell $fromPos")
             return false
         }
-        if (game.get(fromPos) is Cell.Empty) {
+        val fromPosPiece = game.board.get(fromPos)
+        if (fromPosPiece == null) {
             Log.e(TAG, "Tried to move empty cell $fromPos")
             return false
         }
@@ -208,10 +208,11 @@ class DefaultBasicMovesProvider(
             return false
         }
 
-        val move = if (game.get(toPos) is Cell.Empty) { // Non-capture move
+        val toPosPiece = game.board.get(toPos)
+        val move = if (toPosPiece == null) { // Non-capture move
             MovePiece(fromPos, toPos, { game })
         } else { // Capture move
-            if (game.getPiece(fromPos).player != game.getPiece(toPos).player) {
+            if (fromPosPiece.player != toPosPiece.player) {
                 MoveAndCapturePiece(fromPos, toPos, { game })
             } else {
                 return false // fromPos and toPos are both the same player

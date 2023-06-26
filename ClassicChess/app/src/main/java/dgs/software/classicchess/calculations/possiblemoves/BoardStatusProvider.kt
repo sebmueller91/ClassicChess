@@ -28,7 +28,7 @@ class DefaultBoardStatusProvider(
         for (i in 0 until 8) {
             for (j in 0 until 8) {
                 val pos = Coordinate(i,j)
-                if (game.get(pos).isPlayer(player.opponent())) {
+                if (game.board.isPlayer(pos, player.opponent())) {
                     val possibleMoves = basicMovesProvider.getBasicMoves(pos)
                     possibleMoves.forEach{
                         fieldsInCheck[it.toPos.row][it.toPos.column] = true
@@ -43,8 +43,8 @@ class DefaultBoardStatusProvider(
     override fun getPositionOfKing(player: Player) : Coordinate {
         for (i in 0 until 8) {
             for (j in 0 until 8) {
-                val piece = game.get(Coordinate(i,j))
-                if (piece.isPlayer(player) && (piece as Cell.Piece).type == Type.KING) {
+                val piece = game.board.get(Coordinate(i,j))
+                if (piece?.player == player && piece?.type == Type.KING) {
                     return Coordinate(i,j)
                 }
             }

@@ -30,7 +30,7 @@ class DefaultGameStatusProvider(
         for (i in 0 until 8) {
             for (j in 0 until 8) {
                 val pos = Coordinate(i,j)
-                if (game.get(pos).isPlayer(player)) {
+                if (game.board.isPlayer(pos, player)) {
                     val possibleMoves = possibleMovesProvider.getPossibleMoves(pos)
                     if (possibleMoves.any()) {
                         return true

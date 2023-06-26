@@ -1,26 +1,44 @@
 package dgs.software.classicchess.model
 
 data class Board(
-    private val grid: MutableList<MutableList<Cell>> = MutableList(8) { MutableList(8) { Cell.Empty } }
+    private val board: Array<Array<Piece?>> = Array(8) { Array<Piece?>(8) { null } }
 ) {
     init {
         initializeWithDefaultSetup()
     }
 
-    fun get(coordinate: Coordinate): Cell {
+    // TODO: Delete unused methods
+
+    fun get(coordinate: Coordinate): Piece? {
         return get(coordinate.row, coordinate.column)
     }
 
-    fun get(row: Int, col: Int): Cell {
-        return grid[row][col]
+    fun get(row: Int, col: Int): Piece? {
+        return board[row][col]
     }
 
-    fun set(coordinate: Coordinate, cell: Cell) {
-        grid.get(coordinate.row).set(coordinate.column, cell)
+    fun set(coordinate: Coordinate, piece: Piece?) {
+        set(coordinate.row, coordinate.column, piece)
     }
 
-    fun set(row: Int, col: Int, cell: Cell) {
-        grid.get(row).set(col, cell)
+    fun set(row: Int, col: Int, piece: Piece?) {
+        board[row][col] = piece
+    }
+
+    fun isNonEmpty(coordinate: Coordinate): Boolean {
+        return isNonEmpty(coordinate.row, coordinate.column)
+    }
+
+    fun isNonEmpty(row: Int, col: Int): Boolean{
+        return board[row][col] != null
+    }
+
+    fun isPlayer(coordinate: Coordinate, player: Player): Boolean {
+        return isPlayer(coordinate.row, coordinate.column, player)
+    }
+
+    fun isPlayer(row: Int, col: Int, player: Player): Boolean {
+        return board[row][col]?.player == player
     }
 
     fun reset() {
@@ -28,13 +46,13 @@ data class Board(
     }
 
     private fun createPiece(row: Int, col: Int, type: Type, player: Player) {
-        grid[row][col] = Cell.Piece(type, player)
+        board[row][col] = Piece(type, player)
     }
 
     private fun initializeWithDefaultSetup() {
         for (i in 0 until 8) {
             for (j in 0 until 8) {
-                set(i, j, Cell.Empty)
+                set(i, j, null)
             }
         }
 
@@ -71,5 +89,15 @@ data class Board(
         createPiece(7, 5, Type.BISHOP, Player.WHITE);
         createPiece(7, 6, Type.KNIGHT, Player.WHITE);
         createPiece(7, 7, Type.ROOK, Player.WHITE);
+    }
+
+    fun copy(): Board {
+        val newBoard = Board()
+        for (i in 0 until 8) {
+            for (j in 0 until 8) {
+                newBoard.board[i][j] = this.board[i][j]?.copy()
+            }
+        }
+        return newBoard
     }
 }
