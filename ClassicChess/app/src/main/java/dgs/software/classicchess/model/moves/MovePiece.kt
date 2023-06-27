@@ -1,7 +1,6 @@
 package dgs.software.classicchess.model.moves
 
 import android.util.Log
-import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
 import dgs.software.classicchess.model.actions.MovePieceAction
@@ -22,11 +21,11 @@ data class MovePiece(
     }
 
     override fun execute() {
-        if (getGame().get(fromPos) is Cell.Empty) {
+        if (getGame().board.get(fromPos) == null) {
             Log.e(TAG,"Attempting to execute move from empty position from ${fromPos} to ${toPos}")
             return
         }
-        if (getGame().get(toPos) !is Cell.Empty) {
+        if (getGame().board.get(toPos) != null) {
             Log.e(TAG,"Attempting to execute move to non-empty cell from ${fromPos} to ${toPos}")
             return
         }

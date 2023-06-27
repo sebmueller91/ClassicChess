@@ -27,9 +27,6 @@ class LocalGameViewModel : ViewModel() {
     var selectedCoordinate: Coordinate? by mutableStateOf(null)
         private set
 
-    val selectedCell: Cell?
-        get() = selectedCoordinate?.let { game.get(it) }
-
     var selectedPawnPromotionPosition: Coordinate? = null
         private set
 
@@ -55,8 +52,8 @@ class LocalGameViewModel : ViewModel() {
     fun cellSelected(coordinate: Coordinate) {
         // TODO: Add Log statements
         selectedCoordinate = coordinate
+        val selectedPiece: Piece? = selectedCoordinate?.let { game.board.get(it) }
         val clickedMove = possibleMovesForSelectedPiece.filter { it.toPos == coordinate }
-
 
         if (clickedMove.any()) {
             if (clickedMove.first() is PromotePawnMove) {
@@ -67,9 +64,9 @@ class LocalGameViewModel : ViewModel() {
                 selectedCoordinate = null
                 possibleMovesForSelectedPiece.clear()
             }
-        } else if (selectedCell is Cell.Empty) {
+        } else if (selectedPiece == null) {
             possibleMovesForSelectedPiece.clear()
-        } else if ((selectedCell as Cell.Piece).player == game.currentPlayer) {
+        } else if (selectedPiece.player == game.currentPlayer) {
             possibleMovesForSelectedPiece?.clear()
             possibleMovesForSelectedPiece.addAll(
                 possibleMovesProvider.getPossibleMoves(coordinate)

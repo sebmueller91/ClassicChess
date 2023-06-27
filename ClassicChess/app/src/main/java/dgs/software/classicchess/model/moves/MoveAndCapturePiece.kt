@@ -1,7 +1,6 @@
 package dgs.software.classicchess.model.moves
 
 import android.util.Log
-import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
 import dgs.software.classicchess.model.actions.RemovePieceAction
@@ -24,12 +23,14 @@ data class MoveAndCapturePiece(
     }
 
     override fun execute() {
-        if (getGame().get(fromPos) is Cell.Empty) {
+        val fromPosPiece = getGame().board.get(fromPos)
+        val toPosPiece = getGame().board.get(toPos)
+        if (fromPosPiece == null) {
             Log.e(TAG, "Attempting to execute move from empty position from ${fromPos} to ${toPos}")
             return
         }
-        if (getGame().get(toPos) !is Cell.Piece
-            || getGame().getPiece(fromPos).player == getGame().getPiece(toPos).player
+        if (toPosPiece == null
+            || fromPosPiece.player == toPosPiece.player
         ) {
             Log.e(
                 TAG,

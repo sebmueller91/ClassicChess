@@ -22,8 +22,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dgs.software.classicchess.R
-import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
+import dgs.software.classicchess.model.Piece
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.ui.theme.boardCellBlack
@@ -190,8 +190,7 @@ fun ChessCell(
 ) {
     val curCoordinate = Coordinate(rowIndex, colIndex)
 
-    val cell = viewModel.game.board.get(rowIndex, colIndex)
-    val isPiece = !(cell is Cell.Empty)
+    val piece = viewModel.game.board.get(rowIndex, colIndex)
 
     val interactionSource = MutableInteractionSource()
     val backgroundColor =
@@ -213,7 +212,7 @@ fun ChessCell(
         ) {
             viewModel.cellSelected(Coordinate(rowIndex, colIndex))
         }) {
-        if (isPiece) {
+        if (piece != null) {
             Box(
                 Modifier
                     .fillMaxSize()
@@ -231,7 +230,7 @@ fun ChessCell(
                     )
                 }
                 Icon(
-                    painter = painterResource(id = getIconId(cell as Cell.Piece)),
+                    painter = painterResource(id = getIconId(piece)),
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxSize()
@@ -290,7 +289,7 @@ private fun PlayerIndicator(
     }
 }
 
-private fun getIconId(piece: Cell.Piece): Int {
+private fun getIconId(piece: Piece): Int {
     return when (piece.player) {
         Player.WHITE -> when (piece.type) {
             Type.PAWN -> R.drawable.pawn_white

@@ -1,7 +1,6 @@
 package dgs.software.classicchess.model.moves
 
 import android.util.Log
-import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
 import dgs.software.classicchess.model.actions.MovePieceAction
@@ -26,11 +25,11 @@ data class CastlingMove(
     }
 
     override fun execute() {
-        if (getGame().get(kingFromPos) is Cell.Empty || getGame().get(rookFromPos) is Cell.Empty) {
+        if (getGame().board.get(kingFromPos) == null || getGame().board.get(rookFromPos) == null) {
             Log.e(TAG,"Attempting to execute castling from empty position ${kingFromPos}, ${rookFromPos}")
             return
         }
-        if (getGame().get(kingToPos) !is Cell.Empty || getGame().get(rookToPos) !is Cell.Empty) {
+        if (getGame().board.get(kingToPos) != null || getGame().board.get(rookToPos) != null) {
             Log.e(TAG,"Attempting to execute castling with non empty destination ${kingToPos}, ${kingToPos}")
             return
         }

@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dgs.software.classicchess.R
-import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
 
