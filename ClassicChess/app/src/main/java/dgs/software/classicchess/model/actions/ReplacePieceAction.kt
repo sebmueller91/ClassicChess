@@ -1,9 +1,9 @@
 package dgs.software.classicchess.model.actions
 
 import android.util.Log
-import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
+import dgs.software.classicchess.model.Piece
 import dgs.software.classicchess.model.Type
 
 private const val TAG = "ReplacePieceAction"
@@ -13,22 +13,24 @@ data class ReplacePieceAction(
     val type: Type,
     val getGame: () -> Game
 ) : RevertableAction(){
-    lateinit var oldPiece: Cell.Piece
+    lateinit var oldPiece: Piece
 
     override fun execute() {
         super.execute()
-        if (getGame().get(position) is Cell.Empty) {
+        val piece = getGame().board.get(position)
+        if (piece == null) {
             Log.e(TAG, "Attempting to prmote a empty cell (execute)")
+            return
         }
-        oldPiece = getGame().getPiece(position)
-        getGame().set(position, Cell.Piece(type, oldPiece.player, true))
+        oldPiece = piece
+        getGame().board.set(position, Piece(type, oldPiece.player, true))
     }
 
     override fun rollback() {
         super.rollback()
-        if (getGame().get(position) is Cell.Empty) {
+        if (getGame().board.get(position) == null) {
             Log.e(TAG, "Attempting to rollback pawn promotion on empty cell (rollback)")
         }
-        getGame().set(position, oldPiece)
+        getGame().board.set(position, oldPiece)
     }
 }

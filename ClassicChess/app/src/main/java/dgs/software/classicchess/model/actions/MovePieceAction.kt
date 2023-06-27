@@ -13,19 +13,24 @@ data class MovePieceAction(
 ) : RevertableAction(){
     override fun execute() {
         super.execute()
-        if (!(getGame().get(toPos) is Cell.Empty)) {
+        if (getGame().board.get(toPos) != null) {
             Log.e(TAG, "Attempting to move piece into non-empty cell (execute)")
+            return
         }
-        getGame().set(toPos, getGame().get(fromPos) as Cell.Piece)
-        getGame().set(fromPos, Cell.Empty)
+        if (getGame().board.get(fromPos) == null) {
+            Log.e(TAG, "Attempting to move empty piece from $fromPos to $toPos")
+            return
+        }
+        getGame().board.set(toPos, getGame().board.get(fromPos))
+        getGame().board.set(fromPos, null)
     }
 
     override fun rollback() {
         super.rollback()
-        if (!(getGame().get(fromPos) is Cell.Empty)) {
+        if (getGame().board.get(fromPos) != null) {
             Log.e(TAG, "Attempting to move piece into non-empty cell (rollback)")
         }
-        getGame().set(fromPos, getGame().get(toPos))
-        getGame().set(toPos, Cell.Empty)
+        getGame().board.set(fromPos, getGame().board.get(toPos))
+        getGame().board.set(toPos, null)
     }
 }

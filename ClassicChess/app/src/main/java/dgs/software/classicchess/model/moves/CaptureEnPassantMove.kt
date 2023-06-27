@@ -1,7 +1,6 @@
 package dgs.software.classicchess.model.moves
 
 import android.util.Log
-import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
 import dgs.software.classicchess.model.actions.RemovePieceAction
@@ -25,21 +24,22 @@ data class CaptureEnPassantMove(
     }
 
     override fun execute() {
-        if (getGame().get(fromPos) is Cell.Empty) {
+        val fromPosPiece = getGame().board.get(fromPos)
+        if (fromPosPiece == null) {
             Log.e(TAG,"Attempting to execute en-passant move from empty position from ${fromPos} to ${toPos}")
             return
         }
-        if (getGame().get(toPos) !is Cell.Empty) {
+        if (getGame().board.get(toPos) != null) {
             Log.e(TAG,"Attempting to execute en-passant move to non-empty cell from ${fromPos} to ${toPos}")
             return
         }
-        if (getGame().get(capturePiecePos) is Cell.Empty
-            || getGame().getPiece(capturePiecePos).player == getGame().getPiece(fromPos).player) {
-            Log.e(TAG,"Attempting to execute en-passant and capture empty or non-player cell cell at ${capturePiecePos}")
-            return
+        getGame().board.get(capturePiecePos)?.let {
+            if (it.player == fromPosPiece.player) {
+                Log.e(TAG,"Attempting to execute en-passant and capture non-player cell cell at ${capturePiecePos}")
+                return
+            }
+            super.execute()
         }
-
-        super.execute()
     }
 
     override fun rollback() {

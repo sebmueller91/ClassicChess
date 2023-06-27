@@ -1,8 +1,6 @@
 package dgs.software.classicchess.model.actions
 
 import android.util.Log
-import dgs.software.classicchess.model.Board
-import dgs.software.classicchess.model.Cell
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
 
@@ -17,25 +15,21 @@ data class SetIsMovedAction(
     override fun execute() {
         super.execute()
 
-        if (getGame().get(position) is Cell.Empty) {
+        val piece = getGame().board.get(position)
+        if (piece == null) {
             Log.e(TAG,"Attempting to set isMoved of empty cell ${position}")
             return
         }
-
-        val cell = getGame().get(position)
-        when (cell) {
-            is Cell.Empty -> Log.e(TAG,"Attempting to set isMoved of empty cell ${position}")
-            is Cell.Piece -> previousState = cell.isMoved
-        }
+        previousState = piece.isMoved
     }
 
     override fun rollback() {
         super.rollback()
 
-        val cell = getGame().get(position)
-        when (cell) {
-            is Cell.Empty -> Log.e(TAG,"Attempting to rollback isMoved of empty cell ${position}")
-            is Cell.Piece -> cell.isMoved = previousState
+        val piece = getGame().board.get(position)
+        when (piece) {
+            null -> Log.e(TAG,"Attempting to rollback isMoved of empty cell ${position}")
+            else -> piece.isMoved = previousState
         }
     }
 }
