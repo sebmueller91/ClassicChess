@@ -1,55 +1,29 @@
 package dgs.software.classicchess.model
 
-import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import dgs.software.classicchess.model.moves.MoveStackSimulatable
-import dgs.software.classicchess.model.moves.RevertableMove
-
-private const val TAG = "Game"
+import dgs.software.classicchess.model.moves.move_stack.ImmutableMoveStack
+import dgs.software.classicchess.model.moves.move_stack.toSimulatableMoveStack
 
 data class Game(
     val board: Board = Board(),
-    val simulatableMoveStack: MoveStackSimulatable = MoveStackSimulatable(),
+    val immutableMoveStack: ImmutableMoveStack = ImmutableMoveStack(),
+    val currentPlayer: Player = Player.WHITE
 ) {
-    var currentPlayer by mutableStateOf(Player.WHITE)
-        private set
-
-    fun updateCurrentPlayer(player: Player) {
-        currentPlayer = player
-    }
 
     val canUndoMove: Boolean
-        get() = simulatableMoveStack.doneActionsOnStack()
+        get() = immutableMoveStack.doneActionsOnStack()
 
     val canRedoMove: Boolean
-        get() = simulatableMoveStack.undoneActionsOnStack()
+        get() = immutableMoveStack.undoneActionsOnStack()
 
     fun anyMoveExecuted(): Boolean {
-        return simulatableMoveStack.anyMoveExecuted()
+        return immutableMoveStack.anyMoveExecuted()
     }
+}
 
-    fun undoLastMove() {
-        simulatableMoveStack.rollbackLastMove()
-    }
-
-    fun redoNextMove() {
-
-        simulatableMoveStack.redoNextMove()
-    }
-
-    fun executeMove(move: RevertableMove, simulateExecution: Boolean = false) {
-        simulatableMoveStack.executeMove(move, simulateExecution)
-    }
-
-    fun rollbackSimulatedMoves() {
-        simulatableMoveStack.rollbackSimulatedMoves()
-    }
-
-    fun reset() {
-        board.reset()
-        simulatableMoveStack.resetMoveStack()
-        currentPlayer = Player.WHITE
-    }
+fun Game.toMutableGame(): MutableGame {
+    return MutableGame(
+        board = this.board,
+        simulatableMoveStack = this.immutableMoveStack.toSimulatableMoveStack(),
+        currentPlayer = this.currentPlayer
+    )
 }

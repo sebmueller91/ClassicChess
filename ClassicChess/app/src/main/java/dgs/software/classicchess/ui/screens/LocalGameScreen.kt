@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dgs.software.classicchess.R
@@ -35,14 +36,43 @@ fun LocalGameScreen(
     viewModel: LocalGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    viewModel.playerWon?.let {
+    LocalGameScreen(
+        uiStateFlow = viewModel.uiState.collectAsState().value, // TODO: Change to stateWithLifecycle
+        resetPlayerWon = viewModel::resetPlayerWon,
+        resetPlayerStalemate = viewModel::resetPlayerStalemate,
+        resetGame = viewModel::resetGame,
+        dismissPromotePawn = viewModel::dismissPromotePawn,
+        promotePawn = viewModel::promotePawn,
+        invertBoardDisplayDirection = viewModel::invertBoardDisplayDirection,
+        undoPreviousMove = viewModel::undoPreviousMove,
+        redoNextMove = viewModel::redoNextMove,
+        cellSelected = viewModel::cellSelected,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun LocalGameScreen(
+    uiStateFlow: LocalGameUiState,
+    resetPlayerWon: () -> Unit,
+    resetPlayerStalemate: () -> Unit,
+    resetGame: () -> Unit,
+    dismissPromotePawn: () -> Unit,
+    promotePawn: (Type) -> Unit,
+    invertBoardDisplayDirection: () -> Unit,
+    undoPreviousMove: () -> Unit,
+    redoNextMove: () -> Unit,
+    cellSelected: (Coordinate) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    uiStateFlow.playerWon?.let {
         GameWonDialog(player = it) {
-            viewModel.playerWon = null
+            resetPlayerWon()
         }
     }
-    viewModel.playerStalemate?.let {
+    uiStateFlow.playerStalemate?.let {
         StalemateDialog(player = it) {
-            viewModel.playerStalemate = null
+            resetPlayerStalemate()
         }
     }
 
@@ -50,17 +80,17 @@ fun LocalGameScreen(
     if (showResetConfirmationDialog) {
         ResetGameDialog(
             onYesButtonClicked = {
-                viewModel.resetGame()
+                resetGame()
                 showResetConfirmationDialog = false
             },
             onNoButtonClicked = { showResetConfirmationDialog = false })
     }
 
 
-    if (viewModel.requestPawnPromotionInput) {
+    if (uiStateFlow.requestPawnPromotionInput) {
         PromotePawnDialog(
-            onDismiss = viewModel::dismissPromotePawn,
-            onPlayerChoice = viewModel::promotePawn
+            onDismiss = dismissPromotePawn,
+            onPlayerChoice = promotePawn
         )
     }
 
@@ -76,26 +106,25 @@ fun LocalGameScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(text = "${stringResource(R.string.LocalGameScreen_CurrentPlayerText)}" + "   ")
-            PlayerIndicator(isWhiteTurn = viewModel.game.currentPlayer == Player.WHITE)
+            PlayerIndicator(isWhiteTurn = uiStateFlow.game.currentPlayer == Player.WHITE)
         }
-        if (viewModel.forceBoardRecomposition || !viewModel.forceBoardRecomposition) {
-            Box(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .aspectRatio(1f)
-                    .border(
-                        3.dp,
-                        color = MaterialTheme.colors.primary,
-                        shape = RectangleShape
-                    )
-                    .padding(2.dp)
-                    .fillMaxWidth()
-            ) {
-                ChessBoard(
-                    viewModel,
-                    modifier = Modifier.fillMaxSize()
+        Box(
+            modifier = Modifier
+                .padding(10.dp)
+                .aspectRatio(1f)
+                .border(
+                    3.dp,
+                    color = MaterialTheme.colors.primary,
+                    shape = RectangleShape
                 )
-            }
+                .padding(2.dp)
+                .fillMaxWidth()
+        ) {
+            ChessBoard(
+                uiStateFlow,
+                cellSelected,
+                modifier = Modifier.fillMaxSize()
+            )
         }
         Row(
             modifier = Modifier
@@ -104,8 +133,8 @@ fun LocalGameScreen(
             verticalAlignment = Alignment.Bottom
         ) {
             IconButton(
-                onClick = viewModel::invertBoardDisplayDirection,
-                isEnabled = { true },
+                onClick = invertBoardDisplayDirection,
+                isEnabled = true,
                 iconId = R.drawable.ic_baseline_invertupdown_24,
                 contentDescription = stringResource(R.string.LocalGameScreen_InvertButtonContentDescription)
             )
@@ -114,21 +143,21 @@ fun LocalGameScreen(
                     .height(50.dp)
                     .padding(5.dp),
                 onClick = { showResetConfirmationDialog = true },
-                enabled = viewModel.canResetGame()
+                enabled = uiStateFlow.canResetGame
             ) {
                 Text(
                     text = stringResource(R.string.LocalGameScreen_ResetButtonText)
                 )
             }
             IconButton(
-                onClick = viewModel::undoLastMove,
-                isEnabled = viewModel.game::canUndoMove,
+                onClick = undoPreviousMove,
+                isEnabled = uiStateFlow.canUndoMove,
                 iconId = R.drawable.ic_baseline_undo_24,
                 contentDescription = stringResource(R.string.LocalGameScreen_UndoButtonContentDescription)
             )
             IconButton(
-                onClick = viewModel::redoNextMove,
-                isEnabled = viewModel.game::canRedoMove,
+                onClick = redoNextMove,
+                isEnabled = uiStateFlow.canRedoMove,
                 iconId = R.drawable.ic_baseline_redo_24,
                 contentDescription = stringResource(R.string.LocalGameScreen_RedoButtonContentDescription)
             )
@@ -138,46 +167,48 @@ fun LocalGameScreen(
 
 @Composable
 fun ChessBoard(
-    viewModel: LocalGameViewModel,
+    uiStateFlow: LocalGameUiState,
+    cellSelected: (Coordinate) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        val rowIndices = if (viewModel.boardDisplayedInverted) {
+        val rowIndices = if (uiStateFlow.boardDisplayedInverted) {
             listOf(7, 6, 5, 4, 3, 2, 1, 0)
         } else {
             listOf(0, 1, 2, 3, 4, 5, 6, 7)
         }
-        ChessRow(rowIndices[0], viewModel, Modifier.weight(1f))
-        ChessRow(rowIndices[1], viewModel, Modifier.weight(1f))
-        ChessRow(rowIndices[2], viewModel, Modifier.weight(1f))
-        ChessRow(rowIndices[3], viewModel, Modifier.weight(1f))
-        ChessRow(rowIndices[4], viewModel, Modifier.weight(1f))
-        ChessRow(rowIndices[5], viewModel, Modifier.weight(1f))
-        ChessRow(rowIndices[6], viewModel, Modifier.weight(1f))
-        ChessRow(rowIndices[7], viewModel, Modifier.weight(1f))
+        ChessRow(rowIndices[0], uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessRow(rowIndices[1], uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessRow(rowIndices[2], uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessRow(rowIndices[3], uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessRow(rowIndices[4], uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessRow(rowIndices[5], uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessRow(rowIndices[6], uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessRow(rowIndices[7], uiStateFlow, cellSelected, Modifier.weight(1f))
     }
 }
 
 @Composable
 fun ChessRow(
     colIndex: Int,
-    viewModel: LocalGameViewModel,
+    uiStateFlow: LocalGameUiState,
+    cellSelected: (Coordinate) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier) {
-        val colIndices = if (viewModel.boardDisplayedInverted) {
+        val colIndices = if (uiStateFlow.boardDisplayedInverted) {
             listOf(7, 6, 5, 4, 3, 2, 1, 0)
         } else {
             listOf(0, 1, 2, 3, 4, 5, 6, 7)
         }
-        ChessCell(colIndices[0], colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(colIndices[1], colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(colIndices[2], colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(colIndices[3], colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(colIndices[4], colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(colIndices[5], colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(colIndices[6], colIndex, viewModel, Modifier.weight(1f))
-        ChessCell(colIndices[7], colIndex, viewModel, Modifier.weight(1f))
+        ChessCell(colIndices[0], colIndex, uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessCell(colIndices[1], colIndex, uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessCell(colIndices[2], colIndex, uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessCell(colIndices[3], colIndex, uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessCell(colIndices[4], colIndex, uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessCell(colIndices[5], colIndex, uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessCell(colIndices[6], colIndex, uiStateFlow, cellSelected, Modifier.weight(1f))
+        ChessCell(colIndices[7], colIndex, uiStateFlow, cellSelected, Modifier.weight(1f))
     }
 }
 
@@ -185,18 +216,19 @@ fun ChessRow(
 fun ChessCell(
     colIndex: Int,
     rowIndex: Int,
-    viewModel: LocalGameViewModel,
+    uiStateFlow: LocalGameUiState,
+    cellSelected: (Coordinate) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val curCoordinate = Coordinate(rowIndex, colIndex)
 
-    val piece = viewModel.game.board.get(rowIndex, colIndex)
+    val piece = uiStateFlow.game.board.get(rowIndex, colIndex)
 
     val interactionSource = MutableInteractionSource()
     val backgroundColor =
-        if (viewModel?.selectedCoordinate == curCoordinate) {
+        if (uiStateFlow?.selectedCoordinate == curCoordinate) {
             MaterialTheme.colors.selectedCellColor
-        } else if (viewModel.getCellBackgroundType(rowIndex, colIndex)) {
+        } else if (getCellBackgroundType(rowIndex, colIndex)) {
             MaterialTheme.colors.boardCellWhite
         } else {
             MaterialTheme.colors.boardCellBlack
@@ -210,7 +242,7 @@ fun ChessCell(
             interactionSource = interactionSource,
             indication = null
         ) {
-            viewModel.cellSelected(Coordinate(rowIndex, colIndex))
+            cellSelected(Coordinate(rowIndex, colIndex))
         }) {
         if (piece != null) {
             Box(
@@ -219,8 +251,8 @@ fun ChessCell(
                     .wrapContentSize(),
                 contentAlignment = Alignment.Center
             ) {
-                if (viewModel.possibleMovesForSelectedPiece.any { it.toPos == curCoordinate }
-                    || viewModel.kingInCheck == (curCoordinate)) {
+                if (uiStateFlow.possibleMovesForSelectedPiece.any { it.toPos == curCoordinate }
+                    || uiStateFlow.kingInCheck == (curCoordinate)) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_baseline_circle_24),
                         contentDescription = null,
@@ -238,7 +270,7 @@ fun ChessCell(
                     tint = Color.Unspecified
                 )
             }
-        } else if (viewModel.possibleMovesForSelectedPiece.any { it.toPos == curCoordinate }) {
+        } else if (uiStateFlow.possibleMovesForSelectedPiece.any { it.toPos == curCoordinate }) {
             Text(
                 text = "\u2B24",
                 fontSize = 20.sp,
@@ -251,7 +283,7 @@ fun ChessCell(
 @Composable
 private fun IconButton(
     onClick: () -> Unit,
-    isEnabled: () -> Boolean,
+    isEnabled: Boolean,
     @DrawableRes iconId: Int,
     modifier: Modifier = Modifier,
     contentDescription: String? = null
@@ -261,7 +293,7 @@ private fun IconButton(
             .height(50.dp)
             .padding(5.dp),
         onClick = { onClick() },
-        enabled = isEnabled()
+        enabled = isEnabled
     ) {
         Icon(
             painter = painterResource(id = iconId),
@@ -308,4 +340,25 @@ private fun getIconId(piece: Piece): Int {
             Type.KING -> R.drawable.king_black
         }
     }
+}
+
+// returns true if it is a cell with light background, false otherwise
+private fun getCellBackgroundType(rowIndex: Int, colIndex: Int): Boolean {
+    return (rowIndex % 2 == 0 && colIndex % 2 == 0) || (rowIndex % 2 != 0 && colIndex % 2 != 0)
+}
+
+@Composable
+@Preview
+private fun PreviewLocalGameScreen() {
+    LocalGameScreen(
+        uiStateFlow = LocalGameUiState(), resetPlayerWon = { },
+        resetPlayerStalemate = { },
+        resetGame = { },
+        dismissPromotePawn = { },
+        promotePawn = { },
+        invertBoardDisplayDirection = { },
+        undoPreviousMove = { },
+        redoNextMove = { },
+        cellSelected = { },
+    )
 }

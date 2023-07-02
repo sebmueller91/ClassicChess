@@ -1,91 +1,79 @@
 package dgs.software.classicchess.ui.screens
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dgs.software.classicchess.ClassicChessApplication
-import dgs.software.classicchess.calculations.possiblemoves.DefaultBoardStatusProvider
-import dgs.software.classicchess.calculations.possiblemoves.DefaultGameStatusProvider
-import dgs.software.classicchess.calculations.possiblemoves.DefaultPossibleMovesProvider
 import dgs.software.classicchess.model.*
 import dgs.software.classicchess.model.moves.PromotePawnMove
-import dgs.software.classicchess.model.moves.RevertableMove
+import dgs.software.classicchess.use_cases.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 private const val TAG = "LocalGameViewModel"
 
 class LocalGameViewModel : ViewModel() {
-    var forceBoardRecomposition by mutableStateOf(false) // TODO: Try to get rid of
+    var _uiState: MutableStateFlow<LocalGameUiState> = MutableStateFlow(LocalGameUiState())
+    val uiState = _uiState.asStateFlow()
 
-    var game: Game by mutableStateOf(Game())
-        private set
+    fun cellSelected(clickedCoordinate: Coordinate) {
 
-    var selectedCoordinate: Coordinate? by mutableStateOf(null)
-        private set
-
-    var selectedPawnPromotionPosition: Coordinate? = null
-        private set
-
-    var possibleMovesForSelectedPiece by mutableStateOf(mutableListOf<RevertableMove>())
-        private set
-
-    var kingInCheck: Coordinate? by mutableStateOf(null)
-
-    var playerWon: Player? by mutableStateOf(null)
-
-    var playerStalemate: Player? by mutableStateOf(null)
-
-    var boardDisplayedInverted by mutableStateOf(false)
-        private set
-
-    var requestPawnPromotionInput by mutableStateOf(false)
-        private set
-
-    private val possibleMovesProvider = DefaultPossibleMovesProvider(game)
-    private val boardStatusProvider = DefaultBoardStatusProvider(game)
-    private val gameStatusProvider = DefaultGameStatusProvider(game)
-
-    fun cellSelected(coordinate: Coordinate) {
-        // TODO: Add Log statements
-        selectedCoordinate = coordinate
-        val selectedPiece: Piece? = selectedCoordinate?.let { game.board.get(it) }
-        val clickedMove = possibleMovesForSelectedPiece.filter { it.toPos == coordinate }
-
-        if (clickedMove.any()) {
-            if (clickedMove.first() is PromotePawnMove) {
-                selectedPawnPromotionPosition = clickedMove.first().toPos
-                requestPawnPromotionInput = true
-            } else {
-                game.executeMove(clickedMove.first())
-                selectedCoordinate = null
-                possibleMovesForSelectedPiece.clear()
+        when (val userClickAction =
+            ResolveUserClickActionUseCase().execute(uiState.value, clickedCoordinate)) {
+            UserClickAction.DisplayPossibleMovesOfPiece -> {
+                val possibleMoves =
+                    GetPossibleMovesUseCase().execute(uiState.value.game, clickedCoordinate)
+                _uiState.update { previousState ->
+                    previousState.copy(
+                        selectedCoordinate = clickedCoordinate,
+                        possibleMovesForSelectedPiece = possibleMoves
+                    )
+                }
             }
-        } else if (selectedPiece == null) {
-            possibleMovesForSelectedPiece.clear()
-        } else if (selectedPiece.player == game.currentPlayer) {
-            possibleMovesForSelectedPiece?.clear()
-            possibleMovesForSelectedPiece.addAll(
-                possibleMovesProvider.getPossibleMoves(coordinate)
-            )
-        } else {
-            possibleMovesForSelectedPiece?.clear()
+            is UserClickAction.ExecutePromotePawnMove -> {
+                _uiState.update { previousState ->
+                    previousState.copy(
+                        selectedPawnPromotionPosition = userClickAction.coordinate,
+                        requestPawnPromotionInput = true
+                    )
+                }
+            }
+            is UserClickAction.ExecuteRegularMove -> {
+                val game =
+                    ExecuteMoveUseCase().execute(uiState.value.game, userClickAction.revertableMove)
+                _uiState.update { previousState ->
+                    previousState.copy(
+                        game = game,
+                        selectedCoordinate = null,
+                        possibleMovesForSelectedPiece = listOf()
+                    )
+                }
+            }
+            UserClickAction.EmptyCellSelected,
+            UserClickAction.OpponentCellSelected -> {
+                _uiState.update { previousState ->
+                    previousState.copy(
+                        selectedCoordinate = clickedCoordinate,
+                        possibleMovesForSelectedPiece = listOf()
+                    )
+                }
+            }
         }
 
         updateBoard()
     }
 
     fun promotePawn(type: Type) {
-        if (selectedPawnPromotionPosition == null) {
+        if (uiState.value.selectedPawnPromotionPosition == null) {
             Log.e(TAG, "Tried to promote pawn while position is not set")
             return
         }
         val clickedMove =
-            possibleMovesForSelectedPiece.filter {
-                it.toPos == selectedPawnPromotionPosition
+            uiState.value.possibleMovesForSelectedPiece.filter {
+                it.toPos == uiState.value.selectedPawnPromotionPosition
                         && (it as PromotePawnMove).type == type
             }
 
@@ -94,92 +82,94 @@ class LocalGameViewModel : ViewModel() {
             return
         }
 
-        game.executeMove(clickedMove.first())
-        selectedCoordinate = null
-        possibleMovesForSelectedPiece.clear()
-        requestPawnPromotionInput = false
-        selectedPawnPromotionPosition = null
+        val game = ExecuteMoveUseCase().execute(uiState.value.game, clickedMove.first())
 
+        _uiState.update { previousState ->
+            previousState.copy(
+                game = game,
+                selectedCoordinate = null,
+                possibleMovesForSelectedPiece = listOf(),
+                requestPawnPromotionInput = false,
+                selectedPawnPromotionPosition = null
+            )
+        }
         updateBoard()
     }
 
     fun dismissPromotePawn() {
-        selectedPawnPromotionPosition = null
-        requestPawnPromotionInput = false
-        possibleMovesForSelectedPiece.clear()
-
+        _uiState.update { previousState ->
+            previousState.copy(
+                selectedPawnPromotionPosition = null,
+                requestPawnPromotionInput = false,
+                possibleMovesForSelectedPiece = listOf()
+            )
+        }
     }
 
     fun invertBoardDisplayDirection() {
-        boardDisplayedInverted = !boardDisplayedInverted
-    }
-
-    fun canResetGame(): Boolean {
-        return game.anyMoveExecuted()
+        _uiState.update { previousState ->
+            previousState.copy(
+                boardDisplayedInverted = !previousState.boardDisplayedInverted
+            )
+        }
     }
 
     fun resetGame() {
-        selectedCoordinate = null
-        kingInCheck = null
-        possibleMovesForSelectedPiece.clear()
-        game.reset()
-        forceBoardRecomposition = !forceBoardRecomposition
+        _uiState.update { previousState ->
+            ResetGameUseCase().execute(previousState.boardDisplayedInverted)
+        }
+
         updateBoard()
     }
 
-    fun undoLastMove() {
-        game.undoLastMove()
-        possibleMovesForSelectedPiece?.clear()
-        selectedCoordinate = null
+    fun undoPreviousMove() {
+        val game = UndoPreviousMoveUseCase().execute(uiState.value.game)
+        _uiState.update { previousState ->
+            previousState.copy(
+                game = game,
+                possibleMovesForSelectedPiece = listOf(),
+                selectedCoordinate = null
+            )
+        }
         updateBoard()
     }
 
     fun redoNextMove() {
-        game.redoNextMove()
-        possibleMovesForSelectedPiece?.clear()
-        selectedCoordinate = null
+        val game = RedoNextMoveUseCase().execute(uiState.value.game)
+        _uiState.update { previousState ->
+            previousState.copy(
+                game = game,
+                possibleMovesForSelectedPiece = listOf(),
+                selectedCoordinate = null
+            )
+        }
         updateBoard()
     }
 
-    // returns true if it is a cell with light background, false otherwise
-    fun getCellBackgroundType(rowIndex: Int, colIndex: Int): Boolean {
-        return (rowIndex % 2 == 0 && colIndex % 2 == 0) || (rowIndex % 2 != 0 && colIndex % 2 != 0)
+    fun resetPlayerWon() {
+        _uiState.update { previousState ->
+            previousState.copy(playerWon = null)
+        }
+    }
+
+    fun resetPlayerStalemate() {
+        _uiState.update { previousState ->
+            previousState.copy(playerStalemate = null)
+        }
     }
 
     private fun updateBoard() {
-        updateKingInCheck()
-        updatePlayerWon()
-    }
-
-    private fun updateKingInCheck() {
-        kingInCheck = null
-        Player.values().forEach { player ->
-            val positionOfKing = boardStatusProvider.getPositionOfKing(player)
-            val cellsInCheck = boardStatusProvider.getCellsInCheck(player)
-            if (cellsInCheck[positionOfKing.row][positionOfKing.column]) {
-                kingInCheck = positionOfKing
-            }
+        val gameStatusInfo = UpdateGameStatusUseCase().execute(uiState.value.game)
+        _uiState.update { previousState ->
+            previousState.copy(
+                kingInCheck = gameStatusInfo.kingInCheck,
+                playerWon = gameStatusInfo.playerWon,
+                playerStalemate = gameStatusInfo.playerStalemate,
+                canResetGame = uiState.value.game.anyMoveExecuted(),
+                canRedoMove = uiState.value.game.canRedoMove,
+                canUndoMove = uiState.value.game.canUndoMove
+            )
         }
-    }
-
-    private fun updatePlayerWon() {
-        if (gameStatusProvider.isCheckmate(Player.WHITE)) {
-            playerWon = Player.BLACK
-        } else if (gameStatusProvider.isCheckmate(Player.BLACK)) {
-            playerWon = Player.WHITE
-        }
-    }
-
-    private fun updateStalemate() {
-        if (gameStatusProvider.isStalemate(Player.WHITE)) {
-            playerStalemate = Player.BLACK
-        } else if (gameStatusProvider.isStalemate(Player.BLACK)) {
-            playerStalemate = Player.WHITE
-        }
-    }
-
-    init {
-        game = Game()
     }
 
     companion object {

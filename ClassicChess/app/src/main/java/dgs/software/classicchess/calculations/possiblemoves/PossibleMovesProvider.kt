@@ -11,16 +11,22 @@ import dgs.software.classicchess.utils.getPlayerOrNull
 private val TAG = "PossibleMovesProvider"
 
 interface PossibleMovesProvider {
-    fun getPossibleMoves(position: Coordinate): List<RevertableMove>
+    fun getPossibleMoves(mutableGame: MutableGame, position: Coordinate): List<RevertableMove>
 }
 
 class DefaultPossibleMovesProvider(
-    private val game: Game,
-    private val basicPossibleMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider(game),
-    private val boardStatusProvider: BoardStatusProvider = DefaultBoardStatusProvider(game)
+    private val basicPossibleMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider(),
+    private val boardStatusProvider: BoardStatusProvider = DefaultBoardStatusProvider()
 ) : PossibleMovesProvider {
-    override fun getPossibleMoves(position: Coordinate): List<RevertableMove> {
-        val piece = game.board.get(position)
+    private lateinit var _mutableGame: MutableGame
+
+    override fun getPossibleMoves(
+        mutableGame: MutableGame,
+        position: Coordinate
+    ): List<RevertableMove> {
+        _mutableGame = mutableGame
+
+        val piece = _mutableGame.board.get(position)
         if (piece == null) {
             Log.e(TAG, "Tried to calculate moves for an empty cell at pos $position")
             return listOf<RevertableMove>()
@@ -38,36 +44,38 @@ class DefaultPossibleMovesProvider(
     }
 
     private fun getMovesForPawn(position: Coordinate): List<RevertableMove> {
-        var possibleMoves = basicPossibleMovesProvider.getBasicMoves(position).toMutableList()
+        var possibleMoves =
+            basicPossibleMovesProvider.getBasicMoves(_mutableGame, position).toMutableList()
         possibleMoves.addEnPassantMoves(position)
         possibleMoves.addPromotePawnMoves(position)
         return possibleMoves
     }
 
     private fun getMovesForRook(position: Coordinate): List<RevertableMove> {
-        return basicPossibleMovesProvider.getBasicMoves(position)
+        return basicPossibleMovesProvider.getBasicMoves(_mutableGame, position)
     }
 
     private fun getMovesForKnight(position: Coordinate): List<RevertableMove> {
-        return basicPossibleMovesProvider.getBasicMoves(position)
+        return basicPossibleMovesProvider.getBasicMoves(_mutableGame, position)
     }
 
     private fun getMovesForBishop(position: Coordinate): List<RevertableMove> {
-        return basicPossibleMovesProvider.getBasicMoves(position)
+        return basicPossibleMovesProvider.getBasicMoves(_mutableGame, position)
     }
 
     private fun getMovesForQueen(position: Coordinate): List<RevertableMove> {
-        return basicPossibleMovesProvider.getBasicMoves(position)
+        return basicPossibleMovesProvider.getBasicMoves(_mutableGame, position)
     }
 
     private fun getMovesForKing(position: Coordinate): List<RevertableMove> {
-        var possibleMoves = basicPossibleMovesProvider.getBasicMoves(position).toMutableList()
+        var possibleMoves =
+            basicPossibleMovesProvider.getBasicMoves(_mutableGame, position).toMutableList()
         possibleMoves.addCastlingMoves(position)
         return possibleMoves
     }
 
     private fun MutableList<RevertableMove>.addPromotePawnMoves(position: Coordinate) {
-        val player = game.getPlayerOrNull(position, TAG) ?: return
+        val player = _mutableGame.getPlayerOrNull(position, TAG) ?: return
         val toRow = when (player) {
             Player.WHITE -> 0
             Player.BLACK -> 7
@@ -112,29 +120,33 @@ class DefaultPossibleMovesProvider(
         }
         remove(matchingMoves.first())
 
-        add(PromotePawnMove(position, toPosition, Type.QUEEN, { game }, captureAndPromote))
-        add(PromotePawnMove(position, toPosition, Type.ROOK, { game }, captureAndPromote))
-        add(PromotePawnMove(position, toPosition, Type.BISHOP, { game }, captureAndPromote))
-        add(PromotePawnMove(position, toPosition, Type.KNIGHT, { game }, captureAndPromote))
+        add(PromotePawnMove(position, toPosition, Type.QUEEN, captureAndPromote))
+        add(PromotePawnMove(position, toPosition, Type.ROOK, captureAndPromote))
+        add(PromotePawnMove(position, toPosition, Type.BISHOP, captureAndPromote))
+        add(PromotePawnMove(position, toPosition, Type.KNIGHT, captureAndPromote))
     }
 
     private fun MutableList<RevertableMove>.addEnPassantMoves(position: Coordinate) {
-        val player = game.getPlayerOrNull(position, TAG)
+        val player = _mutableGame.getPlayerOrNull(position, TAG)
         when (player) {
             Player.WHITE -> {
                 if (position.row == 3) {
                     val enPassantPositions = listOf(position.left(), position.right())
                     enPassantPositions.forEach { curPos ->
                         if (curPos.isValid()
-                            && game.board.isPlayer(curPos, player.opponent())
-                            && game.simulatableMoveStack.lastMoveWas(curPos.up().up(), curPos)
+                            && _mutableGame.board.isPlayer(curPos, player.opponent())
+                            && _mutableGame.simulatableMoveStack.lastMoveWas(
+                                curPos.up().up(),
+                                curPos
+                            )
                         ) {
                             add(
                                 CaptureEnPassantMove(
                                     fromPos = position,
                                     toPos = curPos.up(),
                                     capturePiecePos = curPos
-                                ) { game })
+                                )
+                            )
                         }
                     }
                 }
@@ -144,15 +156,19 @@ class DefaultPossibleMovesProvider(
                     val enPassantPositions = listOf(position.left(), position.right())
                     enPassantPositions.forEach { curPos ->
                         if (curPos.isValid()
-                            && game.board.isPlayer(curPos, player.opponent())
-                            && game.simulatableMoveStack.lastMoveWas(curPos.down().down(), curPos)
+                            && _mutableGame.board.isPlayer(curPos, player.opponent())
+                            && _mutableGame.simulatableMoveStack.lastMoveWas(
+                                curPos.down().down(),
+                                curPos
+                            )
                         ) {
                             add(
                                 CaptureEnPassantMove(
                                     fromPos = position,
                                     toPos = curPos.down(),
                                     capturePiecePos = curPos
-                                ) { game })
+                                )
+                            )
                         }
                     }
                 }
@@ -161,12 +177,12 @@ class DefaultPossibleMovesProvider(
     }
 
     private fun MutableList<RevertableMove>.addCastlingMoves(position: Coordinate) {
-        val piece = game.board.get(position)
+        val piece = _mutableGame.board.get(position)
         if (piece == null || piece.type != Type.KING) {
             return
         }
 
-        val player = game.getPlayerOrNull(position, TAG) ?: return
+        val player = _mutableGame.getPlayerOrNull(position, TAG) ?: return
         when (player) {
             Player.WHITE -> {
                 if (checkCastingConditionFulfilled(Coordinate(7, 4), Coordinate(7, 7))) {
@@ -176,7 +192,7 @@ class DefaultPossibleMovesProvider(
                             kingToPos = Coordinate(7, 6),
                             rookFromPos = Coordinate(7, 7),
                             rookToPos = Coordinate(7, 5)
-                        ) { game }
+                        )
                     )
                 }
                 if (checkCastingConditionFulfilled(Coordinate(7, 4), Coordinate(7, 0))) {
@@ -186,7 +202,7 @@ class DefaultPossibleMovesProvider(
                             kingToPos = Coordinate(7, 2),
                             rookFromPos = Coordinate(7, 0),
                             rookToPos = Coordinate(7, 3)
-                        ) { game }
+                        )
                     )
                 }
             }
@@ -198,7 +214,7 @@ class DefaultPossibleMovesProvider(
                             kingToPos = Coordinate(0, 6),
                             rookFromPos = Coordinate(0, 7),
                             rookToPos = Coordinate(0, 5)
-                        ) { game }
+                        )
                     )
                 }
                 if (checkCastingConditionFulfilled(Coordinate(0, 4), Coordinate(0, 0))) {
@@ -208,7 +224,7 @@ class DefaultPossibleMovesProvider(
                             kingToPos = Coordinate(0, 2),
                             rookFromPos = Coordinate(0, 0),
                             rookToPos = Coordinate(0, 3)
-                        ) { game }
+                        )
                     )
                 }
             }
@@ -219,8 +235,8 @@ class DefaultPossibleMovesProvider(
         kingPos: Coordinate,
         rookPos: Coordinate
     ): Boolean {
-        val king = game.board.get(kingPos)
-        val rook = game.board.get(rookPos)
+        val king = _mutableGame.board.get(kingPos)
+        val rook = _mutableGame.board.get(rookPos)
         if (king == null || rook == null) {
             return false
         }
@@ -233,14 +249,14 @@ class DefaultPossibleMovesProvider(
         }
 
         // Check that cells between rook and king are empty
-        val fieldsInCheck = boardStatusProvider.getCellsInCheck(king.player)
+        val fieldsInCheck = boardStatusProvider.getCellsInCheck(_mutableGame, king.player)
         val row = kingPos.row
         val fromCol =
             if (kingPos.column > rookPos.column) rookPos.column + 1 else kingPos.column + 1
         val toCol = if (kingPos.column > rookPos.column) kingPos.column - 1 else rookPos.column - 1
 
         for (i in fromCol..toCol) {
-            if (game.board.get(Coordinate(row, i)) != null || fieldsInCheck[row][i]) {
+            if (_mutableGame.board.get(Coordinate(row, i)) != null || fieldsInCheck[row][i]) {
                 return false
             }
         }
@@ -254,11 +270,11 @@ class DefaultPossibleMovesProvider(
     ): List<RevertableMove> {
         val filteredMoves = mutableListOf<RevertableMove>()
         moves.forEach { move ->
-            game.executeMove(move, true)
-            if (!boardStatusProvider.kingIsInCheck(player)) {
+            _mutableGame.executeMove(move, true)
+            if (!boardStatusProvider.kingIsInCheck(_mutableGame, player)) {
                 filteredMoves.add(move)
             }
-            game.rollbackSimulatedMoves()
+            _mutableGame.rollbackSimulatedMoves()
         }
         return filteredMoves
     }

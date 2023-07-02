@@ -1,37 +1,34 @@
-package dgs.software.classicchess.model.moves
+package dgs.software.classicchess.model.moves.move_stack
 
 import android.util.Log
 import dgs.software.classicchess.model.Coordinate
+import dgs.software.classicchess.model.MutableGame
+import dgs.software.classicchess.model.moves.RevertableMove
 
-private val TAG = "MoveStackSimulatable"
+private val TAG = "SimulatableMoveStack"
 
-data class MoveStackSimulatable(
+data class SimulatableMoveStack(
     private val moveStack: MoveStack = MoveStack(),
     private val simulatedMoveStack: MoveStack = MoveStack()
 ) {
-    fun resetMoveStack() {
-        moveStack.resetMoveStack()
-        simulatedMoveStack.resetMoveStack()
-    }
-
-    fun executeMove(move: RevertableMove, simulateExecution: Boolean = false) {
+    fun executeMove(mutableGame: MutableGame, move: RevertableMove, simulateExecution: Boolean = false) {
         Log.d(TAG, "Execute move $move.toString(), simulated: $simulateExecution")
         if (simulateExecution) {
-            simulatedMoveStack.executeMove(move)
+            simulatedMoveStack.executeMove(mutableGame, move)
         } else {
             if (simulatedMoveStack.doneActionsOnStack()) {
                 Log.e(TAG, "Executing move while simulated moves on stack, this should not happen!")
-                simulatedMoveStack.resetMoveStack()
+                simulatedMoveStack.resetMoveStack(mutableGame)
             }
-            moveStack.executeMove(move)
+            moveStack.executeMove(mutableGame, move)
         }
     }
 
-    fun rollbackSimulatedMoves() {
-        simulatedMoveStack.resetMoveStack()
+    fun rollbackSimulatedMoves(mutableGame: MutableGame) {
+        simulatedMoveStack.resetMoveStack(mutableGame)
     }
 
-    fun rollbackLastMove(): Boolean {
+    fun rollbackLastMove(mutableGame: MutableGame): Boolean {
         if (!doneActionsOnStack()) {
             Log.d(
                 TAG,
@@ -44,14 +41,14 @@ data class MoveStackSimulatable(
                 TAG,
                 "Rolling back move while simulated moveStack is not empty, this should not happen!"
             )
-            simulatedMoveStack.rollbackLastMove()
+            simulatedMoveStack.rollbackLastMove(mutableGame)
         } else {
-            moveStack.rollbackLastMove()
+            moveStack.rollbackLastMove(mutableGame)
         }
         return true
     }
 
-    fun redoNextMove(): Boolean {
+    fun redoNextMove(mutableGame: MutableGame): Boolean {
         if (!undoneActionsOnStack()) {
             Log.d(
                 TAG,
@@ -63,9 +60,9 @@ data class MoveStackSimulatable(
             Log.e(TAG, "Redoing move while simulated moveStack is not empty, this should not happen!")
         }
         if (simulatedMoveStack.undoneActionsOnStack()) {
-            simulatedMoveStack.redoNextMove()
+            simulatedMoveStack.redoNextMove(mutableGame)
         } else {
-            moveStack.redoNextMove()
+            moveStack.redoNextMove(mutableGame)
         }
         return true
     }
@@ -91,5 +88,9 @@ data class MoveStackSimulatable(
 
     fun anyMoveExecuted(): Boolean {
         return simulatedMoveStack.anyMoveExecuted() || moveStack.anyMoveExecuted()
+    }
+
+    fun toImmutableMoveStack(): ImmutableMoveStack {
+        return moveStack.toImmutableMoveStack()
     }
 }

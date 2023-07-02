@@ -1,21 +1,19 @@
 package dgs.software.classicchess.model.actions
 
-import dgs.software.classicchess.model.Game
+import dgs.software.classicchess.model.MutableGame
 import dgs.software.classicchess.model.Player
 
-data class UpdateCurrentPlayerAction(
-    val getGame: () -> Game
-) : RevertableAction(){
+class UpdateCurrentPlayerAction() : RevertableAction(){
     lateinit var previousState: Player
 
-    override fun execute() {
-        super.execute()
-        previousState = getGame().currentPlayer
-        getGame().updateCurrentPlayer(previousState.opponent())
+    override fun execute(mutableGame: MutableGame) {
+        super.execute(mutableGame)
+        previousState = mutableGame.currentPlayer
+        mutableGame.updateCurrentPlayer(previousState.opponent())
     }
 
-    override fun rollback() {
-        super.rollback()
-        getGame().updateCurrentPlayer(previousState)
+    override fun rollback(mutableGame: MutableGame) {
+        super.rollback(mutableGame)
+        mutableGame.updateCurrentPlayer(previousState)
     }
 }

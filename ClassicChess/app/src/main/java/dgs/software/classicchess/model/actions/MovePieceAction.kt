@@ -2,35 +2,34 @@ package dgs.software.classicchess.model.actions
 
 import android.util.Log
 import dgs.software.classicchess.model.Coordinate
-import dgs.software.classicchess.model.Game
+import dgs.software.classicchess.model.MutableGame
 
 private const val TAG = "MovePieceAction"
 
 data class MovePieceAction(
     val fromPos: Coordinate,
     val toPos: Coordinate,
-    val getGame: () -> Game
 ) : RevertableAction(){
-    override fun execute() {
-        super.execute()
-        if (getGame().board.get(toPos) != null) {
+    override fun execute(mutableGame: MutableGame) {
+        super.execute(mutableGame)
+        if (mutableGame.board.get(toPos) != null) {
             Log.e(TAG, "Attempting to move piece into non-empty cell (execute)")
             return
         }
-        if (getGame().board.get(fromPos) == null) {
+        if (mutableGame.board.get(fromPos) == null) {
             Log.e(TAG, "Attempting to move empty piece from $fromPos to $toPos")
             return
         }
-        getGame().board.set(toPos, getGame().board.get(fromPos))
-        getGame().board.set(fromPos, null)
+        mutableGame.board.set(toPos, mutableGame.board.get(fromPos))
+        mutableGame.board.set(fromPos, null)
     }
 
-    override fun rollback() {
-        super.rollback()
-        if (getGame().board.get(fromPos) != null) {
+    override fun rollback(mutableGame: MutableGame) {
+        super.rollback(mutableGame)
+        if (mutableGame.board.get(fromPos) != null) {
             Log.e(TAG, "Attempting to move piece into non-empty cell (rollback)")
         }
-        getGame().board.set(fromPos, getGame().board.get(toPos))
-        getGame().board.set(toPos, null)
+        mutableGame.board.set(fromPos, mutableGame.board.get(toPos))
+        mutableGame.board.set(toPos, null)
     }
 }

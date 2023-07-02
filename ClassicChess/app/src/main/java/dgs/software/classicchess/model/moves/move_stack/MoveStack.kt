@@ -1,17 +1,19 @@
-package dgs.software.classicchess.model.moves
+package dgs.software.classicchess.model.moves.move_stack
 
 import android.util.Log
 import dgs.software.classicchess.model.Coordinate
+import dgs.software.classicchess.model.MutableGame
+import dgs.software.classicchess.model.moves.RevertableMove
 
 private val TAG = "MoveStack"
 
 data class MoveStack(
-    private val moves: MutableList<RevertableMove> = mutableListOf<RevertableMove>(),
-    private var iteratorIndex: Int = -1
+    val moves: MutableList<RevertableMove> = mutableListOf(),
+    var iteratorIndex: Int = -1
 ) {
-    fun resetMoveStack() {
+    fun resetMoveStack(mutableGame: MutableGame) {
         while (iteratorIndex >= 0) {
-            moves[iteratorIndex].rollback()
+            moves[iteratorIndex].rollback(mutableGame)
             iteratorIndex--
         }
 
@@ -19,15 +21,15 @@ data class MoveStack(
         iteratorIndex = -1
     }
 
-    fun executeMove(move: RevertableMove) {
+    fun executeMove(mutableGame: MutableGame, move: RevertableMove) {
         Log.d(TAG, "Execute move $move.toString()")
-        deleteElementsAfterIndex(iteratorIndex)
-        move.execute()
+        moves.deleteElementsAfterIndex(iteratorIndex)
+        move.execute(mutableGame)
         moves.add(move)
-        iteratorIndex = moves.count() - 1
+        iteratorIndex = moves.lastIndex
     }
 
-    fun rollbackLastMove(): Boolean {
+    fun rollbackLastMove(mutableGame: MutableGame): Boolean {
         if (!doneActionsOnStack()) {
             Log.d(
                 TAG,
@@ -35,12 +37,12 @@ data class MoveStack(
             )
             return false
         }
-        moves[iteratorIndex].rollback()
+        moves[iteratorIndex].rollback(mutableGame)
         iteratorIndex--
         return true
     }
 
-    fun redoNextMove(): Boolean {
+    fun redoNextMove(mutableGame: MutableGame): Boolean {
         if (!undoneActionsOnStack()) {
             Log.d(
                 TAG,
@@ -49,7 +51,7 @@ data class MoveStack(
             return false
         }
         iteratorIndex++
-        moves[iteratorIndex].execute()
+        moves[iteratorIndex].execute(mutableGame)
         return true
     }
 
@@ -73,8 +75,8 @@ data class MoveStack(
         return moves.any()
     }
 
-    private fun deleteElementsAfterIndex(index: Int) {
-        if (index < -1 || index >= moves.size) {
+    private fun MutableList<RevertableMove>.deleteElementsAfterIndex(index: Int) {
+        if (index < -1 || index >= size) {
             Log.d(TAG,"Attempted to delete element at index $index which is not possible.")
             return;
         }
@@ -82,4 +84,11 @@ data class MoveStack(
             moves.removeLast()
         }
     }
+}
+
+fun MoveStack.toImmutableMoveStack(): ImmutableMoveStack {
+    return ImmutableMoveStack(
+        moves = moves,
+        iteratorIndex = iteratorIndex
+    )
 }

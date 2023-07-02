@@ -6,30 +6,28 @@ import dgs.software.classicchess.model.*
 private const val TAG = "BoardStatusProvider"
 
 interface BoardStatusProvider {
-    fun kingIsInCheck(player: Player) : Boolean
-    fun getCellsInCheck(player: Player): Array<Array<Boolean>>
-    fun getPositionOfKing(player: Player) : Coordinate
+    fun kingIsInCheck(mutableGame: MutableGame, player: Player) : Boolean
+    fun getCellsInCheck(mutableGame: MutableGame, player: Player): Array<Array<Boolean>>
+    fun getPositionOfKing(mutableGame: MutableGame, player: Player) : Coordinate
 }
 
 class DefaultBoardStatusProvider(
-    private val game: Game,
-    private val basicMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider(game)
+    private val basicMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider()
 ) : BoardStatusProvider {
-
-    override fun kingIsInCheck(player: Player) : Boolean {
-        val positionOfKing = getPositionOfKing(player)
-        val cellsInCheck = getCellsInCheck(player)
+    override fun kingIsInCheck(mutableGame: MutableGame, player: Player) : Boolean {
+        val positionOfKing = getPositionOfKing(mutableGame, player)
+        val cellsInCheck = getCellsInCheck(mutableGame, player)
         return cellsInCheck[positionOfKing.row][positionOfKing.column]
     }
 
-    override fun getCellsInCheck(player: Player): Array<Array<Boolean>> {
+    override fun getCellsInCheck(mutableGame: MutableGame, player: Player): Array<Array<Boolean>> {
         val fieldsInCheck = Array(8) { Array(8) { false } }
 
         for (i in 0 until 8) {
             for (j in 0 until 8) {
                 val pos = Coordinate(i,j)
-                if (game.board.isPlayer(pos, player.opponent())) {
-                    val possibleMoves = basicMovesProvider.getBasicMoves(pos)
+                if (mutableGame.board.isPlayer(pos, player.opponent())) {
+                    val possibleMoves = basicMovesProvider.getBasicMoves(mutableGame, pos)
                     possibleMoves.forEach{
                         fieldsInCheck[it.toPos.row][it.toPos.column] = true
                     }
@@ -40,10 +38,10 @@ class DefaultBoardStatusProvider(
         return fieldsInCheck
     }
 
-    override fun getPositionOfKing(player: Player) : Coordinate {
+    override fun getPositionOfKing(mutableGame: MutableGame, player: Player) : Coordinate {
         for (i in 0 until 8) {
             for (j in 0 until 8) {
-                val piece = game.board.get(Coordinate(i,j))
+                val piece = mutableGame.board.get(Coordinate(i,j))
                 if (piece?.player == player && piece?.type == Type.KING) {
                     return Coordinate(i,j)
                 }

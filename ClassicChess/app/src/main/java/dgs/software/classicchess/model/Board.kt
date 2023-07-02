@@ -1,13 +1,11 @@
 package dgs.software.classicchess.model
 
 data class Board(
-    private val board: Array<Array<Piece?>> = Array(8) { Array<Piece?>(8) { null } }
+    val board: Array<Array<Piece?>> = Array(8) { Array<Piece?>(8) { null } }
 ) {
     init {
         initializeWithDefaultSetup()
     }
-
-    // TODO: Delete unused methods
 
     fun get(coordinate: Coordinate): Piece? {
         return get(coordinate.row, coordinate.column)
@@ -25,10 +23,6 @@ data class Board(
         board[row][col] = piece
     }
 
-    fun isNonEmpty(coordinate: Coordinate): Boolean {
-        return isNonEmpty(coordinate.row, coordinate.column)
-    }
-
     fun isNonEmpty(row: Int, col: Int): Boolean{
         return board[row][col] != null
     }
@@ -39,10 +33,6 @@ data class Board(
 
     fun isPlayer(row: Int, col: Int, player: Player): Boolean {
         return board[row][col]?.player == player
-    }
-
-    fun reset() {
-        initializeWithDefaultSetup()
     }
 
     private fun createPiece(row: Int, col: Int, type: Type, player: Player) {
