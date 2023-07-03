@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -19,6 +20,7 @@ import dgs.software.classicchess.R
 import dgs.software.classicchess.ui.screens.LocalGameScreen
 import dgs.software.classicchess.ui.screens.LocalGameViewModel
 import dgs.software.classicchess.ui.screens.MainMenuScreen
+import org.koin.androidx.compose.getViewModel
 
 enum class ClassicChessScreen(@StringRes val title: Int) {
     Menu(title = R.string.Empty),
@@ -60,8 +62,7 @@ fun ClassicChessApp(
         backStackEntry?.destination?.route ?: ClassicChessScreen.Menu.name
     )
 
-    val localGameViewModel: LocalGameViewModel =
-        viewModel(factory = LocalGameViewModel.Factory)
+    val localGameViewModel: LocalGameViewModel = getViewModel()
 
     Scaffold(
         topBar = {

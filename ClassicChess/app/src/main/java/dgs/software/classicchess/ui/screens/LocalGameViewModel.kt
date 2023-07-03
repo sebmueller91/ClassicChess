@@ -15,7 +15,10 @@ import kotlinx.coroutines.flow.update
 
 private const val TAG = "LocalGameViewModel"
 
-class LocalGameViewModel : ViewModel() {
+class LocalGameViewModel(
+    private val getPossibleMovesUseCase: GetPossibleMovesUseCase,
+    private val updateGameStatusUseCase: UpdateGameStatusUseCase
+) : ViewModel() {
     var _uiState: MutableStateFlow<LocalGameUiState> = MutableStateFlow(LocalGameUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -25,7 +28,7 @@ class LocalGameViewModel : ViewModel() {
             ResolveUserClickActionUseCase().execute(uiState.value, clickedCoordinate)) {
             UserClickAction.DisplayPossibleMovesOfPiece -> {
                 val possibleMoves =
-                    GetPossibleMovesUseCase().execute(uiState.value.game, clickedCoordinate)
+                    getPossibleMovesUseCase.execute(uiState.value.game, clickedCoordinate)
                 _uiState.update { previousState ->
                     previousState.copy(
                         selectedCoordinate = clickedCoordinate,
@@ -159,7 +162,7 @@ class LocalGameViewModel : ViewModel() {
     }
 
     private fun updateBoard() {
-        val gameStatusInfo = UpdateGameStatusUseCase().execute(uiState.value.game)
+        val gameStatusInfo = updateGameStatusUseCase.execute(uiState.value.game)
         _uiState.update { previousState ->
             previousState.copy(
                 kingInCheck = gameStatusInfo.kingInCheck,
@@ -169,16 +172,6 @@ class LocalGameViewModel : ViewModel() {
                 canRedoMove = uiState.value.game.canRedoMove,
                 canUndoMove = uiState.value.game.canUndoMove
             )
-        }
-    }
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val application =
-                    (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as ClassicChessApplication)
-                LocalGameViewModel()
-            }
         }
     }
 }

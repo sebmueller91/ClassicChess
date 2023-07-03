@@ -6,20 +6,15 @@ import dgs.software.classicchess.model.Player
 
 private val TAG = "GameStatusProvider"
 
-interface GameStatusProvider {
-    fun isStalemate(mutableGame: MutableGame, player: Player) : Boolean
-    fun isCheckmate(mutableGame: MutableGame, player: Player) : Boolean
-}
-
-class DefaultGameStatusProvider(
-    private val possibleMovesProvider: PossibleMovesProvider = DefaultPossibleMovesProvider(),
-    private val boardStatusProvider: BoardStatusProvider = DefaultBoardStatusProvider()
-) : GameStatusProvider {
-    override fun isStalemate(mutableGame: MutableGame, player: Player) : Boolean {
+class GameStatusProvider(
+    private val possibleMovesProvider: PossibleMovesProvider,
+    private val boardStatusProvider: BoardStatusProvider
+) {
+    fun isStalemate(mutableGame: MutableGame, player: Player) : Boolean {
         return !boardStatusProvider.kingIsInCheck(mutableGame, player) && !playerCanPerformMove(mutableGame, player)
     }
 
-    override fun isCheckmate(mutableGame: MutableGame, player: Player) : Boolean {
+    fun isCheckmate(mutableGame: MutableGame, player: Player) : Boolean {
         val kingIsInCheck = boardStatusProvider.kingIsInCheck(mutableGame, player)
         val playerCanPerformMove = playerCanPerformMove(mutableGame, player)
         return kingIsInCheck && !playerCanPerformMove

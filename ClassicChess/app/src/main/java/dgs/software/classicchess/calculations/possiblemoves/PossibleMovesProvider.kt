@@ -10,17 +10,14 @@ import dgs.software.classicchess.utils.getPlayerOrNull
 
 private val TAG = "PossibleMovesProvider"
 
-interface PossibleMovesProvider {
-    fun getPossibleMoves(mutableGame: MutableGame, position: Coordinate): List<RevertableMove>
-}
 
-class DefaultPossibleMovesProvider(
-    private val basicPossibleMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider(),
-    private val boardStatusProvider: BoardStatusProvider = DefaultBoardStatusProvider()
-) : PossibleMovesProvider {
+class PossibleMovesProvider(
+    private val basicPossibleMovesProvider: BasicMovesProvider,
+    private val boardStatusProvider: BoardStatusProvider
+) {
     private lateinit var _mutableGame: MutableGame
 
-    override fun getPossibleMoves(
+    fun getPossibleMoves(
         mutableGame: MutableGame,
         position: Coordinate
     ): List<RevertableMove> {
@@ -172,6 +169,9 @@ class DefaultPossibleMovesProvider(
                         }
                     }
                 }
+            }
+            null -> {
+                throw Exception("This should not be possible! There is something wrong! Player must always be black or white here.")
             }
         }
     }

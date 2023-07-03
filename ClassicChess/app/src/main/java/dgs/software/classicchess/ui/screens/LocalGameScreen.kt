@@ -226,7 +226,7 @@ fun ChessCell(
 
     val interactionSource = MutableInteractionSource()
     val backgroundColor =
-        if (uiStateFlow?.selectedCoordinate == curCoordinate) {
+        if (uiStateFlow.selectedCoordinate == curCoordinate) {
             MaterialTheme.colors.selectedCellColor
         } else if (getCellBackgroundType(rowIndex, colIndex)) {
             MaterialTheme.colors.boardCellWhite
@@ -289,7 +289,7 @@ private fun IconButton(
     contentDescription: String? = null
 ) {
     Button(
-        modifier = Modifier
+        modifier = modifier
             .height(50.dp)
             .padding(5.dp),
         onClick = { onClick() },
@@ -308,7 +308,7 @@ private fun PlayerIndicator(
     modifier: Modifier = Modifier
 ) {
 
-    Canvas(modifier = Modifier.size(30.dp)) {
+    Canvas(modifier = modifier.size(30.dp)) {
         drawCircle(
             color = if (isWhiteTurn) Color.White else Color.Black,
             radius = size.minDimension / 2

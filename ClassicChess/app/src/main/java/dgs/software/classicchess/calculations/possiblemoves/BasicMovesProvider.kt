@@ -12,14 +12,9 @@ import dgs.software.classicchess.utils.getPlayerOrNull
 
 private val TAG = "BasicMovesProvider"
 
-interface BasicMovesProvider {
-    fun getBasicMoves(mutableGame: MutableGame, position: Coordinate): List<RevertableMove>
-}
-
-class DefaultBasicMovesProvider(
-) : BasicMovesProvider {
+class BasicMovesProvider() {
     private lateinit var _mutableGame: MutableGame
-    override fun getBasicMoves(mutableGame: MutableGame, position: Coordinate): List<RevertableMove> {
+    fun getBasicMoves(mutableGame: MutableGame, position: Coordinate): List<RevertableMove> {
         _mutableGame = mutableGame
         val piece = _mutableGame.board.get(position)
         if (piece == null) {
@@ -43,7 +38,7 @@ class DefaultBasicMovesProvider(
 
         // Move 1 forward
         var destination = position.copy(position.row + moveDirection)
-        possibleMoves.addMoveIfValid(position, destination) { coord ->
+        possibleMoves.addMoveIfValid(position, destination) {
             _mutableGame.board.get(destination) == null
         }
 
@@ -52,7 +47,7 @@ class DefaultBasicMovesProvider(
             || (player == Player.BLACK && position.row == 1 && _mutableGame.board.get(position.copy(row = 2)) == null)
         ) {
             destination = position.copy(position.row + (moveDirection * 2))
-            possibleMoves.addMoveIfValid(position, destination) { coord ->
+            possibleMoves.addMoveIfValid(position, destination) {
                 _mutableGame.board.get(position.copy(position.row + moveDirection)) == null &&
                         _mutableGame.board.get(destination) == null
             }
@@ -60,12 +55,12 @@ class DefaultBasicMovesProvider(
 
         // Hit diagonal left and right
         destination = position.copy(position.row + moveDirection, position.column + 1)
-        possibleMoves.addMoveIfValid(position, destination) { coord ->
+        possibleMoves.addMoveIfValid(position, destination) {
             val piece = _mutableGame.board.get(destination)
             !(piece == null) && player == piece.player.opponent()
         }
         destination = position.copy(position.row + moveDirection, position.column - 1)
-        possibleMoves.addMoveIfValid(position, destination) { coord ->
+        possibleMoves.addMoveIfValid(position, destination) {
             val piece = _mutableGame.board.get(destination)
             !(piece == null) && player == piece.player.opponent()
         }

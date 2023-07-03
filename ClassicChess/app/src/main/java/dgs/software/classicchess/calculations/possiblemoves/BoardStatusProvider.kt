@@ -5,22 +5,15 @@ import dgs.software.classicchess.model.*
 
 private const val TAG = "BoardStatusProvider"
 
-interface BoardStatusProvider {
-    fun kingIsInCheck(mutableGame: MutableGame, player: Player) : Boolean
-    fun getCellsInCheck(mutableGame: MutableGame, player: Player): Array<Array<Boolean>>
-    fun getPositionOfKing(mutableGame: MutableGame, player: Player) : Coordinate
-}
-
-class DefaultBoardStatusProvider(
-    private val basicMovesProvider: BasicMovesProvider = DefaultBasicMovesProvider()
-) : BoardStatusProvider {
-    override fun kingIsInCheck(mutableGame: MutableGame, player: Player) : Boolean {
+class BoardStatusProvider(
+    private val basicMovesProvider: BasicMovesProvider) {
+    fun kingIsInCheck(mutableGame: MutableGame, player: Player) : Boolean {
         val positionOfKing = getPositionOfKing(mutableGame, player)
         val cellsInCheck = getCellsInCheck(mutableGame, player)
         return cellsInCheck[positionOfKing.row][positionOfKing.column]
     }
 
-    override fun getCellsInCheck(mutableGame: MutableGame, player: Player): Array<Array<Boolean>> {
+    fun getCellsInCheck(mutableGame: MutableGame, player: Player): Array<Array<Boolean>> {
         val fieldsInCheck = Array(8) { Array(8) { false } }
 
         for (i in 0 until 8) {
@@ -38,11 +31,11 @@ class DefaultBoardStatusProvider(
         return fieldsInCheck
     }
 
-    override fun getPositionOfKing(mutableGame: MutableGame, player: Player) : Coordinate {
+    fun getPositionOfKing(mutableGame: MutableGame, player: Player) : Coordinate {
         for (i in 0 until 8) {
             for (j in 0 until 8) {
                 val piece = mutableGame.board.get(Coordinate(i,j))
-                if (piece?.player == player && piece?.type == Type.KING) {
+                if (piece?.player == player && piece.type == Type.KING) {
                     return Coordinate(i,j)
                 }
             }

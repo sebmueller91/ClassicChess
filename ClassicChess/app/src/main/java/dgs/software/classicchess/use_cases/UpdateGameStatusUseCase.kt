@@ -1,13 +1,12 @@
 package dgs.software.classicchess.use_cases
 
 import dgs.software.classicchess.calculations.possiblemoves.BoardStatusProvider
-import dgs.software.classicchess.calculations.possiblemoves.DefaultBoardStatusProvider
-import dgs.software.classicchess.calculations.possiblemoves.DefaultGameStatusProvider
+import dgs.software.classicchess.calculations.possiblemoves.GameStatusProvider
 import dgs.software.classicchess.model.*
 
 class UpdateGameStatusUseCase(
-    private val gameStatusProvider: DefaultGameStatusProvider = DefaultGameStatusProvider(),
-    private val boardStatusProvider: BoardStatusProvider = DefaultBoardStatusProvider()
+    private val gameStatusProvider: GameStatusProvider,
+    private val boardStatusProvider: BoardStatusProvider
 ) {
     fun execute(game: Game): GameStatusInfo {
         val mutableGame = game.toMutableGame()

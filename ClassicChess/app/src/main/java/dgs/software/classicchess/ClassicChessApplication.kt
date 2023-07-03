@@ -1,13 +1,19 @@
 package dgs.software.classicchess
 
 import android.app.Application
-import dgs.software.classicchess.data.AppContainer
-import dgs.software.classicchess.data.DefaultAppContainer
+import dgs.software.classicchess.di.classicChessModule
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.GlobalContext.startKoin
 
 class ClassicChessApplication : Application() {
-    lateinit var container: AppContainer
     override fun onCreate() {
         super.onCreate()
-        container = DefaultAppContainer()
+
+        startKoin{
+            androidLogger()
+            androidContext(this@ClassicChessApplication)
+            modules(classicChessModule)
+        }
     }
 }
