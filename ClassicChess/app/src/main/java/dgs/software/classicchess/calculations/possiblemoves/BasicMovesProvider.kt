@@ -4,7 +4,6 @@ import android.util.Log
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.MutableGame
 import dgs.software.classicchess.model.Player
-import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.model.moves.MoveAndCapturePiece
 import dgs.software.classicchess.model.moves.MovePiece
 import dgs.software.classicchess.model.moves.RevertableMove
@@ -12,117 +11,174 @@ import dgs.software.classicchess.utils.getPlayerOrNull
 
 private val TAG = "BasicMovesProvider"
 
-class BasicMovesProvider() {
-    private lateinit var _mutableGame: MutableGame
-    fun getBasicMoves(mutableGame: MutableGame, position: Coordinate): List<RevertableMove> {
-        _mutableGame = mutableGame
-        val piece = _mutableGame.board.get(position)
-        if (piece == null) {
-            Log.e(TAG, "Tried to calculate basic moves for an empty cell at pos $position")
-            return listOf()
-        }
-        return when (piece.type) {
-            Type.PAWN -> getBasicMovesForPawn(position)
-            Type.ROOK -> getBasicMovesForRook(position)
-            Type.KNIGHT -> getBasicMovesForKnight(position)
-            Type.BISHOP -> getBasicMovesForBishop(position)
-            Type.QUEEN -> getBasicMovesForQueen(position)
-            Type.KING -> getBasicMovesForKing(position)
-        }
-    }
+sealed class BasicMovesProvider() {
+    abstract fun calculateBasicMoves(
+        mutableGame: MutableGame,
+        position: Coordinate
+    ): List<RevertableMove>
 
-    private fun getBasicMovesForPawn(position: Coordinate): List<RevertableMove> {
-        val player = _mutableGame.getPlayerOrNull(position, TAG) ?: return listOf()
-        val moveDirection = if (player == Player.BLACK) 1 else -1
-        var possibleMoves = mutableListOf<RevertableMove>()
+    object PawnBasicMovesProvider : BasicMovesProvider() {
+        override fun calculateBasicMoves(
+            mutableGame: MutableGame,
+            position: Coordinate
+        ): List<RevertableMove> {
+            val player = mutableGame.getPlayerOrNull(position, TAG) ?: return listOf()
+            val moveDirection = if (player == Player.BLACK) 1 else -1
+            var possibleMoves = mutableListOf<RevertableMove>()
 
-        // Move 1 forward
-        var destination = position.copy(position.row + moveDirection)
-        possibleMoves.addMoveIfValid(position, destination) {
-            _mutableGame.board.get(destination) == null
-        }
-
-        // Move 2 forward
-        if ((player == Player.WHITE && position.row == 6 && _mutableGame.board.get(position.copy(row = 5)) == null)
-            || (player == Player.BLACK && position.row == 1 && _mutableGame.board.get(position.copy(row = 2)) == null)
-        ) {
-            destination = position.copy(position.row + (moveDirection * 2))
-            possibleMoves.addMoveIfValid(position, destination) {
-                _mutableGame.board.get(position.copy(position.row + moveDirection)) == null &&
-                        _mutableGame.board.get(destination) == null
+            // Move 1 forward
+            var destination = position.copy(position.row + moveDirection)
+            possibleMoves.addMoveIfValid(mutableGame, position, destination) {
+                mutableGame.board.get(destination) == null
             }
+
+            // Move 2 forward
+            if ((player == Player.WHITE && position.row == 6 && mutableGame.board.get(
+                    position.copy(
+                        row = 5
+                    )
+                ) == null)
+                || (player == Player.BLACK && position.row == 1 && mutableGame.board.get(
+                    position.copy(
+                        row = 2
+                    )
+                ) == null)
+            ) {
+                destination = position.copy(position.row + (moveDirection * 2))
+                possibleMoves.addMoveIfValid(mutableGame, position, destination) {
+                    mutableGame.board.get(position.copy(position.row + moveDirection)) == null &&
+                            mutableGame.board.get(destination) == null
+                }
+            }
+
+            // Hit diagonal left and right
+            destination = position.copy(position.row + moveDirection, position.column + 1)
+            possibleMoves.addMoveIfValid(mutableGame, position, destination) {
+                val piece = mutableGame.board.get(destination)
+                !(piece == null) && player == piece.player.opponent()
+            }
+            destination = position.copy(position.row + moveDirection, position.column - 1)
+            possibleMoves.addMoveIfValid(mutableGame, position, destination) {
+                val piece = mutableGame.board.get(destination)
+                !(piece == null) && player == piece.player.opponent()
+            }
+
+            return possibleMoves
         }
+    }
 
-        // Hit diagonal left and right
-        destination = position.copy(position.row + moveDirection, position.column + 1)
-        possibleMoves.addMoveIfValid(position, destination) {
-            val piece = _mutableGame.board.get(destination)
-            !(piece == null) && player == piece.player.opponent()
+    object RookBasicMovesProvider : BasicMovesProvider() {
+        override fun calculateBasicMoves(
+            mutableGame: MutableGame,
+            position: Coordinate
+        ): List<RevertableMove> {
+            var possibleMoves = mutableListOf<RevertableMove>()
+            possibleMoves.addCellsOnStraightLines(mutableGame, position)
+            return possibleMoves
         }
-        destination = position.copy(position.row + moveDirection, position.column - 1)
-        possibleMoves.addMoveIfValid(position, destination) {
-            val piece = _mutableGame.board.get(destination)
-            !(piece == null) && player == piece.player.opponent()
+    }
+
+    object KnightBasicMovesProvider : BasicMovesProvider() {
+        override fun calculateBasicMoves(
+            mutableGame: MutableGame,
+            position: Coordinate
+        ): List<RevertableMove> {
+            var possibleMoves = mutableListOf<RevertableMove>()
+
+            possibleMoves.addMoveIfValid(
+                mutableGame,
+                position,
+                position.copy(position.row + 2, position.column + 1)
+            )
+            possibleMoves.addMoveIfValid(
+                mutableGame,
+                position,
+                position.copy(position.row + 2, position.column - 1)
+            )
+            possibleMoves.addMoveIfValid(
+                mutableGame,
+                position,
+                position.copy(position.row - 2, position.column + 1)
+            )
+            possibleMoves.addMoveIfValid(
+                mutableGame,
+                position,
+                position.copy(position.row - 2, position.column - 1)
+            )
+            possibleMoves.addMoveIfValid(
+                mutableGame,
+                position,
+                position.copy(position.row + 1, position.column + 2)
+            )
+            possibleMoves.addMoveIfValid(
+                mutableGame,
+                position,
+                position.copy(position.row - 1, position.column + 2)
+            )
+            possibleMoves.addMoveIfValid(
+                mutableGame,
+                position,
+                position.copy(position.row + 1, position.column - 2)
+            )
+            possibleMoves.addMoveIfValid(
+                mutableGame,
+                position,
+                position.copy(position.row - 1, position.column - 2)
+            )
+
+            return possibleMoves
         }
-
-        return possibleMoves
     }
 
-    private fun getBasicMovesForRook(position: Coordinate): List<RevertableMove> {
-        var possibleMoves = mutableListOf<RevertableMove>()
-        possibleMoves.addCellsOnStraightLines(position)
-        return possibleMoves
+    object BishopBasicMovesProvider : BasicMovesProvider() {
+        override fun calculateBasicMoves(
+            mutableGame: MutableGame,
+            position: Coordinate
+        ): List<RevertableMove> {
+            var possibleMoves = mutableListOf<RevertableMove>()
+            possibleMoves.addCellsOnDiagonalLines(mutableGame, position)
+            return possibleMoves
+        }
     }
 
-    private fun getBasicMovesForKnight(position: Coordinate): List<RevertableMove> {
-        var possibleMoves = mutableListOf<RevertableMove>()
-
-        possibleMoves.addMoveIfValid(position, position.copy(position.row + 2, position.column + 1))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row + 2, position.column - 1))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row - 2, position.column + 1))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row - 2, position.column - 1))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row + 1, position.column + 2))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row - 1, position.column + 2))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row + 1, position.column - 2))
-        possibleMoves.addMoveIfValid(position, position.copy(position.row - 1, position.column - 2))
-
-        return possibleMoves
+    object QueenBasicMovesProvider: BasicMovesProvider() {
+        override fun calculateBasicMoves(
+            mutableGame: MutableGame,
+            position: Coordinate
+        ): List<RevertableMove> {
+            var possibleMoves = mutableListOf<RevertableMove>()
+            possibleMoves.addCellsOnStraightLines(mutableGame, position)
+            possibleMoves.addCellsOnDiagonalLines(mutableGame, position)
+            possibleMoves.addNeighborCells(mutableGame, position)
+            return possibleMoves
+        }
     }
 
-    private fun getBasicMovesForBishop(position: Coordinate): List<RevertableMove> {
-        var possibleMoves = mutableListOf<RevertableMove>()
-        possibleMoves.addCellsOnDiagonalLines(position)
-        return possibleMoves
+    object KingBasicMovesProvider: BasicMovesProvider() {
+        override fun calculateBasicMoves(
+            mutableGame: MutableGame,
+            position: Coordinate
+        ): List<RevertableMove> {
+            var possibleMoves = mutableListOf<RevertableMove>()
+            possibleMoves.addNeighborCells(mutableGame, position)
+            return possibleMoves
+        }
     }
 
-    private fun getBasicMovesForQueen(position: Coordinate): List<RevertableMove> {
-        var possibleMoves = mutableListOf<RevertableMove>()
-        possibleMoves.addCellsOnStraightLines(position)
-        possibleMoves.addCellsOnDiagonalLines(position)
-        possibleMoves.addNeighborCells(position)
-        return possibleMoves
-    }
-
-    private fun getBasicMovesForKing(position: Coordinate): List<RevertableMove> {
-        var possibleMoves = mutableListOf<RevertableMove>()
-        possibleMoves.addNeighborCells(position)
-        return possibleMoves
-    }
-
-    private fun MutableList<RevertableMove>.addNeighborCells(fromPos: Coordinate) {
+    protected fun MutableList<RevertableMove>.addNeighborCells(mutableGame: MutableGame, fromPos: Coordinate) {
         val r = fromPos.row
         val c = fromPos.column
-        addMoveIfValid(fromPos, fromPos.copy(row = r + 1, column = c - 1))
-        addMoveIfValid(fromPos, fromPos.copy(row = r + 1, column = c))
-        addMoveIfValid(fromPos, fromPos.copy(row = r + 1, column = c + 1))
-        addMoveIfValid(fromPos, fromPos.copy(row = r, column = c - 1))
-        addMoveIfValid(fromPos, fromPos.copy(row = r, column = c + 1))
-        addMoveIfValid(fromPos, fromPos.copy(row = r - 1, column = c - 1))
-        addMoveIfValid(fromPos, fromPos.copy(row = r - 1, column = c))
-        addMoveIfValid(fromPos, fromPos.copy(row = r - 1, column = c + 1))
+        addMoveIfValid(mutableGame, fromPos, fromPos.copy(row = r + 1, column = c - 1))
+        addMoveIfValid(mutableGame, fromPos, fromPos.copy(row = r + 1, column = c))
+        addMoveIfValid(mutableGame, fromPos, fromPos.copy(row = r + 1, column = c + 1))
+        addMoveIfValid(mutableGame, fromPos, fromPos.copy(row = r, column = c - 1))
+        addMoveIfValid(mutableGame, fromPos, fromPos.copy(row = r, column = c + 1))
+        addMoveIfValid(mutableGame, fromPos, fromPos.copy(row = r - 1, column = c - 1))
+        addMoveIfValid(mutableGame, fromPos, fromPos.copy(row = r - 1, column = c))
+        addMoveIfValid(mutableGame, fromPos, fromPos.copy(row = r - 1, column = c + 1))
     }
 
-    private fun MutableList<RevertableMove>.addCellsOnStraightLines(fromPos: Coordinate) {
+    protected fun MutableList<RevertableMove>.addCellsOnStraightLines(mutableGame: MutableGame, fromPos: Coordinate) {
         val directions =
             listOf(
                 Coordinate(1, 0),
@@ -135,14 +191,14 @@ class BasicMovesProvider() {
             var toPos = fromPos
             for (i in 0..6) {
                 toPos += direction
-                if (!addMoveAndCheckIfToContinue(fromPos, toPos)) {
+                if (!addMoveAndCheckIfToContinue(mutableGame, fromPos, toPos)) {
                     break
                 }
             }
         }
     }
 
-    private fun MutableList<RevertableMove>.addCellsOnDiagonalLines(fromPos: Coordinate) {
+    protected fun MutableList<RevertableMove>.addCellsOnDiagonalLines(mutableGame: MutableGame, fromPos: Coordinate) {
         val directions =
             listOf(
                 Coordinate(1, 1),
@@ -155,36 +211,39 @@ class BasicMovesProvider() {
             var toPos = fromPos
             for (i in 0..6) {
                 toPos += direction
-                if (!addMoveAndCheckIfToContinue(fromPos, toPos)) {
+                if (!addMoveAndCheckIfToContinue(mutableGame, fromPos, toPos)) {
                     break
                 }
             }
         }
     }
 
-    private fun MutableList<RevertableMove>.addMoveAndCheckIfToContinue(
+    protected fun MutableList<RevertableMove>.addMoveAndCheckIfToContinue(
+        mutableGame: MutableGame,
         fromPos: Coordinate,
         toPos: Coordinate
     ): Boolean {
         if (!toPos.isValid()) {
             return false
         }
-        val fromPosPiece = _mutableGame.board.get(fromPos)
+        val fromPosPiece = mutableGame.board.get(fromPos)
         if (fromPosPiece == null) {
             Log.e(TAG, "Tried to move an invalid cell $fromPos")
             return false
         }
 
-        val toPosPiece = _mutableGame.board.get(toPos) ?: return addMoveIfValid(fromPos, toPos)
+        val toPosPiece =
+            mutableGame.board.get(toPos) ?: return addMoveIfValid(mutableGame, fromPos, toPos)
 
         if (fromPosPiece.player != toPosPiece.player) {
-            addMoveIfValid(fromPos, toPos)
+            addMoveIfValid(mutableGame, fromPos, toPos)
         }
 
         return false
     }
 
-    private fun MutableList<RevertableMove>.addMoveIfValid(
+    protected fun MutableList<RevertableMove>.addMoveIfValid(
+        mutableGame: MutableGame,
         fromPos: Coordinate,
         toPos: Coordinate,
         conditionToAdd: (Coordinate) -> Boolean = { true }
@@ -193,7 +252,7 @@ class BasicMovesProvider() {
             Log.e(TAG, "Tried to move an invalid cell $fromPos")
             return false
         }
-        val fromPosPiece = _mutableGame.board.get(fromPos)
+        val fromPosPiece = mutableGame.board.get(fromPos)
         if (fromPosPiece == null) {
             Log.e(TAG, "Tried to move empty cell $fromPos")
             return false
@@ -204,7 +263,7 @@ class BasicMovesProvider() {
             return false
         }
 
-        val toPosPiece = _mutableGame.board.get(toPos)
+        val toPosPiece = mutableGame.board.get(toPos)
         val move = if (toPosPiece == null) { // Non-capture move
             MovePiece(fromPos, toPos)
         } else { // Capture move

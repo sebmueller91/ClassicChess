@@ -26,7 +26,6 @@ fun MainMenuScreen(
     onComputerGameButtonClickedAction: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // TODO: Pass in as parameter
     val gameModes = listOf(
         GameMode(
             iconId = R.drawable.playervsplayer,
@@ -123,12 +122,3 @@ private fun GameModeCard(
         }
     }
 }
-
-
-// TODO: Move into separate class
-private data class GameMode(
-    val name: String,
-    val description: String,
-    val iconId: Int,
-    val buttonClickedAction: () -> Unit
-)

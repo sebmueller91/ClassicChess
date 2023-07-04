@@ -4,10 +4,7 @@ import dgs.software.classicchess.calculations.possiblemoves.BoardStatusProvider
 import dgs.software.classicchess.calculations.possiblemoves.GameStatusProvider
 import dgs.software.classicchess.model.*
 
-class UpdateGameStatusUseCase(
-    private val gameStatusProvider: GameStatusProvider,
-    private val boardStatusProvider: BoardStatusProvider
-) {
+class UpdateGameStatusUseCase {
     fun execute(game: Game): GameStatusInfo {
         val mutableGame = game.toMutableGame()
         return GameStatusInfo(
@@ -19,8 +16,8 @@ class UpdateGameStatusUseCase(
 
     private fun getKingInCheck(mutableGame: MutableGame): Coordinate? {
         Player.values().forEach { player ->
-            val positionOfKing = boardStatusProvider.getPositionOfKing(mutableGame, player)
-            val cellsInCheck = boardStatusProvider.getCellsInCheck(mutableGame,player)
+            val positionOfKing = mutableGame.boardStatus.getPositionOfKing(player)
+            val cellsInCheck = mutableGame.boardStatus.getCellsInCheck(player)
             if (cellsInCheck[positionOfKing.row][positionOfKing.column]) {
                 return positionOfKing
             }
@@ -28,25 +25,31 @@ class UpdateGameStatusUseCase(
         return null
     }
 
-    private fun getPlayerWon(mutableGame: MutableGame): Player? {
-        return if (gameStatusProvider.isCheckmate(mutableGame, Player.WHITE)) {
-            Player.BLACK
-        } else if (gameStatusProvider.isCheckmate(mutableGame,Player.BLACK)) {
-            Player.WHITE
-        } else {
-            null
+    private fun getPlayerWon(mutableGame: MutableGame): Player? =
+        when {
+            mutableGame.gameStatus.isCheckmate(Player.WHITE) -> {
+                Player.BLACK
+            }
+            mutableGame.gameStatus.isCheckmate(Player.BLACK) -> {
+                Player.WHITE
+            }
+            else -> {
+                null
+            }
         }
-    }
 
-    private fun getPlayerStalemate(mutableGame: MutableGame): Player? {
-        return if (gameStatusProvider.isStalemate(mutableGame, Player.WHITE)) {
-            Player.BLACK
-        } else if (gameStatusProvider.isStalemate(mutableGame,Player.BLACK)) {
-            Player.WHITE
-        } else {
-            null
+    private fun getPlayerStalemate(mutableGame: MutableGame): Player? =
+        when {
+            mutableGame.gameStatus.isStalemate(Player.WHITE) -> {
+                Player.BLACK
+            }
+            mutableGame.gameStatus.isStalemate(Player.BLACK) -> {
+                Player.WHITE
+            }
+            else -> {
+                null
+            }
         }
-    }
 }
 
 class GameStatusInfo(

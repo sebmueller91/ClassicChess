@@ -15,10 +15,7 @@ import kotlinx.coroutines.flow.update
 
 private const val TAG = "LocalGameViewModel"
 
-class LocalGameViewModel(
-    private val getPossibleMovesUseCase: GetPossibleMovesUseCase,
-    private val updateGameStatusUseCase: UpdateGameStatusUseCase
-) : ViewModel() {
+class LocalGameViewModel: ViewModel() {
     var _uiState: MutableStateFlow<LocalGameUiState> = MutableStateFlow(LocalGameUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -28,7 +25,7 @@ class LocalGameViewModel(
             ResolveUserClickActionUseCase().execute(uiState.value, clickedCoordinate)) {
             UserClickAction.DisplayPossibleMovesOfPiece -> {
                 val possibleMoves =
-                    getPossibleMovesUseCase.execute(uiState.value.game, clickedCoordinate)
+                    GetPossibleMovesUseCase().execute(uiState.value.game, clickedCoordinate)
                 _uiState.update { previousState ->
                     previousState.copy(
                         selectedCoordinate = clickedCoordinate,
@@ -162,7 +159,7 @@ class LocalGameViewModel(
     }
 
     private fun updateBoard() {
-        val gameStatusInfo = updateGameStatusUseCase.execute(uiState.value.game)
+        val gameStatusInfo = UpdateGameStatusUseCase().execute(uiState.value.game)
         _uiState.update { previousState ->
             previousState.copy(
                 kingInCheck = gameStatusInfo.kingInCheck,

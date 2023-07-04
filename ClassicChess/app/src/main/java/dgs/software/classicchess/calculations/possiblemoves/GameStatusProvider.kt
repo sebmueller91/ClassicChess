@@ -7,28 +7,29 @@ import dgs.software.classicchess.model.Player
 private val TAG = "GameStatusProvider"
 
 class GameStatusProvider(
-    private val possibleMovesProvider: PossibleMovesProvider,
-    private val boardStatusProvider: BoardStatusProvider
+    private val mutableGame: MutableGame
 ) {
-    fun isStalemate(mutableGame: MutableGame, player: Player) : Boolean {
-        return !boardStatusProvider.kingIsInCheck(mutableGame, player) && !playerCanPerformMove(mutableGame, player)
+    fun isStalemate(player: Player): Boolean {
+        return !mutableGame.boardStatus.kingIsInCheck(player) && !playerCanPerformMove(player)
     }
 
-    fun isCheckmate(mutableGame: MutableGame, player: Player) : Boolean {
-        val kingIsInCheck = boardStatusProvider.kingIsInCheck(mutableGame, player)
-        val playerCanPerformMove = playerCanPerformMove(mutableGame, player)
+    fun isCheckmate(player: Player): Boolean {
+        val kingIsInCheck = mutableGame.boardStatus.kingIsInCheck(player)
+        val playerCanPerformMove = playerCanPerformMove(player)
         return kingIsInCheck && !playerCanPerformMove
     }
 
-    private fun playerCanPerformMove(mutableGame: MutableGame, player: Player) : Boolean {
+    private fun playerCanPerformMove(player: Player): Boolean {
         for (i in 0 until 8) {
             for (j in 0 until 8) {
-                val pos = Coordinate(i,j)
-                if (mutableGame.board.isPlayer(pos, player)) {
-                    val possibleMoves = possibleMovesProvider.getPossibleMoves(mutableGame, pos)
-                    if (possibleMoves.any()) {
-                        return true
-                    }
+                val pos = Coordinate(i, j)
+                val piece = mutableGame.board.get(pos)
+                if (piece?.player != player) {
+                    continue
+                }
+                val possibleMoves = piece.moves.calculatePossibleMoves(mutableGame, pos)
+                if (possibleMoves.any()) {
+                    return true
                 }
             }
         }

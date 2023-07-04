@@ -1,5 +1,7 @@
 package dgs.software.classicchess.model
 
+import dgs.software.classicchess.calculations.possiblemoves.BoardStatusProvider
+import dgs.software.classicchess.calculations.possiblemoves.GameStatusProvider
 import dgs.software.classicchess.model.moves.RevertableMove
 import dgs.software.classicchess.model.moves.move_stack.SimulatableMoveStack
 
@@ -10,6 +12,12 @@ data class MutableGame(
     var simulatableMoveStack: SimulatableMoveStack = SimulatableMoveStack(),
     var currentPlayer: Player = Player.WHITE
 ) {
+    val boardStatus: BoardStatusProvider
+        get() = BoardStatusProvider(this)
+
+    val gameStatus: GameStatusProvider
+        get() = GameStatusProvider(this)
+
     fun undoPreviousMove() {
         simulatableMoveStack.rollbackLastMove(this)
     }
