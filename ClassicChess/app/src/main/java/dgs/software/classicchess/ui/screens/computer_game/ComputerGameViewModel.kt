@@ -1,28 +1,45 @@
-package dgs.software.classicchess.ui.screens
+package dgs.software.classicchess.ui.screens.computer_game
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import dgs.software.classicchess.ClassicChessApplication
-import dgs.software.classicchess.model.*
+import dgs.software.classicchess.calculations.ai.AiMoveCalculator
+import dgs.software.classicchess.calculations.ai.Difficulty
+import dgs.software.classicchess.model.Coordinate
+import dgs.software.classicchess.model.Player
+import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.model.moves.PromotePawnMove
+import dgs.software.classicchess.model.toMutableGame
 import dgs.software.classicchess.use_cases.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-private const val TAG = "LocalGameViewModel"
+private const val TAG = "ComputerGameViewModel"
 
-class LocalGameViewModel: ViewModel() {
-    var _uiState: MutableStateFlow<LocalGameUiState> = MutableStateFlow(LocalGameUiState())
+class ComputerGameViewModel(
+    val difficulty: Difficulty
+) : ViewModel() {
+    private var _uiState: MutableStateFlow<ComputerGameUiState> =
+        MutableStateFlow(ComputerGameUiState(difficulty = difficulty))
     val uiState = _uiState.asStateFlow()
+    private val aiMoveCalculator: AiMoveCalculator
+
+    init {
+        _uiState.update { previousState ->
+            previousState.copy(
+                computerPlayer = Player.values().toList().shuffled().first()
+            )
+        }
+        aiMoveCalculator =  AiMoveCalculator(difficulty, uiState.value.computerPlayer)
+    }
 
     fun cellSelected(clickedCoordinate: Coordinate) {
-
         when (val userClickAction =
-            ResolveUserClickActionUseCase().execute(uiState.value, clickedCoordinate)) {
+            ResolveUserClickActionUseCase().execute(
+                uiState.value.game,
+                uiState.value.possibleMovesForSelectedPiece,
+                clickedCoordinate
+            )) {
             UserClickAction.DisplayPossibleMovesOfPiece -> {
                 val possibleMoves =
                     GetPossibleMovesUseCase().execute(uiState.value.game, clickedCoordinate)
@@ -48,7 +65,9 @@ class LocalGameViewModel: ViewModel() {
                     previousState.copy(
                         game = game,
                         selectedCoordinate = null,
-                        possibleMovesForSelectedPiece = listOf()
+                        possibleMovesForSelectedPiece = listOf(),
+                        computeAiMove = true
+
                     )
                 }
             }
@@ -90,7 +109,8 @@ class LocalGameViewModel: ViewModel() {
                 selectedCoordinate = null,
                 possibleMovesForSelectedPiece = listOf(),
                 requestPawnPromotionInput = false,
-                selectedPawnPromotionPosition = null
+                selectedPawnPromotionPosition = null,
+                computeAiMove = true
             )
         }
         updateBoard()
@@ -114,12 +134,8 @@ class LocalGameViewModel: ViewModel() {
         }
     }
 
-    fun resetGame() {
-        _uiState.update { previousState ->
-            ResetGameUseCase().execute(previousState.boardDisplayedInverted)
-        }
-
-        updateBoard()
+    fun startNewGame() {
+        // TODO: Implement
     }
 
     fun undoPreviousMove() {
@@ -165,7 +181,7 @@ class LocalGameViewModel: ViewModel() {
                 kingInCheck = gameStatusInfo.kingInCheck,
                 playerWon = gameStatusInfo.playerWon,
                 playerStalemate = gameStatusInfo.playerStalemate,
-                canResetGame = uiState.value.game.anyMoveExecuted(),
+                canStartNewGame = uiState.value.game.anyMoveExecuted(),
                 canRedoMove = uiState.value.game.canRedoMove,
                 canUndoMove = uiState.value.game.canUndoMove
             )

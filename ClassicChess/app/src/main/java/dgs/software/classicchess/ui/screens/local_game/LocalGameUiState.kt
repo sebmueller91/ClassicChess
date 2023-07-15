@@ -1,4 +1,4 @@
-package dgs.software.classicchess.ui.screens
+package dgs.software.classicchess.ui.screens.local_game
 
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game

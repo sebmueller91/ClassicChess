@@ -1,7 +1,7 @@
 package dgs.software.classicchess.model
 
 data class Board(
-    val board: Array<Array<Piece?>> = Array(8) { Array<Piece?>(8) { null } }
+    val board: Array<Array<Piece?>> = Array(8) { Array(8) { null } }
 ) {
     init {
         initializeWithDefaultSetup()
@@ -89,5 +89,20 @@ data class Board(
             }
         }
         return newBoard
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Board
+
+        if (!board.contentDeepEquals(other.board)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return board.contentDeepHashCode()
     }
 }

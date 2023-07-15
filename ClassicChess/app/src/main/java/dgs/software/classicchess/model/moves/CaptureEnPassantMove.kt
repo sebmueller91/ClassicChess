@@ -3,6 +3,7 @@ package dgs.software.classicchess.model.moves
 import android.util.Log
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.MutableGame
+import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.model.actions.RemovePieceAction
 import dgs.software.classicchess.model.actions.MovePieceAction
 import dgs.software.classicchess.model.actions.SetIsMovedAction
@@ -39,5 +40,14 @@ data class CaptureEnPassantMove(
             }
             super.execute(mutableGame)
         }
+    }
+
+    fun getTypeOfPieceToCapture(mutableGame: MutableGame): Type {
+        val piece = mutableGame.board.get(toPos)
+        if (piece == null || piece.player == mutableGame.board.get(fromPos)?.player) {
+            Log.e(TAG, "Tried to get captured piece of empty pos $toPos")
+            return Type.PAWN
+        }
+        return piece.type
     }
 }

@@ -42,6 +42,20 @@ data class MoveStack(
         return true
     }
 
+    fun rollbackAndDeleteLastMove(mutableGame: MutableGame): Boolean {
+        if (!doneActionsOnStack()) {
+            Log.d(
+                TAG,
+                "Attempted to rollback and delete last move at index ${iteratorIndex}/${moves.size} which was not possible"
+            )
+            return false
+        }
+        moves[iteratorIndex].rollback(mutableGame)
+        iteratorIndex--
+        moves.deleteElementsAfterIndex(iteratorIndex)
+        return true
+    }
+
     fun redoNextMove(mutableGame: MutableGame): Boolean {
         if (!undoneActionsOnStack()) {
             Log.d(

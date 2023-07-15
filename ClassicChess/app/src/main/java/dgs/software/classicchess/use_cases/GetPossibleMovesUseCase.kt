@@ -17,6 +17,6 @@ class GetPossibleMovesUseCase(
             return listOf()
         }
 
-        return piece.moves.calculatePossibleMoves(game.toMutableGame(), position)
+        return piece.moves.calculatePossibleMovesOfPiece(game.toMutableGame(), position)
     }
 }

@@ -26,8 +26,12 @@ data class MutableGame(
         simulatableMoveStack.redoNextMove(this)
     }
 
-    fun executeMove(move: RevertableMove, simulateExecution: Boolean = false) {
+    fun executeMove(move: RevertableMove, simulateExecution: Boolean = false) { // TODO: Throw out simulate execution
         simulatableMoveStack.executeMove(this, move, simulateExecution)
+    }
+
+    fun rollbackAndDeleteLastMove(mutableGame: MutableGame) {
+        simulatableMoveStack.rollbackAndDeleteLastMove(mutableGame)
     }
 
     fun rollbackSimulatedMoves() {
@@ -36,6 +40,26 @@ data class MutableGame(
 
     fun updateCurrentPlayer(player: Player) {
         currentPlayer = player
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Game
+
+        if (board != other.board) return false
+        if (currentPlayer != other.currentPlayer) return false
+        if (!simulatableMoveStack.equals(other)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = board.hashCode()
+        result = 31 * result + currentPlayer.hashCode()
+        result = 31 * result + simulatableMoveStack.hashCode()
+        return result
     }
 }
 

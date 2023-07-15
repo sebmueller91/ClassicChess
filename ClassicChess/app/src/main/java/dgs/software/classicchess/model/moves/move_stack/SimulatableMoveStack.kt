@@ -2,6 +2,7 @@ package dgs.software.classicchess.model.moves.move_stack
 
 import android.util.Log
 import dgs.software.classicchess.model.Coordinate
+import dgs.software.classicchess.model.Game
 import dgs.software.classicchess.model.MutableGame
 import dgs.software.classicchess.model.moves.RevertableMove
 
@@ -48,6 +49,10 @@ data class SimulatableMoveStack(
         return true
     }
 
+    fun rollbackAndDeleteLastMove(mutableGame: MutableGame): Boolean {
+        return moveStack.rollbackAndDeleteLastMove(mutableGame)
+    }
+
     fun redoNextMove(mutableGame: MutableGame): Boolean {
         if (!undoneActionsOnStack()) {
             Log.d(
@@ -86,8 +91,19 @@ data class SimulatableMoveStack(
         }
     }
 
-    fun anyMoveExecuted(): Boolean {
-        return simulatedMoveStack.anyMoveExecuted() || moveStack.anyMoveExecuted()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Game
+
+        if (moveStack.moves.last() != other.immutableMoveStack.moves.last()) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return moveStack.moves.last().hashCode()
     }
 
     fun toImmutableMoveStack(): ImmutableMoveStack {

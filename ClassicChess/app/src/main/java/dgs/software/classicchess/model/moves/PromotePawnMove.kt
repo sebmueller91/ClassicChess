@@ -40,4 +40,13 @@ data class PromotePawnMove(
 
         super.execute(mutableGame)
     }
+
+    fun getTypeOfPieceToCapture(mutableGame: MutableGame): Type {
+        val piece = mutableGame.board.get(toPos)
+        if (piece == null || piece.player == mutableGame.board.get(fromPos)?.player) {
+            Log.e(TAG, "Tried to get captured piece of empty pos $toPos")
+            return Type.PAWN
+        }
+        return piece.type
+    }
 }

@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,26 +18,35 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import dgs.software.classicchess.R
+import dgs.software.classicchess.calculations.ai.Difficulty
 
 @Composable
 fun MainMenuScreen(
-    onLocalGameButtonClickedAction: () -> Unit,
-    onComputerGameButtonClickedAction: () -> Unit,
+    startLocalGame: () -> Unit,
+    startComputerGame: (Difficulty) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var selectDifficultyDialogVisible by remember { mutableStateOf(false) }
+    SelectDifficultyDialog(
+        showDialog = selectDifficultyDialogVisible,
+        onDifficultySelected = { difficulty -> startComputerGame(difficulty) }) {
+        selectDifficultyDialogVisible = false
+    }
+
     val gameModes = listOf(
         GameMode(
             iconId = R.drawable.playervsplayer,
             name = stringResource(R.string.MainMenu_LocalGame),
             description = stringResource(R.string.MainMenu_PlayFriendDescription),
-            buttonClickedAction = onLocalGameButtonClickedAction
+            buttonClickedAction = startLocalGame
         ),
         GameMode(
             iconId = R.drawable.playervscomputer,
             name = stringResource(R.string.MainMenu_PlayComputer),
             description = stringResource(R.string.MainMenu_PlayComputerDescription),
-            buttonClickedAction = onComputerGameButtonClickedAction
+            buttonClickedAction = { selectDifficultyDialogVisible = true }
         )
     )
 
@@ -118,6 +127,69 @@ private fun GameModeCard(
                     color = MaterialTheme.colors.onBackground,
                     style = MaterialTheme.typography.body2
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectDifficultyDialog(
+    onDifficultySelected: (Difficulty) -> Unit,
+    showDialog: Boolean,
+    onDismissRequest: () -> Unit
+) {
+    if (showDialog) {
+        Dialog(onDismissRequest = { onDismissRequest() }) {
+            Surface(shape = RoundedCornerShape(8.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = stringResource(R.string.SelectDifficultyDialog_Title), style = MaterialTheme.typography.h6)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Column(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) { // Reduce vertical padding here
+                        Difficulty.values().forEach { difficulty ->
+                            Button(
+                                onClick = {
+                                    onDifficultySelected(difficulty)
+                                    onDismissRequest()
+                                },
+                                shape = RoundedCornerShape(50.dp),
+                                modifier = Modifier
+                                    .width(150.dp)
+                                    .height(50.dp)
+                                    .padding(vertical = 4.dp),
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Text(
+                                    text = difficulty.name,
+                                    style = MaterialTheme.typography.body1.merge(),
+                                    modifier = Modifier.padding(8.dp),
+                                    color = MaterialTheme.colors.onSecondary
+                                )
+                            }
+                        }
+                    }
+
+                    Button(
+                        onClick = { onDismissRequest() },
+                        modifier = Modifier
+                            .width(120.dp)
+                            .padding(top=50.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .height(30.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text(stringResource(R.string.Cancel_Dialog_Option))
+                    }
+                }
             }
         }
     }
