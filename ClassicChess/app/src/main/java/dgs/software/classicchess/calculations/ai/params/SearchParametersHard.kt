@@ -1,11 +1,11 @@
-package dgs.software.classicchess.calculations.ai.weights
+package dgs.software.classicchess.calculations.ai.params
 
 import dgs.software.classicchess.model.Piece
 import dgs.software.classicchess.model.Type
 
-class SearchParametersNormal : SearchParameters() {
+class SearchParametersHard : SearchParameters() {
     override val searchDepth: Int
-        get() = 3
+        get() = 4
 
     override fun getSquareTable(piece: Piece, isEndgame: Boolean): Array<IntArray> {
         return if (piece.type == Type.KING && isEndgame) {

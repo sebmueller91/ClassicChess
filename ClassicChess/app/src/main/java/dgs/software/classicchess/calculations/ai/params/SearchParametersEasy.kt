@@ -1,4 +1,4 @@
-package dgs.software.classicchess.calculations.ai.weights
+package dgs.software.classicchess.calculations.ai.params
 
 import dgs.software.classicchess.model.Piece
 import dgs.software.classicchess.model.Type

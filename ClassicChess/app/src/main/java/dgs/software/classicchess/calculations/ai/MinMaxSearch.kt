@@ -16,42 +16,10 @@ class MinMaxSearch(
     private val transpositionTable = HashMap<Int, Int>()
 
     fun search(mutableGame: MutableGame, player: Player): RevertableMove {
-        val bestMoveSeries = minMax(
-            mutableGame,
-            evaluationFunction.searchDepth,
-            player,
-            Int.MIN_VALUE,
-            Int.MAX_VALUE,
-            null
-        )
-        return bestMoveSeries ?: throw RuntimeException("No valid moves found")
-    }
-
-    private fun minMax(
-        mutableGame: MutableGame,
-        depth: Int,
-        player: Player,
-        alpha: Int,
-        beta: Int,
-        move: RevertableMove?
-    ): RevertableMove? {
-        val gameStatusProvider = GameStatusProvider(mutableGame)
-
-        if (depth == 0 || gameStatusProvider.isGameOver()) {
-            return move
-        }
-
-        if (USE_TRANSPOSITION_TABLE) {
-            transpositionTable[mutableGame.hashCode()]?.let { return move }
-        }
-
-        var alpha = alpha
-        var beta = beta
         var bestMove: RevertableMove? = null
         var bestValue = if (player == Player.WHITE) Int.MIN_VALUE else Int.MAX_VALUE
 
-        val possibleMoves =
-            PossibleMovesProvider.calculatePossibleMovesOfPlayer(mutableGame, player)
+        val possibleMoves = PossibleMovesProvider.calculatePossibleMovesOfPlayer(mutableGame, player)
         val orderedMoves = if (USE_MOVE_ORDERING) {
             possibleMoves.orderMovesByPriority(mutableGame)
         } else {
@@ -60,40 +28,64 @@ class MinMaxSearch(
 
         for (possibleMove in orderedMoves) {
             mutableGame.executeMove(possibleMove)
-            val resultMove =
-                minMax(mutableGame, depth - 1, player.opponent(), alpha, beta, possibleMove)
+            val evaluation = minMax(mutableGame, evaluationFunction.searchDepth - 1, player.opponent(), Int.MIN_VALUE, Int.MAX_VALUE)
             mutableGame.rollbackAndDeleteLastMove(mutableGame)
 
-            val evaluation = evaluationFunction.evaluate(mutableGame, player)
-
-            if (USE_TRANSPOSITION_TABLE) {
-                transpositionTable[mutableGame.hashCode()] = evaluation
-            }
-
-            if (player == Player.WHITE && resultMove != null) {
-                if (evaluation > bestValue) {
-                    bestMove = resultMove
-                    bestValue = evaluation
-                }
-                alpha = maxOf(alpha, bestValue)
-
-                if (beta <= alpha) {
-                    break
-                }
-            } else if (player == Player.BLACK && resultMove != null) {
-                if (evaluation < bestValue) {
-                    bestMove = resultMove
-                    bestValue = evaluation
-                }
-                beta = minOf(beta, bestValue)
-
-                if (beta <= alpha) {
-                    break
-                }
+            if (player == Player.WHITE && evaluation > bestValue) {
+                bestMove = possibleMove
+                bestValue = evaluation
+            } else if (player == Player.BLACK && evaluation < bestValue) {
+                bestMove = possibleMove
+                bestValue = evaluation
             }
         }
 
-        return bestMove
+        return bestMove ?: throw RuntimeException("No valid moves found")
+    }
+
+    private fun minMax(
+        mutableGame: MutableGame,
+        depth: Int,
+        player: Player,
+        alpha: Int,
+        beta: Int
+    ): Int {
+        val gameStatusProvider = GameStatusProvider(mutableGame)
+
+        if (depth == 0 || gameStatusProvider.isGameOver()) {
+            return evaluationFunction.evaluate(mutableGame, player)
+        }
+
+        var alpha = alpha
+        var beta = beta
+        var bestValue = if (player == Player.WHITE) Int.MIN_VALUE else Int.MAX_VALUE
+
+        val possibleMoves = PossibleMovesProvider.calculatePossibleMovesOfPlayer(mutableGame, player)
+        val orderedMoves = if (USE_MOVE_ORDERING) {
+            possibleMoves.orderMovesByPriority(mutableGame)
+        } else {
+            possibleMoves
+        }
+
+        for (possibleMove in orderedMoves) {
+            mutableGame.executeMove(possibleMove)
+            val evaluation = minMax(mutableGame, depth - 1, player.opponent(), alpha, beta)
+            mutableGame.rollbackAndDeleteLastMove(mutableGame)
+
+            if (player == Player.WHITE) {
+                bestValue = maxOf(bestValue, evaluation)
+                alpha = maxOf(alpha, bestValue)
+            } else {
+                bestValue = minOf(bestValue, evaluation)
+                beta = minOf(beta, bestValue)
+            }
+
+            if (beta <= alpha) {
+                break
+            }
+        }
+
+        return bestValue
     }
 
     private fun List<RevertableMove>.orderMovesByPriority(mutableGame: MutableGame): List<RevertableMove> {

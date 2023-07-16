@@ -1,6 +1,6 @@
 package dgs.software.classicchess.calculations.ai
 
-import dgs.software.classicchess.calculations.ai.weights.SearchParameters
+import dgs.software.classicchess.calculations.ai.params.SearchParameters
 import dgs.software.classicchess.model.MutableGame
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type

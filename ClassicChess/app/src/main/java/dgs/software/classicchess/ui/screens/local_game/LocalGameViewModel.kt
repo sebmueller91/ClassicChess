@@ -18,7 +18,7 @@ class LocalGameViewModel : ViewModel() {
     fun cellSelected(clickedCoordinate: Coordinate) {
 
         when (val userClickAction =
-            ResolveUserClickActionUseCase().execute(
+            ResolveUserClickActionUseCase().executeLocalGame(
                 uiState.value.game,
                 uiState.value.possibleMovesForSelectedPiece,
                 clickedCoordinate
@@ -52,7 +52,7 @@ class LocalGameViewModel : ViewModel() {
                     )
                 }
             }
-            UserClickAction.EmptyCellSelected,
+            UserClickAction.NoActionCellSelected,
             UserClickAction.OpponentCellSelected -> {
                 _uiState.update { previousState ->
                     previousState.copy(

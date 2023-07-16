@@ -103,6 +103,9 @@ data class SimulatableMoveStack(
     }
 
     override fun hashCode(): Int {
+        if (moveStack.moves.isEmpty()) {
+            return 0
+        }
         return moveStack.moves.last().hashCode()
     }
 

@@ -2,6 +2,7 @@ package dgs.software.classicchess.ui.screens.computer_game
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dgs.software.classicchess.calculations.ai.AiMoveCalculator
 import dgs.software.classicchess.calculations.ai.Difficulty
 import dgs.software.classicchess.model.Coordinate
@@ -13,6 +14,7 @@ import dgs.software.classicchess.use_cases.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 private const val TAG = "ComputerGameViewModel"
 
@@ -25,20 +27,41 @@ class ComputerGameViewModel(
     private val aiMoveCalculator: AiMoveCalculator
 
     init {
+        val computerPlayer = Player.values().toList().shuffled().first()
         _uiState.update { previousState ->
             previousState.copy(
-                computerPlayer = Player.values().toList().shuffled().first()
+                computerPlayer = computerPlayer,
+                computeAiMove = computerPlayer == Player.WHITE
             )
         }
         aiMoveCalculator =  AiMoveCalculator(difficulty, uiState.value.computerPlayer)
+
+        viewModelScope.launch {
+            uiState.collect { state ->
+                if (state.computeAiMove) {
+                    val move = aiMoveCalculator.calculateAiMove(uiState.value.game.toMutableGame())
+                    val game =
+                        ExecuteMoveUseCase().execute(uiState.value.game, move)
+                    _uiState.update { previousState ->
+                        previousState.copy(
+                            game = game,
+                            selectedCoordinate = null,
+                            possibleMovesForSelectedPiece = listOf(),
+                            computeAiMove = false
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun cellSelected(clickedCoordinate: Coordinate) {
         when (val userClickAction =
-            ResolveUserClickActionUseCase().execute(
+            ResolveUserClickActionUseCase().executeAiGame(
                 uiState.value.game,
                 uiState.value.possibleMovesForSelectedPiece,
-                clickedCoordinate
+                clickedCoordinate,
+                uiState.value.computerPlayer
             )) {
             UserClickAction.DisplayPossibleMovesOfPiece -> {
                 val possibleMoves =
@@ -71,7 +94,7 @@ class ComputerGameViewModel(
                     )
                 }
             }
-            UserClickAction.EmptyCellSelected,
+            UserClickAction.NoActionCellSelected,
             UserClickAction.OpponentCellSelected -> {
                 _uiState.update { previousState ->
                     previousState.copy(
