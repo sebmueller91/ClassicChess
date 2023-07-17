@@ -14,11 +14,11 @@ val Colors.boardCellWhite: Color
 val Colors.boardCellBlack: Color
     get() = DarkOliveGreen
 
-val Colors.boardBorderColor: Color
-    get() = Black
-
 val Colors.selectedCellColor: Color
     get() = BrickRed
+
+val Colors.aiMoveVisualizationColor: Color
+    get() = SoftCyan
 
 @SuppressLint("ConflictingOnColor")
 private val LightColorPalette = lightColors(

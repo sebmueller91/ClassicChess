@@ -1,6 +1,7 @@
 package dgs.software.classicchess.model.moves.move_stack
 
-import android.util.Log
+import dgs.software.classicchess.logger.Logger
+import dgs.software.classicchess.logger.LoggerFactory
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.MutableGame
 import dgs.software.classicchess.model.moves.RevertableMove
@@ -9,7 +10,8 @@ private val TAG = "MoveStack"
 
 data class MoveStack(
     val moves: MutableList<RevertableMove> = mutableListOf(),
-    var iteratorIndex: Int = -1
+    var iteratorIndex: Int = -1,
+    val logger: Logger = LoggerFactory().create()
 ) {
     fun resetMoveStack(mutableGame: MutableGame) {
         while (iteratorIndex >= 0) {
@@ -22,7 +24,7 @@ data class MoveStack(
     }
 
     fun executeMove(mutableGame: MutableGame, move: RevertableMove) {
-        Log.d(TAG, "Execute move $move.toString()")
+        logger.d(TAG, "Execute move $move.toString()")
         moves.deleteElementsAfterIndex(iteratorIndex)
         move.execute(mutableGame)
         moves.add(move)
@@ -31,7 +33,7 @@ data class MoveStack(
 
     fun rollbackLastMove(mutableGame: MutableGame): Boolean {
         if (!doneActionsOnStack()) {
-            Log.d(
+            logger.d(
                 TAG,
                 "Attempted to rollback last move at index ${iteratorIndex}/${moves.size} which was not possible"
             )
@@ -44,7 +46,7 @@ data class MoveStack(
 
     fun rollbackAndDeleteLastMove(mutableGame: MutableGame): Boolean {
         if (!doneActionsOnStack()) {
-            Log.d(
+            logger.d(
                 TAG,
                 "Attempted to rollback and delete last move at index ${iteratorIndex}/${moves.size} which was not possible"
             )
@@ -58,7 +60,7 @@ data class MoveStack(
 
     fun redoNextMove(mutableGame: MutableGame): Boolean {
         if (!undoneActionsOnStack()) {
-            Log.d(
+            logger.d(
                 TAG,
                 "Attempted to redo next move at index ${iteratorIndex}/${moves.size} which was not possible"
             )
@@ -91,18 +93,23 @@ data class MoveStack(
 
     private fun MutableList<RevertableMove>.deleteElementsAfterIndex(index: Int) {
         if (index < -1 || index >= size) {
-            Log.d(TAG,"Attempted to delete element at index $index which is not possible.")
+            logger.d(TAG,"Attempted to delete element at index $index which is not possible.")
             return;
         }
         while (moves.size - 1 > index) {
             moves.removeLast()
         }
     }
+
+    fun deepCopy() = MoveStack(
+        moves = moves.map { it.deepCopy() }.toMutableList(),
+        iteratorIndex = iteratorIndex
+    )
 }
 
 fun MoveStack.toImmutableMoveStack(): ImmutableMoveStack {
     return ImmutableMoveStack(
-        moves = moves,
+        moves = moves.map { it.deepCopy() },
         iteratorIndex = iteratorIndex
     )
 }

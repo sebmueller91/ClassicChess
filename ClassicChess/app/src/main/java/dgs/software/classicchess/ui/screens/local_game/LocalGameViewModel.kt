@@ -1,9 +1,14 @@
 package dgs.software.classicchess.ui.screens.local_game
 
-import android.util.Log
+import UserClickAction
 import androidx.lifecycle.ViewModel
-import dgs.software.classicchess.model.*
+import dgs.software.classicchess.logger.Logger
+import dgs.software.classicchess.logger.LoggerFactory
+import dgs.software.classicchess.model.Coordinate
+import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.model.moves.PromotePawnMove
+import dgs.software.classicchess.model.toGame
+import dgs.software.classicchess.model.toMutableGame
 import dgs.software.classicchess.use_cases.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,8 +16,10 @@ import kotlinx.coroutines.flow.update
 
 private const val TAG = "LocalGameViewModel"
 
-class LocalGameViewModel : ViewModel() {
-    var _uiState: MutableStateFlow<LocalGameUiState> = MutableStateFlow(LocalGameUiState())
+class LocalGameViewModel(
+    private val logger: Logger = LoggerFactory().create()
+) : ViewModel() {
+    private var _uiState: MutableStateFlow<LocalGameUiState> = MutableStateFlow(LocalGameUiState())
     val uiState = _uiState.asStateFlow()
 
     fun cellSelected(clickedCoordinate: Coordinate) {
@@ -68,7 +75,7 @@ class LocalGameViewModel : ViewModel() {
 
     fun promotePawn(type: Type) {
         if (uiState.value.selectedPawnPromotionPosition == null) {
-            Log.e(TAG, "Tried to promote pawn while position is not set")
+            logger.e(TAG, "Tried to promote pawn while position is not set")
             return
         }
         val clickedMove =
@@ -78,7 +85,7 @@ class LocalGameViewModel : ViewModel() {
             }
 
         if (!clickedMove.any()) {
-            Log.e(TAG, "promotePawn() expects at least 1 move")
+            logger.e(TAG, "promotePawn() expects at least 1 move")
             return
         }
 

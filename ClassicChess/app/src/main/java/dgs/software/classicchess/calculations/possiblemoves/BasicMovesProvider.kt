@@ -1,6 +1,7 @@
 package dgs.software.classicchess.calculations.possiblemoves
 
-import android.util.Log
+import dgs.software.classicchess.logger.Logger
+import dgs.software.classicchess.logger.LoggerFactory
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.MutableGame
 import dgs.software.classicchess.model.Player
@@ -11,13 +12,17 @@ import dgs.software.classicchess.utils.getPlayerOrNull
 
 private val TAG = "BasicMovesProvider"
 
-sealed class BasicMovesProvider() {
+sealed class BasicMovesProvider(
+    open val logger: Logger = LoggerFactory().create()
+) {
     abstract fun calculateBasicMoves(
         mutableGame: MutableGame,
-        position: Coordinate
+        position: Coordinate,
     ): List<RevertableMove>
 
-    object PawnBasicMovesProvider : BasicMovesProvider() {
+    class PawnBasicMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : BasicMovesProvider(logger) {
         override fun calculateBasicMoves(
             mutableGame: MutableGame,
             position: Coordinate
@@ -67,7 +72,9 @@ sealed class BasicMovesProvider() {
         }
     }
 
-    object RookBasicMovesProvider : BasicMovesProvider() {
+    class RookBasicMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : BasicMovesProvider(logger) {
         override fun calculateBasicMoves(
             mutableGame: MutableGame,
             position: Coordinate
@@ -78,7 +85,9 @@ sealed class BasicMovesProvider() {
         }
     }
 
-    object KnightBasicMovesProvider : BasicMovesProvider() {
+    class KnightBasicMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : BasicMovesProvider(logger) {
         override fun calculateBasicMoves(
             mutableGame: MutableGame,
             position: Coordinate
@@ -130,7 +139,9 @@ sealed class BasicMovesProvider() {
         }
     }
 
-    object BishopBasicMovesProvider : BasicMovesProvider() {
+    class BishopBasicMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : BasicMovesProvider(logger) {
         override fun calculateBasicMoves(
             mutableGame: MutableGame,
             position: Coordinate
@@ -141,7 +152,9 @@ sealed class BasicMovesProvider() {
         }
     }
 
-    object QueenBasicMovesProvider: BasicMovesProvider() {
+    class QueenBasicMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : BasicMovesProvider(logger) {
         override fun calculateBasicMoves(
             mutableGame: MutableGame,
             position: Coordinate
@@ -154,7 +167,9 @@ sealed class BasicMovesProvider() {
         }
     }
 
-    object KingBasicMovesProvider: BasicMovesProvider() {
+    class KingBasicMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : BasicMovesProvider(logger) {
         override fun calculateBasicMoves(
             mutableGame: MutableGame,
             position: Coordinate
@@ -165,7 +180,10 @@ sealed class BasicMovesProvider() {
         }
     }
 
-    protected fun MutableList<RevertableMove>.addNeighborCells(mutableGame: MutableGame, fromPos: Coordinate) {
+    protected fun MutableList<RevertableMove>.addNeighborCells(
+        mutableGame: MutableGame,
+        fromPos: Coordinate
+    ) {
         val r = fromPos.row
         val c = fromPos.column
         addMoveIfValid(mutableGame, fromPos, fromPos.copy(row = r + 1, column = c - 1))
@@ -178,7 +196,10 @@ sealed class BasicMovesProvider() {
         addMoveIfValid(mutableGame, fromPos, fromPos.copy(row = r - 1, column = c + 1))
     }
 
-    protected fun MutableList<RevertableMove>.addCellsOnStraightLines(mutableGame: MutableGame, fromPos: Coordinate) {
+    protected fun MutableList<RevertableMove>.addCellsOnStraightLines(
+        mutableGame: MutableGame,
+        fromPos: Coordinate
+    ) {
         val directions =
             listOf(
                 Coordinate(1, 0),
@@ -198,7 +219,10 @@ sealed class BasicMovesProvider() {
         }
     }
 
-    protected fun MutableList<RevertableMove>.addCellsOnDiagonalLines(mutableGame: MutableGame, fromPos: Coordinate) {
+    protected fun MutableList<RevertableMove>.addCellsOnDiagonalLines(
+        mutableGame: MutableGame,
+        fromPos: Coordinate
+    ) {
         val directions =
             listOf(
                 Coordinate(1, 1),
@@ -228,7 +252,7 @@ sealed class BasicMovesProvider() {
         }
         val fromPosPiece = mutableGame.board.get(fromPos)
         if (fromPosPiece == null) {
-            Log.e(TAG, "Tried to move an invalid cell $fromPos")
+            logger.e(TAG, "Tried to move an invalid cell $fromPos")
             return false
         }
 
@@ -249,12 +273,12 @@ sealed class BasicMovesProvider() {
         conditionToAdd: (Coordinate) -> Boolean = { true }
     ): Boolean {
         if (!fromPos.isValid()) {
-            Log.e(TAG, "Tried to move an invalid cell $fromPos")
+            logger.e(TAG, "Tried to move an invalid cell $fromPos")
             return false
         }
         val fromPosPiece = mutableGame.board.get(fromPos)
         if (fromPosPiece == null) {
-            Log.e(TAG, "Tried to move empty cell $fromPos")
+            logger.e(TAG, "Tried to move empty cell $fromPos")
             return false
         }
         if (!toPos.isValid()

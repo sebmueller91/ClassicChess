@@ -22,7 +22,7 @@ data class Game(
 
 fun Game.toMutableGame(): MutableGame {
     return MutableGame(
-        board = this.board,
+        board = this.board.deepCopy(),
         simulatableMoveStack = this.immutableMoveStack.toSimulatableMoveStack(),
         currentPlayer = this.currentPlayer
     )

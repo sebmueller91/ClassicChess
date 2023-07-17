@@ -1,7 +1,11 @@
 package dgs.software.classicchess.calculations.possiblemoves
 
-import android.util.Log
-import dgs.software.classicchess.model.*
+import dgs.software.classicchess.logger.Logger
+import dgs.software.classicchess.logger.LoggerFactory
+import dgs.software.classicchess.model.Coordinate
+import dgs.software.classicchess.model.MutableGame
+import dgs.software.classicchess.model.Player
+import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.model.moves.CaptureEnPassantMove
 import dgs.software.classicchess.model.moves.CastlingMove
 import dgs.software.classicchess.model.moves.PromotePawnMove
@@ -11,7 +15,9 @@ import dgs.software.classicchess.utils.getPlayerOrNull
 private val TAG = "PossibleMovesProvider"
 
 
-sealed class PossibleMovesProvider {
+sealed class PossibleMovesProvider(
+    open val logger: Logger = LoggerFactory().create()
+) {
 
     abstract fun calculatePossibleMovesOfPiece(
         mutableGame: MutableGame,
@@ -40,7 +46,9 @@ sealed class PossibleMovesProvider {
         }
     }
 
-    object PawnMovesProvider : PossibleMovesProvider() {
+    class PawnMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : PossibleMovesProvider(logger) {
         override fun calculatePossibleMovesOfPiece(
             mutableGame: MutableGame,
             position: Coordinate
@@ -54,14 +62,16 @@ sealed class PossibleMovesProvider {
         }
     }
 
-    object RookMovesProvider : PossibleMovesProvider() {
+    class RookMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : PossibleMovesProvider(logger) {
         override fun calculatePossibleMovesOfPiece(
             mutableGame: MutableGame,
             position: Coordinate
         ): List<RevertableMove> {
             val piece = mutableGame.board.get(position)
             if (piece == null) {
-                Log.e(TAG, "Piece must not be null here! Something is wrong with the code")
+                logger.e(TAG, "Piece must not be null here! Something is wrong with the code")
                 return listOf()
             }
             val possibleMoves = piece.basicMoves.calculateBasicMoves(mutableGame, position)
@@ -69,30 +79,16 @@ sealed class PossibleMovesProvider {
         }
     }
 
-    object KnightMovesProvider : PossibleMovesProvider() {
+    class KnightMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : PossibleMovesProvider(logger) {
         override fun calculatePossibleMovesOfPiece(
             mutableGame: MutableGame,
             position: Coordinate
         ): List<RevertableMove> {
             val piece = mutableGame.board.get(position)
             if (piece == null) {
-                Log.e(TAG, "Piece must not be null here! Something is wrong with the code")
-                return listOf()
-            }
-            val possibleMoves = piece.basicMoves.calculateBasicMoves(mutableGame, position)
-            return filterMovesThatLeaveKingInCheck(mutableGame, possibleMoves, piece.player)
-
-        }
-    }
-
-    object BishopMovesProvider : PossibleMovesProvider() {
-        override fun calculatePossibleMovesOfPiece(
-            mutableGame: MutableGame,
-            position: Coordinate
-        ): List<RevertableMove> {
-            val piece = mutableGame.board.get(position)
-            if (piece == null) {
-                Log.e(TAG, "Piece must not be null here! Something is wrong with the code")
+                logger.e(TAG, "Piece must not be null here! Something is wrong with the code")
                 return listOf()
             }
             val possibleMoves = piece.basicMoves.calculateBasicMoves(mutableGame, position)
@@ -101,14 +97,16 @@ sealed class PossibleMovesProvider {
         }
     }
 
-    object QueenMovesProvider : PossibleMovesProvider() {
+    class BishopMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : PossibleMovesProvider(logger) {
         override fun calculatePossibleMovesOfPiece(
             mutableGame: MutableGame,
             position: Coordinate
         ): List<RevertableMove> {
             val piece = mutableGame.board.get(position)
             if (piece == null) {
-                Log.e(TAG, "Piece must not be null here! Something is wrong with the code")
+                logger.e(TAG, "Piece must not be null here! Something is wrong with the code")
                 return listOf()
             }
             val possibleMoves = piece.basicMoves.calculateBasicMoves(mutableGame, position)
@@ -117,14 +115,34 @@ sealed class PossibleMovesProvider {
         }
     }
 
-    object KingMovesProvider : PossibleMovesProvider() {
+    class QueenMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : PossibleMovesProvider(logger) {
         override fun calculatePossibleMovesOfPiece(
             mutableGame: MutableGame,
             position: Coordinate
         ): List<RevertableMove> {
             val piece = mutableGame.board.get(position)
             if (piece == null) {
-                Log.e(TAG, "Piece must not be null here! Something is wrong with the code")
+                logger.e(TAG, "Piece must not be null here! Something is wrong with the code")
+                return listOf()
+            }
+            val possibleMoves = piece.basicMoves.calculateBasicMoves(mutableGame, position)
+            return filterMovesThatLeaveKingInCheck(mutableGame, possibleMoves, piece.player)
+
+        }
+    }
+
+    class KingMovesProvider(
+        override val logger: Logger = LoggerFactory().create()
+    ) : PossibleMovesProvider(logger) {
+        override fun calculatePossibleMovesOfPiece(
+            mutableGame: MutableGame,
+            position: Coordinate
+        ): List<RevertableMove> {
+            val piece = mutableGame.board.get(position)
+            if (piece == null) {
+                logger.e(TAG, "Piece must not be null here! Something is wrong with the code")
                 return listOf()
             }
             val possibleMoves =
@@ -176,7 +194,7 @@ sealed class PossibleMovesProvider {
             return
         }
         if (matchingMoves.size != 1) {
-            Log.e(
+            logger.e(
                 TAG,
                 "replaceMoveWithPromotePawnMoves expectes exactly 1 matching move, but found ${matchingMoves.size}"
             )

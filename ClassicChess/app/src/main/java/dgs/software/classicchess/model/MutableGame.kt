@@ -4,6 +4,7 @@ import dgs.software.classicchess.calculations.possiblemoves.BoardStatusProvider
 import dgs.software.classicchess.calculations.possiblemoves.GameStatusProvider
 import dgs.software.classicchess.model.moves.RevertableMove
 import dgs.software.classicchess.model.moves.move_stack.SimulatableMoveStack
+import dgs.software.classicchess.utils.random64BitNumber
 
 private const val TAG = "Game"
 
@@ -12,6 +13,9 @@ data class MutableGame(
     var simulatableMoveStack: SimulatableMoveStack = SimulatableMoveStack(),
     var currentPlayer: Player = Player.WHITE
 ) {
+    private val zobristTable = Array(8) { Array(8) { Array(2) { LongArray(12) { random64BitNumber() } } } }
+    private val currentPlayerZobristNumber = random64BitNumber()
+
     val boardStatus: BoardStatusProvider
         get() = BoardStatusProvider(this)
 
@@ -61,11 +65,35 @@ data class MutableGame(
         result = 31 * result + simulatableMoveStack.hashCode()
         return result
     }
+
+    fun zobristHash(): Long {
+        var hash = 0L
+        for (i in 0 until 8) {
+            for (j in 0 until 8) {
+                val piece = board.get(i, j)
+                if (piece != null) {
+                    val pieceTypeIndex = piece.type.ordinal + piece.player.index * 6
+                    val movedIndex = if (piece.isMoved) 1 else 0
+                    hash = hash xor zobristTable[i][j][movedIndex][pieceTypeIndex]
+                }
+            }
+        }
+        if (currentPlayer == Player.BLACK) {
+            hash = hash xor currentPlayerZobristNumber
+        }
+        return hash
+    }
+
+    fun deepCopy() = MutableGame(
+        board = board.deepCopy(),
+        simulatableMoveStack = simulatableMoveStack.deepCopy(),
+        currentPlayer = currentPlayer
+    )
 }
 
 fun MutableGame.toGame(): Game {
     return Game(
-        board = this.board,
+        board = this.board.deepCopy(),
         immutableMoveStack = this.simulatableMoveStack.toImmutableMoveStack(),
         currentPlayer = this.currentPlayer
     )

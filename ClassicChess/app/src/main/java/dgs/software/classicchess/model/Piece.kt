@@ -8,20 +8,20 @@ data class Piece(
     val player: Player,
     var isMoved: Boolean = false,
     val basicMoves: BasicMovesProvider = when(type) {
-        Type.PAWN -> BasicMovesProvider.PawnBasicMovesProvider
-        Type.BISHOP -> BasicMovesProvider.BishopBasicMovesProvider
-        Type.KNIGHT -> BasicMovesProvider.KnightBasicMovesProvider
-        Type.ROOK -> BasicMovesProvider.RookBasicMovesProvider
-        Type.QUEEN -> BasicMovesProvider.QueenBasicMovesProvider
-        Type.KING -> BasicMovesProvider.KingBasicMovesProvider
+        Type.PAWN -> BasicMovesProvider.PawnBasicMovesProvider()
+        Type.BISHOP -> BasicMovesProvider.BishopBasicMovesProvider()
+        Type.KNIGHT -> BasicMovesProvider.KnightBasicMovesProvider()
+        Type.ROOK -> BasicMovesProvider.RookBasicMovesProvider()
+        Type.QUEEN -> BasicMovesProvider.QueenBasicMovesProvider()
+        Type.KING -> BasicMovesProvider.KingBasicMovesProvider()
     },
     val moves: PossibleMovesProvider = when(type) {
-        Type.PAWN -> PossibleMovesProvider.PawnMovesProvider
-        Type.BISHOP -> PossibleMovesProvider.BishopMovesProvider
-        Type.KNIGHT -> PossibleMovesProvider.KnightMovesProvider
-        Type.ROOK -> PossibleMovesProvider.RookMovesProvider
-        Type.QUEEN -> PossibleMovesProvider.QueenMovesProvider
-        Type.KING -> PossibleMovesProvider.KingMovesProvider
+        Type.PAWN -> PossibleMovesProvider.PawnMovesProvider()
+        Type.BISHOP -> PossibleMovesProvider.BishopMovesProvider()
+        Type.KNIGHT -> PossibleMovesProvider.KnightMovesProvider()
+        Type.ROOK -> PossibleMovesProvider.RookMovesProvider()
+        Type.QUEEN -> PossibleMovesProvider.QueenMovesProvider()
+        Type.KING -> PossibleMovesProvider.KingMovesProvider()
     }
 ) {
     override fun equals(other: Any?): Boolean {

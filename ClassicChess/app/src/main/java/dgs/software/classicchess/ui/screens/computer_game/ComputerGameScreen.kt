@@ -15,6 +15,7 @@ import dgs.software.classicchess.R
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
+import dgs.software.classicchess.model.moves.RevertableMove
 import dgs.software.classicchess.ui.components.ChessBoard
 import dgs.software.classicchess.ui.components.CustomIconButton
 import dgs.software.classicchess.ui.components.PlayerIndicator
@@ -132,7 +133,8 @@ fun ComputerGameScreen(
                 game = uiStateFlow.game,
                 kingInCheck = uiStateFlow.kingInCheck,
                 possibleMovesForSelectedPiece = uiStateFlow.possibleMovesForSelectedPiece,
-                selectedCoordinate = uiStateFlow.selectedCoordinate
+                selectedCoordinate = uiStateFlow.selectedCoordinate,
+                lastComputerMove = uiStateFlow.lastComputerMove,
             )
         }
         Row(

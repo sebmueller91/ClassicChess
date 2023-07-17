@@ -22,4 +22,5 @@ data class ComputerGameUiState(
     val computerPlayer: Player = Player.BLACK,
     val computeAiMove: Boolean = false,
     val difficulty: Difficulty,
+    val lastComputerMove: RevertableMove? = null
 )

@@ -1,6 +1,8 @@
 package dgs.software.classicchess.model.moves
 
-import android.util.Log
+import dgs.software.classicchess.logger.AndroidLogger
+import dgs.software.classicchess.logger.Logger
+import dgs.software.classicchess.logger.LoggerFactory
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.MutableGame
 import dgs.software.classicchess.model.actions.RevertableAction
@@ -9,15 +11,14 @@ private const val TAG = "Move"
 
 abstract class RevertableMove(
     open val fromPos: Coordinate,
-    open val toPos: Coordinate
-    ) {
-    val actions = mutableListOf<RevertableAction>()
-    var isExecuted = false
-        private set
-
+    open val toPos: Coordinate,
+    open var isExecuted: Boolean = false,
+    open val actions: MutableList<RevertableAction> = mutableListOf(),
+    protected val logger: Logger = LoggerFactory().create()
+) {
     open fun execute(mutableGame: MutableGame) {
         if (isExecuted) {
-            Log.e(TAG, "Move execute() called despite already executed")
+            logger.e(TAG, "Move execute() called despite already executed")
         }
         isExecuted = true
 
@@ -28,7 +29,7 @@ abstract class RevertableMove(
 
     fun rollback(mutableGame: MutableGame) {
         if (!isExecuted) {
-            Log.e(TAG, "Move rollback() called despite not executed")
+            logger.e(TAG, "Move rollback() called despite not executed")
         }
         isExecuted = false
 
@@ -36,4 +37,6 @@ abstract class RevertableMove(
             actions[i].rollback(mutableGame)
         }
     }
+
+    abstract fun deepCopy(): RevertableMove
 }

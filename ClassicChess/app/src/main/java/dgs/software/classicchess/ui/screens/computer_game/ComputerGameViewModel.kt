@@ -1,25 +1,30 @@
 package dgs.software.classicchess.ui.screens.computer_game
 
-import android.util.Log
+import UserClickAction
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dgs.software.classicchess.calculations.ai.AiMoveCalculator
 import dgs.software.classicchess.calculations.ai.Difficulty
+import dgs.software.classicchess.logger.Logger
+import dgs.software.classicchess.logger.LoggerFactory
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.model.moves.PromotePawnMove
 import dgs.software.classicchess.model.toMutableGame
 import dgs.software.classicchess.use_cases.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val TAG = "ComputerGameViewModel"
 
 class ComputerGameViewModel(
-    val difficulty: Difficulty
+    val difficulty: Difficulty,
+    private val logger: Logger = LoggerFactory().create()
 ) : ViewModel() {
     private var _uiState: MutableStateFlow<ComputerGameUiState> =
         MutableStateFlow(ComputerGameUiState(difficulty = difficulty))
@@ -39,19 +44,22 @@ class ComputerGameViewModel(
         viewModelScope.launch {
             uiState.collect { state ->
                 if (state.computeAiMove) {
-                    val move = aiMoveCalculator.calculateAiMove(uiState.value.game.toMutableGame())
-                    val game =
-                        ExecuteMoveUseCase().execute(uiState.value.game, move)
+                    val move = withContext(Dispatchers.Default) {
+                        aiMoveCalculator.calculateAiMove(uiState.value.game.toMutableGame())
+                    }
+                    val game = ExecuteMoveUseCase().execute(uiState.value.game, move)
                     _uiState.update { previousState ->
                         previousState.copy(
                             game = game,
                             selectedCoordinate = null,
                             possibleMovesForSelectedPiece = listOf(),
-                            computeAiMove = false
+                            computeAiMove = false,
+                            lastComputerMove = move
                         )
                     }
                 }
             }
+            updateBoard()
         }
     }
 
@@ -69,7 +77,8 @@ class ComputerGameViewModel(
                 _uiState.update { previousState ->
                     previousState.copy(
                         selectedCoordinate = clickedCoordinate,
-                        possibleMovesForSelectedPiece = possibleMoves
+                        possibleMovesForSelectedPiece = possibleMoves,
+                        lastComputerMove = null
                     )
                 }
             }
@@ -77,7 +86,8 @@ class ComputerGameViewModel(
                 _uiState.update { previousState ->
                     previousState.copy(
                         selectedPawnPromotionPosition = userClickAction.coordinate,
-                        requestPawnPromotionInput = true
+                        requestPawnPromotionInput = true,
+                        lastComputerMove = null
                     )
                 }
             }
@@ -89,8 +99,8 @@ class ComputerGameViewModel(
                         game = game,
                         selectedCoordinate = null,
                         possibleMovesForSelectedPiece = listOf(),
-                        computeAiMove = true
-
+                        computeAiMove = true,
+                        lastComputerMove = null
                     )
                 }
             }
@@ -99,7 +109,8 @@ class ComputerGameViewModel(
                 _uiState.update { previousState ->
                     previousState.copy(
                         selectedCoordinate = clickedCoordinate,
-                        possibleMovesForSelectedPiece = listOf()
+                        possibleMovesForSelectedPiece = listOf(),
+                        lastComputerMove = null
                     )
                 }
             }
@@ -110,7 +121,7 @@ class ComputerGameViewModel(
 
     fun promotePawn(type: Type) {
         if (uiState.value.selectedPawnPromotionPosition == null) {
-            Log.e(TAG, "Tried to promote pawn while position is not set")
+            logger.e(TAG, "Tried to promote pawn while position is not set")
             return
         }
         val clickedMove =
@@ -120,7 +131,7 @@ class ComputerGameViewModel(
             }
 
         if (!clickedMove.any()) {
-            Log.e(TAG, "promotePawn() expects at least 1 move")
+            logger.e(TAG, "promotePawn() expects at least 1 move")
             return
         }
 
@@ -133,7 +144,8 @@ class ComputerGameViewModel(
                 possibleMovesForSelectedPiece = listOf(),
                 requestPawnPromotionInput = false,
                 selectedPawnPromotionPosition = null,
-                computeAiMove = true
+                computeAiMove = true,
+                lastComputerMove = null
             )
         }
         updateBoard()
@@ -144,7 +156,8 @@ class ComputerGameViewModel(
             previousState.copy(
                 selectedPawnPromotionPosition = null,
                 requestPawnPromotionInput = false,
-                possibleMovesForSelectedPiece = listOf()
+                possibleMovesForSelectedPiece = listOf(),
+                lastComputerMove = null
             )
         }
     }
@@ -167,7 +180,8 @@ class ComputerGameViewModel(
             previousState.copy(
                 game = game,
                 possibleMovesForSelectedPiece = listOf(),
-                selectedCoordinate = null
+                selectedCoordinate = null,
+                lastComputerMove = null
             )
         }
         updateBoard()
@@ -179,7 +193,8 @@ class ComputerGameViewModel(
             previousState.copy(
                 game = game,
                 possibleMovesForSelectedPiece = listOf(),
-                selectedCoordinate = null
+                selectedCoordinate = null,
+                lastComputerMove = null
             )
         }
         updateBoard()

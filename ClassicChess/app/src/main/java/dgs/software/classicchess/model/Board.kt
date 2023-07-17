@@ -1,12 +1,16 @@
 package dgs.software.classicchess.model
 
-data class Board(
-    val board: Array<Array<Piece?>> = Array(8) { Array(8) { null } }
+import java.util.*
+
+class Board(
+    val board: Array<Array<Piece?>> = Array(8) { Array(8) { null } },
+    initializeWithDefaults: Boolean = true
 ) {
     init {
-        initializeWithDefaultSetup()
+        if (initializeWithDefaults) {
+            initializeWithDefaultSetup()
+        }
     }
-
     fun get(coordinate: Coordinate): Piece? {
         return get(coordinate.row, coordinate.column)
     }
@@ -21,10 +25,6 @@ data class Board(
 
     fun set(row: Int, col: Int, piece: Piece?) {
         board[row][col] = piece
-    }
-
-    fun isNonEmpty(row: Int, col: Int): Boolean{
-        return board[row][col] != null
     }
 
     fun isPlayer(coordinate: Coordinate, player: Player): Boolean {
@@ -81,16 +81,6 @@ data class Board(
         createPiece(7, 7, Type.ROOK, Player.WHITE);
     }
 
-    fun copy(): Board {
-        val newBoard = Board()
-        for (i in 0 until 8) {
-            for (j in 0 until 8) {
-                newBoard.board[i][j] = this.board[i][j]?.copy()
-            }
-        }
-        return newBoard
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -105,4 +95,9 @@ data class Board(
     override fun hashCode(): Int {
         return board.contentDeepHashCode()
     }
+
+    fun deepCopy() = Board(
+        board = board.map { it.clone() }.toTypedArray(),
+        initializeWithDefaults = false
+    )
 }

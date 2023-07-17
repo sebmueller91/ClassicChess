@@ -1,12 +1,17 @@
 package dgs.software.classicchess.calculations.possiblemoves
 
-import android.util.Log
-import dgs.software.classicchess.model.*
+import dgs.software.classicchess.logger.Logger
+import dgs.software.classicchess.logger.LoggerFactory
+import dgs.software.classicchess.model.Coordinate
+import dgs.software.classicchess.model.MutableGame
+import dgs.software.classicchess.model.Player
+import dgs.software.classicchess.model.Type
 
 private const val TAG = "BoardStatusProvider"
 
 class BoardStatusProvider(
-    private val mutableGame: MutableGame
+    private val mutableGame: MutableGame,
+    val logger: Logger = LoggerFactory().create()
 ) {
     fun kingIsInCheck(player: Player): Boolean {
         val positionOfKing = getPositionOfKing(player)
@@ -42,7 +47,7 @@ class BoardStatusProvider(
                 }
             }
         }
-        Log.e(TAG, "No king found for player $player")
+        logger.e(TAG, "No king found for player $player")
         throw java.lang.IllegalStateException("No king found for player $player")
     }
 

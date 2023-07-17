@@ -25,7 +25,7 @@ data class ImmutableMoveStack(
 fun ImmutableMoveStack.toSimulatableMoveStack(): SimulatableMoveStack {
     return SimulatableMoveStack(
         moveStack = MoveStack(
-            moves = moves.toMutableList(),
+            moves = moves.map { it.deepCopy() }.toMutableList(),
             iteratorIndex = iteratorIndex
         )
     )

@@ -1,6 +1,5 @@
 package dgs.software.classicchess.ui
 
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
@@ -69,7 +68,6 @@ fun ClassicChessApp(
     )
 
     val localGameViewModel: LocalGameViewModel = getViewModel()
-    val computerGameViewModel: ComputerGameViewModel = getViewModel{ parametersOf(Difficulty.EASY)}
 
     Scaffold(
         topBar = {
@@ -111,7 +109,6 @@ private fun getScreenFromRoute(route: String): ClassicChessScreen {
         route.startsWith(ClassicChessScreen.LocalGame.route) -> ClassicChessScreen.LocalGame
         route.startsWith(ClassicChessScreen.ComputerGame.route.substringBefore("{")) -> ClassicChessScreen.ComputerGame
         else -> {
-            Log.e(TAG, "Could not get screen from route.")
             ClassicChessScreen.Menu
         }
     }

@@ -18,6 +18,7 @@ import dgs.software.classicchess.R
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Game
 import dgs.software.classicchess.model.moves.RevertableMove
+import dgs.software.classicchess.ui.theme.aiMoveVisualizationColor
 import dgs.software.classicchess.ui.theme.boardCellBlack
 import dgs.software.classicchess.ui.theme.boardCellWhite
 import dgs.software.classicchess.ui.theme.selectedCellColor
@@ -30,6 +31,7 @@ fun ChessBoard(
     kingInCheck: Coordinate?,
     selectedCoordinate: Coordinate?,
     boardDisplayedInverted: Boolean,
+    lastComputerMove: RevertableMove? = null,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -48,6 +50,7 @@ fun ChessBoard(
                 kingInCheck = kingInCheck,
                 selectedCoordinate = selectedCoordinate,
                 boardDisplayedInverted = boardDisplayedInverted,
+                lastComputerMove = lastComputerMove,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -63,6 +66,7 @@ private fun ChessRow(
     kingInCheck: Coordinate?,
     selectedCoordinate: Coordinate?,
     boardDisplayedInverted: Boolean,
+    lastComputerMove: RevertableMove?,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier) {
@@ -80,6 +84,7 @@ private fun ChessRow(
                 possibleMovesForSelectedPiece = possibleMovesForSelectedPiece,
                 kingInCheck = kingInCheck,
                 selectedCoordinate = selectedCoordinate,
+                lastComputerMove = lastComputerMove,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -95,6 +100,7 @@ private fun ChessCell(
     possibleMovesForSelectedPiece: List<RevertableMove>,
     kingInCheck: Coordinate?,
     selectedCoordinate: Coordinate?,
+    lastComputerMove: RevertableMove?,
     modifier: Modifier = Modifier
 ) {
     val curCoordinate = Coordinate(rowIndex, colIndex)
@@ -128,14 +134,17 @@ private fun ChessCell(
                     .wrapContentSize(),
                 contentAlignment = Alignment.Center
             ) {
-                if (possibleMovesForSelectedPiece.any { it.toPos == curCoordinate }
-                    || kingInCheck == (curCoordinate)) {
+                val captureIndicator =
+                    possibleMovesForSelectedPiece.any { it.toPos == curCoordinate }
+                            || kingInCheck == (curCoordinate)
+                val aiMoveIndicator = lastComputerMove?.toPos == curCoordinate
+                if (captureIndicator || aiMoveIndicator) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_baseline_circle_24),
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxSize(),
-                        tint = MaterialTheme.colors.selectedCellColor
+                        tint = if (captureIndicator) MaterialTheme.colors.selectedCellColor else MaterialTheme.colors.aiMoveVisualizationColor
                     )
                 }
                 Icon(
@@ -152,6 +161,12 @@ private fun ChessCell(
                 text = "\u2B24",
                 fontSize = 20.sp,
                 color = MaterialTheme.colors.selectedCellColor
+            )
+        } else if (lastComputerMove?.fromPos == curCoordinate) {
+            Text(
+                text = "\u2B24",
+                fontSize = 20.sp,
+                color = MaterialTheme.colors.aiMoveVisualizationColor
             )
         }
     }
