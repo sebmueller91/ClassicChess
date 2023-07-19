@@ -41,7 +41,7 @@ class ResolveUserClickActionUseCase {
         val selectedPiece: Piece? = game.board.get(clickedCoordinate)
         val clickedMove = possibleMoves.filter { it.toPos == clickedCoordinate }
 
-        return if (game.currentPlayer == computerPlayer) {
+        return if (game.currentPlayer == computerPlayer || game.canRedoMove) {
             UserClickAction.NoActionCellSelected
         } else if (clickedMove.any()) {
             if (clickedMove.first() is PromotePawnMove) {

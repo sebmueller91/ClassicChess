@@ -23,13 +23,13 @@ import kotlinx.coroutines.withContext
 private const val TAG = "ComputerGameViewModel"
 
 class ComputerGameViewModel(
-    val difficulty: Difficulty,
+    difficulty: Difficulty,
     private val logger: Logger = LoggerFactory().create()
 ) : ViewModel() {
     private var _uiState: MutableStateFlow<ComputerGameUiState> =
         MutableStateFlow(ComputerGameUiState(difficulty = difficulty))
     val uiState = _uiState.asStateFlow()
-    private val aiMoveCalculator: AiMoveCalculator
+    private var aiMoveCalculator: AiMoveCalculator
 
     init {
         val computerPlayer = Player.values().toList().shuffled().first()
@@ -171,7 +171,15 @@ class ComputerGameViewModel(
     }
 
     fun startNewGame() {
-        // TODO: Implement
+        val computerPlayer = Player.values().toList().shuffled().first()
+        _uiState.update { previousState ->
+            ComputerGameUiState(
+                computerPlayer = computerPlayer,
+                computeAiMove = computerPlayer == Player.WHITE,
+                boardDisplayedInverted = previousState.boardDisplayedInverted
+            )
+        }
+        aiMoveCalculator =  AiMoveCalculator(difficulty, uiState.value.computerPlayer)
     }
 
     fun undoPreviousMove() {

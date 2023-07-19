@@ -1,5 +1,6 @@
 package dgs.software.classicchess.ui.screens
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,6 +64,8 @@ fun StalemateDialog(
 
 @Composable
 fun ResetGameDialog(
+    @StringRes titleId: Int,
+    @StringRes textId: Int,
     onYesButtonClicked: () -> Unit,
     onNoButtonClicked: () -> Unit
 ) {

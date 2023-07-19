@@ -72,6 +72,8 @@ fun ComputerGameScreen(
     var showNewGameConfirmationDialog by remember { mutableStateOf(false) }
     if (showNewGameConfirmationDialog) {
         ResetGameDialog(
+            titleId = R.string.NewGameDialog_Header,
+            textId = R.string.NewGameDialog_Text,
             onYesButtonClicked = {
                 startNewGame()
                 showNewGameConfirmationDialog = false

@@ -72,6 +72,8 @@ fun LocalGameScreen(
     var showResetConfirmationDialog by remember { mutableStateOf(false) }
     if (showResetConfirmationDialog) {
         ResetGameDialog(
+            titleId = R.string.ResetGameDialog_Header,
+            textId = R.string.ResetGameDialog_Text,
             onYesButtonClicked = {
                 resetGame()
                 showResetConfirmationDialog = false

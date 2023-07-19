@@ -23,6 +23,8 @@
     <string name="GameOverDialog_StalemateDescriptionText"> can not perform any moves.</string>
     <string name="ResetGameDialog_Text">Do you really want to reset the game?</string>
     <string name="ResetGameDialog_Header">Reset Game</string>
+    <string name="NewGameDialog_Text">Do you really want to start a new game?</string>
+    <string name="NewGameDialog_Header">New Game</string>
     <string name="Dialog_OkText">OK</string>
     <string name="Yes_Answer">Yes</string>
     <string name="No_Answer">No</string>

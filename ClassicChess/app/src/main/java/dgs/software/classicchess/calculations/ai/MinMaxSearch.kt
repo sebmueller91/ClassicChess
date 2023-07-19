@@ -6,14 +6,15 @@ import dgs.software.classicchess.model.MutableGame
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.model.moves.*
+import java.util.concurrent.ConcurrentHashMap
 
-private const val USE_TRANSPOSITION_TABLE = true
+private const val USE_TRANSPOSITION_TABLE = false
 private const val USE_MOVE_ORDERING = true
 
 class MinMaxSearch(
     private val evaluationFunction: EvaluationFunction
 ) {
-    private val transpositionTable = HashMap<Int, Int>()
+    private val transpositionTable = ConcurrentHashMap<Long, Int>()
 
     fun search(mutableGame: MutableGame, player: Player): RevertableMove {
         var bestMove: RevertableMove? = null
@@ -56,11 +57,17 @@ class MinMaxSearch(
             return evaluationFunction.evaluate(mutableGame, player)
         }
 
+        val hash = mutableGame.zobristHash()
+        if (USE_TRANSPOSITION_TABLE && transpositionTable.containsKey(hash)) {
+            return transpositionTable[hash]!!
+        }
+
         var alpha = alpha
         var beta = beta
         var bestValue = if (player == Player.WHITE) Int.MIN_VALUE else Int.MAX_VALUE
 
-        val possibleMoves = PossibleMovesProvider.calculatePossibleMovesOfPlayer(mutableGame, player)
+        val possibleMoves =
+            PossibleMovesProvider.calculatePossibleMovesOfPlayer(mutableGame, player)
         val orderedMoves = if (USE_MOVE_ORDERING) {
             possibleMoves.orderMovesByPriority(mutableGame)
         } else {
@@ -83,6 +90,10 @@ class MinMaxSearch(
             if (beta <= alpha) {
                 break
             }
+        }
+
+        if (USE_TRANSPOSITION_TABLE) {
+            transpositionTable[hash] = bestValue
         }
 
         return bestValue
