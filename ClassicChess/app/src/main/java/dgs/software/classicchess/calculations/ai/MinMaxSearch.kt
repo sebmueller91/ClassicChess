@@ -30,7 +30,7 @@ class MinMaxSearch(
         for (possibleMove in orderedMoves) {
             mutableGame.executeMove(possibleMove)
             val evaluation = minMax(mutableGame, evaluationFunction.searchDepth - 1, player.opponent(), Int.MIN_VALUE, Int.MAX_VALUE)
-            mutableGame.rollbackAndDeleteLastMove(mutableGame)
+            mutableGame.rollbackAndDeleteLastMove()
 
             if (player == Player.WHITE && evaluation > bestValue) {
                 bestMove = possibleMove
@@ -77,7 +77,7 @@ class MinMaxSearch(
         for (possibleMove in orderedMoves) {
             mutableGame.executeMove(possibleMove)
             val evaluation = minMax(mutableGame, depth - 1, player.opponent(), alpha, beta)
-            mutableGame.rollbackAndDeleteLastMove(mutableGame)
+            mutableGame.rollbackAndDeleteLastMove()
 
             if (player == Player.WHITE) {
                 bestValue = maxOf(bestValue, evaluation)

@@ -34,8 +34,8 @@ data class MutableGame(
         simulatableMoveStack.executeMove(this, move, simulateExecution)
     }
 
-    fun rollbackAndDeleteLastMove(mutableGame: MutableGame) {
-        simulatableMoveStack.rollbackAndDeleteLastMove(mutableGame)
+    fun rollbackAndDeleteLastMove() {
+        simulatableMoveStack.rollbackAndDeleteLastMove(this)
     }
 
     fun rollbackSimulatedMoves() {
