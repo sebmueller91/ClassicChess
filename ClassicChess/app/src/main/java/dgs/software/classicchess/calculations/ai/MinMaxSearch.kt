@@ -8,7 +8,7 @@ import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.model.moves.*
 import java.util.concurrent.ConcurrentHashMap
 
-private const val USE_TRANSPOSITION_TABLE = false
+private const val USE_TRANSPOSITION_TABLE = true
 private const val USE_MOVE_ORDERING = true
 
 class MinMaxSearch(

@@ -18,7 +18,6 @@ data class ComputerGameUiState(
     val requestPawnPromotionInput: Boolean = false,
     val canRedoMove: Boolean = false,
     val canUndoMove: Boolean = false,
-    val canStartNewGame: Boolean = false,
     val computerPlayer: Player = Player.BLACK,
     val computeAiMove: Boolean = false,
     val difficulty: Difficulty,

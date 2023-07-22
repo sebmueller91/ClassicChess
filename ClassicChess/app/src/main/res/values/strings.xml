@@ -42,4 +42,8 @@
     <string name="Cancel_Dialog_Option">Cancel</string>
     <string name="Confirm_Dialog_Option">Confirm</string>
     <string name="SelectDifficultyDialog_Title">Select Difficulty</string>
+    <string name="diffculty_easy">Easy</string>
+    <string name="diffculty_normal">Normal</string>
+    <string name="diffculty_hard">Hard</string>
+    <string name="calculateComputerMoveTimer">Computer is thinking...</string>
 </resources>

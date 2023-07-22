@@ -12,6 +12,7 @@ import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
 import dgs.software.classicchess.model.moves.PromotePawnMove
 import dgs.software.classicchess.model.toMutableGame
+import dgs.software.classicchess.ui.theme.White
 import dgs.software.classicchess.use_cases.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +55,8 @@ class ComputerGameViewModel(
                             selectedCoordinate = null,
                             possibleMovesForSelectedPiece = listOf(),
                             computeAiMove = false,
-                            lastComputerMove = move
+                            lastComputerMove = move,
+                            boardDisplayedInverted = computerPlayer == Player.WHITE
                         )
                     }
                 }
@@ -170,13 +172,14 @@ class ComputerGameViewModel(
         }
     }
 
-    fun startNewGame() {
+    fun startNewGame(difficulty: Difficulty) {
         val computerPlayer = Player.values().toList().shuffled().first()
         _uiState.update { previousState ->
             ComputerGameUiState(
                 computerPlayer = computerPlayer,
                 computeAiMove = computerPlayer == Player.WHITE,
-                boardDisplayedInverted = previousState.boardDisplayedInverted
+                boardDisplayedInverted = computerPlayer == Player.WHITE,
+                difficulty = difficulty
             )
         }
         aiMoveCalculator =  AiMoveCalculator(difficulty, uiState.value.computerPlayer)
@@ -227,7 +230,6 @@ class ComputerGameViewModel(
                 kingInCheck = gameStatusInfo.kingInCheck,
                 playerWon = gameStatusInfo.playerWon,
                 playerStalemate = gameStatusInfo.playerStalemate,
-                canStartNewGame = uiState.value.game.anyMoveExecuted(),
                 canRedoMove = uiState.value.game.canRedoMove,
                 canUndoMove = uiState.value.game.canUndoMove
             )

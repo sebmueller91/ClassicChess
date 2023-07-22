@@ -9,20 +9,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dgs.software.classicchess.R
+import dgs.software.classicchess.calculations.ai.Difficulty
 import dgs.software.classicchess.model.Coordinate
 import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
-import dgs.software.classicchess.model.moves.RevertableMove
 import dgs.software.classicchess.ui.components.ChessBoard
 import dgs.software.classicchess.ui.components.CustomIconButton
 import dgs.software.classicchess.ui.components.PlayerIndicator
-import dgs.software.classicchess.ui.screens.GameWonDialog
-import dgs.software.classicchess.ui.screens.PromotePawnDialog
-import dgs.software.classicchess.ui.screens.ResetGameDialog
-import dgs.software.classicchess.ui.screens.StalemateDialog
+import dgs.software.classicchess.ui.components.getDifficultyTextId
+import dgs.software.classicchess.ui.screens.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
 
 @Composable
 fun ComputerGameScreen(
@@ -49,7 +50,7 @@ fun ComputerGameScreen(
     uiStateFlow: ComputerGameUiState,
     resetPlayerWon: () -> Unit,
     resetPlayerStalemate: () -> Unit,
-    startNewGame: () -> Unit,
+    startNewGame: (Difficulty) -> Unit,
     dismissPromotePawn: () -> Unit,
     promotePawn: (Type) -> Unit,
     invertBoardDisplayDirection: () -> Unit,
@@ -71,11 +72,11 @@ fun ComputerGameScreen(
 
     var showNewGameConfirmationDialog by remember { mutableStateOf(false) }
     if (showNewGameConfirmationDialog) {
-        ResetGameDialog(
+        NewGameDialog(
             titleId = R.string.NewGameDialog_Header,
             textId = R.string.NewGameDialog_Text,
-            onYesButtonClicked = {
-                startNewGame()
+            onYesButtonClicked = { difficulty ->
+                startNewGame(difficulty)
                 showNewGameConfirmationDialog = false
             },
             onNoButtonClicked = { showNewGameConfirmationDialog = false })
@@ -96,12 +97,14 @@ fun ComputerGameScreen(
 
         Column(
             modifier = Modifier
-                .weight(1f)
+                .weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
                 modifier = Modifier
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
                 PlayerIndicator(isWhite = uiStateFlow.computerPlayer == Player.WHITE)
                 Text(text = "   " + "${stringResource(R.string.ComputerVsPlayer)}" + "   ")
@@ -109,8 +112,25 @@ fun ComputerGameScreen(
             }
             Row(
                 modifier = Modifier
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text("Difficulty: ")
+                Text(
+                    text = stringResource(
+                        id = getDifficultyTextId(
+                            uiStateFlow.difficulty,
+                            LocalContext.current
+                        )
+                    )
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
                 Text(text = "${stringResource(R.string.CurrentPlayerText)}" + "   ")
                 PlayerIndicator(isWhite = uiStateFlow.game.currentPlayer == Player.WHITE)
@@ -139,6 +159,9 @@ fun ComputerGameScreen(
                 lastComputerMove = uiStateFlow.lastComputerMove,
             )
         }
+        Row(verticalAlignment = Alignment.Bottom) {
+            ComputerCalculationTimer(uiStateFlow)
+        }
         Row(
             modifier = Modifier
                 .weight(1f)
@@ -155,8 +178,7 @@ fun ComputerGameScreen(
                 modifier = Modifier
                     .height(50.dp)
                     .padding(5.dp),
-                onClick = { showNewGameConfirmationDialog = true },
-                enabled = uiStateFlow.canStartNewGame
+                onClick = { showNewGameConfirmationDialog = true }
             ) {
                 Text(
                     text = stringResource(R.string.ComputerGameScreen_NewGameButtonText)
@@ -175,5 +197,32 @@ fun ComputerGameScreen(
                 contentDescription = stringResource(R.string.RedoButtonContentDescription)
             )
         }
+    }
+}
+
+@Composable
+private fun ComputerCalculationTimer(uiStateFlow: ComputerGameUiState) {
+    val timeComputerCalculating = remember { mutableStateOf(0) }
+
+    LaunchedEffect(uiStateFlow.computeAiMove) {
+        if (uiStateFlow.computeAiMove) {
+            tickerFlow(1000).collect {
+                timeComputerCalculating.value += 1
+            }
+        } else {
+            timeComputerCalculating.value = 0
+        }
+    }
+
+    val text =
+        if (uiStateFlow.computeAiMove) "${stringResource(R.string.calculateComputerMoveTimer)} (${timeComputerCalculating.value}s)"
+        else ""
+    Text(text)
+}
+
+private fun tickerFlow(periodMillis: Long) = flow {
+    while (true) {
+        delay(periodMillis)
+        emit(Unit)
     }
 }
