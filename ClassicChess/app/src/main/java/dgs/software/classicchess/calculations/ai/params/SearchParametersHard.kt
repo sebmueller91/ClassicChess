@@ -1,6 +1,7 @@
 package dgs.software.classicchess.calculations.ai.params
 
 import dgs.software.classicchess.model.Piece
+import dgs.software.classicchess.model.Player
 import dgs.software.classicchess.model.Type
 
 class SearchParametersHard : SearchParameters() {
@@ -8,16 +9,22 @@ class SearchParametersHard : SearchParameters() {
         get() = 4
 
     override fun getSquareTable(piece: Piece, isEndgame: Boolean): Array<IntArray> {
-        return if (piece.type == Type.KING && isEndgame) {
+        val table = if (piece.type == Type.KING && isEndgame) {
             kingEndgameSquareTable
         } else {
             requireNotNull(squareTables[piece.type]) {
                 "No square table found for piece type ${piece.type}"
             }
         }
+
+        return if (piece.player == Player.BLACK) {
+            table.reversedArray()
+        } else {
+            table
+        }
     }
 
-    override val squareTables = mapOf<Type, Array<IntArray>>(
+    override val squareTables = mapOf(
         Type.PAWN to arrayOf(
             intArrayOf(0, 0, 0, 0, 0, 0, 0, 0),
             intArrayOf(50, 50, 50, 50, 50, 50, 50, 50),
