@@ -102,7 +102,7 @@ class RevertableMoveTest {
         val copiedMove = originalMove.deepCopy()
 
         assertThat(copiedMove).usingRecursiveComparison().isEqualTo(originalMove)
-        assertThat(originalGameState).usingRecursiveComparison().isEqualTo(game)
+        assertThat(originalGameState).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(game)
     }
 
     @SuppressLint("CheckResult")
@@ -126,7 +126,7 @@ class RevertableMoveTest {
         val copiedMove = originalMove.deepCopy()
 
         assertThat(copiedMove).usingRecursiveComparison().isEqualTo(originalMove)
-        assertThat(originalGameState).usingRecursiveComparison().isEqualTo(game)
+        assertThat(originalGameState).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(game)
     }
 
     @SuppressLint("CheckResult")
@@ -150,7 +150,7 @@ class RevertableMoveTest {
         val copiedMove = originalMove.deepCopy()
 
         assertThat(copiedMove).usingRecursiveComparison().isEqualTo(originalMove)
-        assertThat(originalGameState).usingRecursiveComparison().isEqualTo(game)
+        assertThat(originalGameState).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(game)
     }
 
     @SuppressLint("CheckResult")
@@ -172,7 +172,7 @@ class RevertableMoveTest {
         val copiedMove = originalMove.deepCopy()
 
         assertThat(copiedMove).usingRecursiveComparison().isEqualTo(originalMove)
-        assertThat(originalGameState).usingRecursiveComparison().isEqualTo(game)
+        assertThat(originalGameState).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(game)
     }
 
     @Test
@@ -196,7 +196,7 @@ class RevertableMoveTest {
         val copiedMove = originalMove.deepCopy()
 
         assertThat(copiedMove).usingRecursiveComparison().isEqualTo(originalMove)
-        assertThat(originalGameState).usingRecursiveComparison().isEqualTo(game)
+        assertThat(originalGameState).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(game)
     }
 
     @SuppressLint("CheckResult")
@@ -224,6 +224,6 @@ class RevertableMoveTest {
         val copiedMove = originalMove.deepCopy()
 
         assertThat(copiedMove).usingRecursiveComparison().isEqualTo(originalMove)
-        assertThat(originalGameState).usingRecursiveComparison().isEqualTo(game)
+        assertThat(originalGameState).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(game)
     }
 }

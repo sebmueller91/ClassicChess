@@ -112,6 +112,6 @@ class MoveStackTest {
             moveStack.rollbackAndDeleteLastMove(game)
         }
 
-        assertThat(game).usingRecursiveComparison().isEqualTo(originalGameState)
+        assertThat(game).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(originalGameState)
     }
 }

@@ -100,7 +100,7 @@ class RevertableActionTest {
         val copiedAction = originalAction.deepCopy()
 
         Assertions.assertThat(copiedAction).usingRecursiveComparison().isEqualTo(originalAction)
-        Assertions.assertThat(originalGameState).usingRecursiveComparison().isEqualTo(game)
+        Assertions.assertThat(originalGameState).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(game)
     }
 
     @Test
@@ -117,7 +117,7 @@ class RevertableActionTest {
         val copiedAction = originalAction.deepCopy()
 
         Assertions.assertThat(copiedAction).usingRecursiveComparison().isEqualTo(originalAction)
-        Assertions.assertThat(originalGameState).usingRecursiveComparison().isEqualTo(game)
+        Assertions.assertThat(originalGameState).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(game)
     }
 
     @SuppressLint("CheckResult")
@@ -141,7 +141,7 @@ class RevertableActionTest {
         val copiedAction = originalAction.deepCopy()
 
         Assertions.assertThat(copiedAction).usingRecursiveComparison().isEqualTo(originalAction)
-        Assertions.assertThat(originalGameState).usingRecursiveComparison().isEqualTo(game)
+        Assertions.assertThat(originalGameState).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(game)
     }
 
     @SuppressLint("CheckResult")
@@ -159,7 +159,7 @@ class RevertableActionTest {
         val copiedAction = originalAction.deepCopy()
 
         Assertions.assertThat(copiedAction).usingRecursiveComparison().isEqualTo(originalAction)
-        Assertions.assertThat(originalGameState).usingRecursiveComparison().isEqualTo(game)
+        Assertions.assertThat(originalGameState).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(game)
     }
 
     @SuppressLint("CheckResult")
@@ -177,6 +177,6 @@ class RevertableActionTest {
         val copiedAction = originalAction.deepCopy()
 
         Assertions.assertThat(copiedAction).usingRecursiveComparison().isEqualTo(originalAction)
-        Assertions.assertThat(originalGameState).usingRecursiveComparison().isEqualTo(game)
+        Assertions.assertThat(originalGameState).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(game)
     }
 }

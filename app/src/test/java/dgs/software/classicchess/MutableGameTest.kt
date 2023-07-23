@@ -39,7 +39,7 @@ class MutableGameTest {
         originalGame.executeMove(MovePiece(fromPos = Coordinate(1,1), toPos = Coordinate(3,1)))
         originalGame.executeMove(MovePiece(fromPos = Coordinate(6,1), toPos = Coordinate(5,1)))
         val copiedGame = originalGame.deepCopy()
-        assertThat(copiedGame).usingRecursiveComparison().isEqualTo(originalGame)
+        assertThat(copiedGame).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(originalGame)
     }
 
     @Test
@@ -48,9 +48,9 @@ class MutableGameTest {
         originalGame.executeMove(MovePiece(fromPos = Coordinate(1,1), toPos = Coordinate(3,1)))
         originalGame.executeMove(MovePiece(fromPos = Coordinate(6,1), toPos = Coordinate(5,1)))
         val copiedGame = originalGame.deepCopy()
-        assertThat(copiedGame).usingRecursiveComparison().isEqualTo(originalGame)
+        assertThat(copiedGame).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(originalGame)
         originalGame.board.set(Coordinate(0, 0), null)
-        assertThat(copiedGame).usingRecursiveComparison().isNotEqualTo(originalGame)
+        assertThat(copiedGame).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isNotEqualTo(originalGame)
     }
 
     @Test
@@ -64,6 +64,6 @@ class MutableGameTest {
 
         val convertedGame = copiedGame.toGame().toMutableGame()
 
-        assertThat(convertedGame).usingRecursiveComparison().isEqualTo(originalGame)
+        assertThat(convertedGame).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(originalGame)
     }
 }

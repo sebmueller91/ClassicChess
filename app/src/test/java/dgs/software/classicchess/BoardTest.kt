@@ -5,6 +5,7 @@ import dgs.software.classicchess.logger.Logger
 import dgs.software.classicchess.logger.TestLogger
 import dgs.software.classicchess.model.*
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -38,6 +39,6 @@ class BoardTest {
         val copy = original.deepCopy()
 
         assertThat(copy).isNotSameAs(original)
-        assertThat(copy).usingRecursiveComparison().isEqualTo(original)
+        assertThat(copy).usingRecursiveComparison().ignoringFields("zobristTable", "currentPlayerZobristNumber").isEqualTo(original)
     }
 }
