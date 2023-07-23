@@ -46,4 +46,5 @@
     <string name="diffculty_normal">Normal</string>
     <string name="diffculty_hard">Hard</string>
     <string name="calculateComputerMoveTimer">Computer is thinking...</string>
+    <string name="gamePauseUntilLatestMove">The game will be paused until you go back to the latest move.</string>
 </resources>

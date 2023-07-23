@@ -24,7 +24,7 @@ class SearchParametersHard : SearchParameters() {
         }
     }
 
-    override val squareTables = mapOf(
+    private val squareTables = mapOf(
         Type.PAWN to arrayOf(
             intArrayOf(0, 0, 0, 0, 0, 0, 0, 0),
             intArrayOf(50, 50, 50, 50, 50, 50, 50, 50),

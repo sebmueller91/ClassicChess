@@ -1,5 +1,6 @@
 package dgs.software.classicchess.ui.screens.computer_game
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
@@ -8,9 +9,11 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dgs.software.classicchess.R
 import dgs.software.classicchess.calculations.ai.Difficulty
@@ -159,12 +162,14 @@ fun ComputerGameScreen(
                 lastComputerMove = uiStateFlow.lastComputerMove,
             )
         }
-        Row(verticalAlignment = Alignment.Bottom) {
-            ComputerCalculationTimer(uiStateFlow)
+        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.Center) {
+            UserInformationText(uiStateFlow,
+                Modifier
+                    .fillMaxWidth()
+                    .height(100.dp))
         }
         Row(
             modifier = Modifier
-                .weight(1f)
                 .padding(bottom = 10.dp),
             verticalAlignment = Alignment.Bottom
         ) {
@@ -201,7 +206,10 @@ fun ComputerGameScreen(
 }
 
 @Composable
-private fun ComputerCalculationTimer(uiStateFlow: ComputerGameUiState) {
+private fun UserInformationText(
+    uiStateFlow: ComputerGameUiState,
+    modifier: Modifier = Modifier
+) {
     val timeComputerCalculating = remember { mutableStateOf(0) }
 
     LaunchedEffect(uiStateFlow.computeAiMove) {
@@ -214,10 +222,20 @@ private fun ComputerCalculationTimer(uiStateFlow: ComputerGameUiState) {
         }
     }
 
-    val text =
-        if (uiStateFlow.computeAiMove) "${stringResource(R.string.calculateComputerMoveTimer)} (${timeComputerCalculating.value}s)"
-        else ""
-    Text(text)
+    val text = if (uiStateFlow.canRedoMove) {
+        stringResource(R.string.gamePauseUntilLatestMove)
+    } else if (uiStateFlow.computeAiMove) {
+        "${stringResource(R.string.calculateComputerMoveTimer)} (${timeComputerCalculating.value}s)"
+    } else {
+        ""
+    }
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Text(
+            text = text,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 12.dp)
+        )
+    }
 }
 
 private fun tickerFlow(periodMillis: Long) = flow {

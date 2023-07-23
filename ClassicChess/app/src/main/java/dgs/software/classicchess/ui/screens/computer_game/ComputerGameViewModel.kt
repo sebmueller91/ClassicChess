@@ -37,7 +37,8 @@ class ComputerGameViewModel(
         _uiState.update { previousState ->
             previousState.copy(
                 computerPlayer = computerPlayer,
-                computeAiMove = computerPlayer == Player.WHITE
+                computeAiMove = computerPlayer == Player.WHITE,
+                boardDisplayedInverted = computerPlayer == Player.WHITE
             )
         }
         aiMoveCalculator =  AiMoveCalculator(difficulty, uiState.value.computerPlayer)
@@ -55,13 +56,12 @@ class ComputerGameViewModel(
                             selectedCoordinate = null,
                             possibleMovesForSelectedPiece = listOf(),
                             computeAiMove = false,
-                            lastComputerMove = move,
-                            boardDisplayedInverted = computerPlayer == Player.WHITE
+                            lastComputerMove = move
                         )
                     }
+                    updateBoard()
                 }
             }
-            updateBoard()
         }
     }
 

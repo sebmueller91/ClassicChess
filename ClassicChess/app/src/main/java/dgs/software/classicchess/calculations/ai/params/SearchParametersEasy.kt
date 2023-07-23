@@ -7,7 +7,7 @@ class SearchParametersEasy : SearchParameters() {
     override val searchDepth: Int
         get() = 2
 
-    override val squareTables = mapOf<Type, Array<IntArray>>(
+    private val squareTables = mapOf<Type, Array<IntArray>>(
         Type.PAWN to Array(8) { IntArray(8) { 0 } },
         Type.KNIGHT to Array(8) { IntArray(8) { 0 } },
         Type.BISHOP to Array(8) { IntArray(8) { 0 } },
