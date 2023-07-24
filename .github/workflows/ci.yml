@@ -40,9 +40,12 @@ jobs:
       env:
         KEYSTORE: ${{ secrets.KEYSTORE }}
 
+    - name: List files in workspace
+      run: ls -l
+
     - name: Sign APK
       run: |
-        ./gradlew signRelease
+        ./gradlew assembleRelease
       env:
         KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
