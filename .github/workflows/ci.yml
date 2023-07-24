@@ -31,8 +31,8 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: ${{ runner.os }}-gradle
 
-    - name: Build with Gradle
-      run: ./gradlew build
+    - name: Build debug variant
+      run: ./gradlew assembleDebug
 
     - name: Setup key file
       run: |
@@ -43,7 +43,7 @@ jobs:
     - name: List files in workspace
       run: ls -l
 
-    - name: Sign APK
+    - name: Build and Sign release variant
       run: |
         ./gradlew assembleRelease
       env:
