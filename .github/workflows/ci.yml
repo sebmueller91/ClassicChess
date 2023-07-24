@@ -2,9 +2,9 @@ name: Android CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -31,9 +31,6 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: ${{ runner.os }}-gradle
 
-    - name: Build debug variant
-      run: ./gradlew assembleDebug
-
     - name: Setup key file
       run: |
         echo "${{ secrets.KEYSTORE }}" | base64 --decode > ${{ github.workspace }}/keystore.jks
@@ -54,8 +51,12 @@ jobs:
     - name: Test with Gradle
       run: ./gradlew test
 
+    - name: Rename APK
+      run: mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/classicChess.apk
+
     - name: Upload APK
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: actions/upload-artifact@v2.2.4
       with:
         name: app
-        path: app/build/outputs/apk/release/app-release.apk
+        path: app/build/outputs/apk/release/classicChess.apk
