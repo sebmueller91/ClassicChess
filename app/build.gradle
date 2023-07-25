@@ -3,6 +3,40 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+def getVersionProperties() {
+    Properties versionProps = new Properties()
+    try {
+        File versionPropsFile = file("../version.properties")
+        if (versionPropsFile.exists()) {
+            versionProps.load(versionPropsFile.newDataInputStream())
+        } else {
+            println "version.properties file not found"
+        }
+    } catch (Exception e) {
+        println "Error reading version.properties file: " + e.getMessage()
+    }
+    return versionProps
+}
+
+def generateVersionCode(String versionName) {
+    if (versionName == null) {
+        versionName = "0.0.1"
+    }
+    def (major, minor, patch) = versionName.tokenize('.').collect { it.toInteger() }
+    return major * 10000 + minor * 100 + patch
+}
+
+def getFullVersionName() {
+    String versionName = "0.0.0"
+    try {
+        Properties versionProps = getVersionProperties()
+        versionName = versionProps.getProperty("version_name", versionName)
+    } catch (Exception e) {
+        println "Error reading version.properties file: " + e.getMessage()
+    }
+    return versionName
+}
+
 android {
     namespace 'dgs.software.classicchess'
     compileSdk 33
@@ -11,8 +45,8 @@ android {
         applicationId "dgs.software.classicchess"
         minSdk 21
         targetSdk 33
-        versionCode 1
-        versionName "1.0"
+        versionCode generateVersionCode(getVersionProperties().getProperty("version_name"))
+        versionName getFullVersionName()
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -35,8 +69,13 @@ android {
 
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            versionNameSuffix ''
+        }
+        debug {
+            versionNameSuffix '-debug'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8

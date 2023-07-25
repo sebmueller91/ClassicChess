@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,9 +18,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.unit.sp
+import dgs.software.classicchess.BuildConfig
 import dgs.software.classicchess.R
 import dgs.software.classicchess.calculations.ai.Difficulty
 
@@ -50,42 +54,56 @@ fun MainMenuScreen(
         )
     )
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.background),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(MaterialTheme.colors.background)
     ) {
         val screenWidth = LocalConfiguration.current.screenWidthDp.dp
         val imageAspectRatio = 1536f / 768f
 
-        Image(
-            painter = painterResource(id = R.drawable.mainappimage),
-            contentDescription = "App Logo",
-            modifier = Modifier
-                .requiredSize(width = screenWidth, height = screenWidth / imageAspectRatio)
-                .padding(top = 24.dp),
-            contentScale = ContentScale.Crop
-        )
+        Column(
+            Modifier
+                .fillMaxSize()
+                .align(Alignment.TopCenter)) {
+            Image(
+                painter = painterResource(id = R.drawable.mainappimage),
+                contentDescription = "App Logo",
+                modifier = Modifier
+                    .requiredSize(width = screenWidth, height = screenWidth / imageAspectRatio)
+                    .padding(top = 24.dp),
+                contentScale = ContentScale.Crop
+            )
 
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            itemsIndexed(gameModes) { index, gameMode ->
-                GameModeCard(
-                    gameMode = gameMode,
-                    imageSize = 80.dp,
-                    modifier = modifier.height(140.dp)
-                )
-                if (index < gameModes.size - 1) {
-                    Spacer(
-                        modifier = Modifier
-                            .height(1.dp)
-                            .fillMaxWidth()
-                            .padding(horizontal = 50.dp)
-                            .background(MaterialTheme.colors.onBackground)
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                itemsIndexed(gameModes) { index, gameMode ->
+                    GameModeCard(
+                        gameMode = gameMode,
+                        imageSize = 80.dp,
+                        modifier = modifier.height(140.dp)
                     )
+                    if (index < gameModes.size - 1) {
+                        Spacer(
+                            modifier = Modifier
+                                .height(1.dp)
+                                .fillMaxWidth()
+                                .padding(horizontal = 50.dp)
+                                .background(MaterialTheme.colors.onBackground)
+                        )
+                    }
                 }
             }
         }
+        val infoText = "App version: ${BuildConfig.VERSION_NAME}\n©2023 Sebastian Müller\ngithub.com/sebmueller91"
+        Text(
+            text = infoText,
+            color = MaterialTheme.colors.onBackground.copy(alpha = 0.5f),
+            fontSize = 12.sp,
+            textAlign = TextAlign.End,
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.BottomEnd)
+        )
     }
 }
 
